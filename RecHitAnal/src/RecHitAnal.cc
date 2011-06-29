@@ -134,6 +134,7 @@ private:
   Float_t angle;
   double d0;
   Int_t nTracks;
+  Int_t nMuons;
   
   TTree *t1; // Tree for each muon
   Int_t hitsFromRpc;
@@ -207,6 +208,7 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t0->Branch("angle",       &angle,            "angle/F");
   t0->Branch("d0",          &d0,               "d0/D");
   t0->Branch("nTracks",     &nTracks,          "nTracks/I");
+  t0->Branch("nMuons",      &nMuons,           "nMuons/I");
 
   t1 = fs->make<TTree>("muon","");
   t1->Branch("Run",         &Run,              "Run/I");
@@ -214,6 +216,7 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t1->Branch("angle",       &angle,            "angle/F");
   t1->Branch("d0",          &d0,               "d0/D");
   t1->Branch("nTracks",     &nTracks,          "nTracks/I");
+  t1->Branch("nMuons",      &nMuons,           "nMuons/I");
   t1->Branch("nRpcHit",     &hitsFromRpc,      "nRpcHit/I");
   t1->Branch("eta",         &eta,              "eta/F");
   t1->Branch("phi",         &phi,              "phi/F");
@@ -331,7 +334,7 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
   int nCSCseg = allCSCSegments->size();
   int nDTseg = allDT4DSegments->size();
   int nRPCRecHits = rpcRecHits->size();
-  int nMuons = muons->size();
+  nMuons = muons->size();
   int nStaMuons = StandAloneMuons->size();
   nTracks = generalTracks->size();
 
