@@ -146,12 +146,14 @@ private:
   Int_t region[kMax];
   Int_t ring[kMax];
   Int_t sector[kMax];
+  Int_t subsector[kMax];
   Int_t station[kMax];  // 1-4 for barrel, disk 1-3 for endcaps 
   Int_t sublayer[kMax]; // 1 (in) or 2 (out) just for barrel RB1 and RB2  
   //for STA
   Int_t regionSTA[kMax];
   Int_t ringSTA[kMax];
   Int_t sectorSTA[kMax];
+  Int_t subsectorSTA[kMax];
   Int_t stationSTA[kMax];  // 1-4 for barrel, disk 1-3 for endcaps 
   Int_t sublayerSTA[kMax]; // 1 (in) or 2 (out) just for barrel RB1 and RB2  
   
@@ -230,12 +232,14 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t1->Branch("region",      region,            "region[nRpcHit]/I");
   t1->Branch("ring",        ring,              "ring[nRpcHit]/I");
   t1->Branch("sector",      sector,            "sector[nRpcHit]/I");
+  t1->Branch("subsector",   subsector,         "subsector[nRpcHit]/I");
   t1->Branch("station",     station,           "station[nRpcHit]/I");
   t1->Branch("sublayer",    sublayer,          "sublayer[nRpcHit]/I");
   // For standalone muons
   t1->Branch("regionSTA",   regionSTA,         "regionSTA[nRpcHitSTA]/I");
   t1->Branch("ringSTA",     ringSTA,           "ringSTA[nRpcHitSTA]/I");
   t1->Branch("sectorSTA",   sectorSTA,         "sectorSTA[nRpcHitSTA]/I");
+  t1->Branch("subsectorSTA",subsectorSTA,      "subsectorSTA[nRpcHitSTA]/I");
   t1->Branch("stationSTA",  stationSTA,        "stationSTA[nRpcHitSTA]/I");
   t1->Branch("sublayerSTA", sublayerSTA,       "sublayerSTA[nRpcHitSTA]/I");
 }
@@ -503,6 +507,7 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
 	  region[hitsFromRpc]= rpcId.region();
 	  ring[hitsFromRpc] = rpcId.ring();
 	  sector[hitsFromRpc] = rpcId.sector();
+	  subsector[hitsFromRpc] = rpcId.subsector();
 	  station[hitsFromRpc] = rpcId.station(); // 1-4 for barrel, disk 1-3 for endcaps 
 	  sublayer[hitsFromRpc] = rpcId.layer();    // 1 (in) or 2 (out) just for barrel RB1 and RB2
 
@@ -563,6 +568,7 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
 	  regionSTA[hitsFromRpcSTA] = rpcId.region();
 	  ringSTA[hitsFromRpcSTA] = rpcId.ring();
 	  sectorSTA[hitsFromRpcSTA] = rpcId.sector();
+	  subsectorSTA[hitsFromRpcSTA] = rpcId.subsector();
 	  stationSTA[hitsFromRpcSTA] = rpcId.station(); // 1-4 for barrel, disk 1-3 for endcaps 
 	  sublayerSTA[hitsFromRpcSTA] = rpcId.layer();    // 1 (in) or 2 (out) just for barrel RB1 and RB2
 
