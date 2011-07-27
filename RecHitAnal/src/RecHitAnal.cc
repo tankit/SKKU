@@ -13,7 +13,7 @@
 //                                                                                                                               
 // Original Author:  Hyunkwan Seo,588 R-009,+41227678393,                                                                        
 //         Created:  Fri Jun 17 17:45:39 CEST 2011                                                                               
-// $Id$                                                                                                                          
+// $Id: RecHitAnal.cc,v 1.3 2011/07/06 15:40:19 hkseo Exp $                                                                                                                          
 //                                                                                                                               
 //    
 
@@ -137,8 +137,8 @@ private:
   Int_t nMuons;
   
   TTree *t1; // Tree for each muon
-  Int_t hitsFromRpc;
-  Int_t hitsFromRpcSTA;
+  Int_t hitsFromRpc, hitsFromDt, hitsFromCsc;
+  Int_t hitsFromRpcSTA, hitsFromDtSTA, hitsFromCscSTA;
   Float_t eta, phi, pt;
   Float_t eta_STA, phi_STA, pt_STA;
 
@@ -220,10 +220,14 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t1->Branch("nTracks",     &nTracks,          "nTracks/I");
   t1->Branch("nMuons",      &nMuons,           "nMuons/I");
   t1->Branch("nRpcHit",     &hitsFromRpc,      "nRpcHit/I");
+  t1->Branch("nDtHit",      &hitsFromDt,       "nDtHit/I");
+  t1->Branch("nCscHit",     &hitsFromCsc,      "nCscHit/I");
   t1->Branch("eta",         &eta,              "eta/F");
   t1->Branch("phi",         &phi,              "phi/F");
   t1->Branch("pt",          &pt,               "pt/F");
   t1->Branch("nRpcHitSTA",  &hitsFromRpcSTA,   "nRpcHitSTA/I");
+  t1->Branch("nDtHitSTA",   &hitsFromDtSTA,    "nDtHitSTA/I");
+  t1->Branch("nCscHitSTA",  &hitsFromCscSTA,   "nCscHitSTA/I");
   t1->Branch("etaSTA",      &eta_STA,          "eta/F");
   t1->Branch("phiSTA",      &phi_STA,          "phi/F");
   t1->Branch("ptSTA",       &pt_STA,           "pt/F");
@@ -450,8 +454,8 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
       //MuonTransientTrackingRecHit::MuonRecHitContainer segments = theSegmentsAssociator->associate(event, eventSetup, (reco::Track)*staOfGlobalRef );
 
       // hit counters
-      //int hitsFromDt=0;
-      //int hitsFromCsc=0;
+      hitsFromDt=0;
+      hitsFromCsc=0;
       hitsFromRpc=0;
       int hitsFromTk=0;
       int hitsFromTrack=0;
@@ -477,21 +481,23 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
 	if ((*recHit)->isValid()) validHitsFromTrack++;
 	hitsFromTrack++;
 	DetId id = (*recHit)->geographicalId();
-	/*
+
 	// hits from DT
 	if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::DT ) {
 	  hitsFromDt++;   
+	  /*
 	  const DTChamber * d1;
 	  d1 = dtGeometry->chamber(id);
 	  DTChamberId dtId = d1->id();
 	  int wheel = dtId.wheel();
 	  int sector = dtId.sector();
 	  int station = dtId.station(); 
+	  */
 	}
 	// hits from CSC
 	if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::CSC ) 
 	  hitsFromCsc++;
-	*/
+
 	// hits from RPC
 	if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::RPC ) {
 	  if(Debug_) cout<< " mark 3 "<<endl;
@@ -535,28 +541,30 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
       */
       // hit counters
       hitsFromRpcSTA=0;
-      //int hitsFromDtSTA=0;
-      //int hitsFromCscSTA=0;
+      hitsFromDtSTA=0;
+      hitsFromCscSTA=0;
 
-      // hits from STA muon track (the part concerning the rechits of rpc. info from Davide)
+      // hits from STA muon track
       for(trackingRecHit_iterator recHit = ((reco::Track)*staOfGlobalRef).recHitsBegin(); recHit != ((reco::Track)*staOfGlobalRef).recHitsEnd(); ++recHit){
 	DetId id = (*recHit)->geographicalId();
 	if (!(*recHit)->isValid()) continue;
-	/*
+
 	// hits from DT
 	if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::DT ) {
 	  hitsFromDtSTA++;   
+	  /*
 	  const DTChamber * d1;
 	  d1 = dtGeometry->chamber(id);
 	  DTChamberId dtId = d1->id();
 	  int wheel = dtId.wheel();
 	  int sector = dtId.sector();
 	  int station = dtId.station(); 
+	  */
 	}
 	// hits from CSC
 	if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::CSC ) 
 	  hitsFromCscSTA++;
-	*/
+
 	// hits from RPC
 	if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::RPC ) {
 	  const RPCRoll * r1; LocalPoint l;
