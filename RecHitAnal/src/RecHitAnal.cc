@@ -12,8 +12,9 @@
 */
 //                                                                                                                               
 // Original Author:  Hyunkwan Seo,588 R-009,+41227678393,                                                                        
-//         Created:  Fri Jun 17 17:45:39 CEST 2011                                                                               
-// $Id: RecHitAnal.cc,v 1.3 2011/07/06 15:40:19 hkseo Exp $                                                                                                                          
+//         Created:  Fri Jun 17 17:45:39 CEST 2011<<<<<<< RecHitAnal.cc
+// $Id: RecHitAnal.cc,v 1.3 2011/07/06 15:40:19 hkseo Exp $=======
+// $Id: RecHitAnal.cc,v 1.4 2011/07/27 14:26:23 hkseo Exp $>>>>>>> 1.4
 //                                                                                                                               
 //    
 
@@ -149,6 +150,7 @@ private:
   Int_t subsector[kMax];
   Int_t station[kMax];  // 1-4 for barrel, disk 1-3 for endcaps 
   Int_t sublayer[kMax]; // 1 (in) or 2 (out) just for barrel RB1 and RB2  
+  Float_t recX[kMax];
   //for STA
   Int_t regionSTA[kMax];
   Int_t ringSTA[kMax];
@@ -156,7 +158,8 @@ private:
   Int_t subsectorSTA[kMax];
   Int_t stationSTA[kMax];  // 1-4 for barrel, disk 1-3 for endcaps 
   Int_t sublayerSTA[kMax]; // 1 (in) or 2 (out) just for barrel RB1 and RB2  
-  
+  Float_t recXSTA[kMax];
+
   bool Debug_;
 
   InputTag RPCRecHits_;
@@ -239,6 +242,7 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t1->Branch("subsector",   subsector,         "subsector[nRpcHit]/I");
   t1->Branch("station",     station,           "station[nRpcHit]/I");
   t1->Branch("sublayer",    sublayer,          "sublayer[nRpcHit]/I");
+  t1->Branch("localX",      recX,              "localX[nRpcHit]/F");
   // For standalone muons
   t1->Branch("regionSTA",   regionSTA,         "regionSTA[nRpcHitSTA]/I");
   t1->Branch("ringSTA",     ringSTA,           "ringSTA[nRpcHitSTA]/I");
@@ -246,6 +250,7 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t1->Branch("subsectorSTA",subsectorSTA,      "subsectorSTA[nRpcHitSTA]/I");
   t1->Branch("stationSTA",  stationSTA,        "stationSTA[nRpcHitSTA]/I");
   t1->Branch("sublayerSTA", sublayerSTA,       "sublayerSTA[nRpcHitSTA]/I");
+  t1->Branch("localXSTA",   recXSTA,           "localXSTA[nRpcHitSTA]/F");
 }
 
 RecHitAnal::~RecHitAnal()
@@ -516,6 +521,7 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
 	  subsector[hitsFromRpc] = rpcId.subsector();
 	  station[hitsFromRpc] = rpcId.station(); // 1-4 for barrel, disk 1-3 for endcaps 
 	  sublayer[hitsFromRpc] = rpcId.layer();    // 1 (in) or 2 (out) just for barrel RB1 and RB2
+	  recX[hitsFromRpc] = l.x();
 
 	  hitsFromRpc++;
 	}// End loop of RPC hits for GLB
@@ -579,6 +585,7 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
 	  subsectorSTA[hitsFromRpcSTA] = rpcId.subsector();
 	  stationSTA[hitsFromRpcSTA] = rpcId.station(); // 1-4 for barrel, disk 1-3 for endcaps 
 	  sublayerSTA[hitsFromRpcSTA] = rpcId.layer();    // 1 (in) or 2 (out) just for barrel RB1 and RB2
+	  recXSTA[hitsFromRpcSTA] = l.x();
 
 	  hitsFromRpcSTA++;
 
