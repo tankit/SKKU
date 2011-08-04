@@ -13,8 +13,8 @@
 //                                                                                                                               
 // Original Author:  Hyunkwan Seo,588 R-009,+41227678393,                                                                        
 //         Created:  Fri Jun 17 17:45:39 CEST 2011<<<<<<< RecHitAnal.cc
-// $Id: RecHitAnal.cc,v 1.3 2011/07/06 15:40:19 hkseo Exp $=======
-// $Id: RecHitAnal.cc,v 1.4 2011/07/27 14:26:23 hkseo Exp $>>>>>>> 1.4
+// $Id: RecHitAnal.cc,v 1.5 2011/07/28 14:25:25 hkseo Exp $=======
+// $Id: RecHitAnal.cc,v 1.5 2011/07/28 14:25:25 hkseo Exp $>>>>>>> 1.4
 //                                                                                                                               
 //    
 
@@ -89,16 +89,16 @@
 #include <stdlib.h>
 #include <string>
 #include <map>
-#include<iostream>
-#include<cmath>
-#include<assert.h>
+#include <iostream>
+#include <cmath>
+#include <assert.h>
 #include "TPaletteAxis.h"
 #include "TTimeStamp.h"
 #include "TString.h"
 #include "TFolder.h"
 #include "TTree.h"
 #include "TFile.h"
-#include"TH1.h"
+#include "TH1.h"
 #include "TH2F.h"
 #include "TLorentzVector.h"
 
@@ -108,6 +108,7 @@ using namespace std;
 using namespace reco;
 
 static const int kMax = 10;
+static const int kMaxMu = 10000;
 
 //
 // class declaration
@@ -128,20 +129,37 @@ private:
   int fBX;
   int fOrbit;  
 
-  TTree *t0; //Tree for each event
+  //Tree for each event
+  TTree *t0; 
   Int_t Run;
   Int_t eventNumber;
   Int_t totalEvents;
   Float_t angle;
-  double d0;
   Int_t nTracks;
   Int_t nMuons;
-  
-  TTree *t1; // Tree for each muon
+  Float_t dxy[kMaxMu];
+  Float_t mupt[kMaxMu];
+  Float_t mup[kMaxMu];
+  Float_t mupx[kMaxMu];
+  Float_t mupy[kMaxMu];
+  Float_t mupz[kMaxMu];
+  Float_t muphi[kMaxMu];
+  Float_t mueta[kMaxMu];
+  Float_t muet[kMaxMu];
+  Float_t mue[kMaxMu];
+  Int_t muchg[kMaxMu];
+
+  bool isTrackerMu[kMaxMu];
+  bool isStaMu[kMaxMu];
+  bool isGlobalMu[kMaxMu];
+
+  // Tree for each muon
+  TTree *t1; 
   Int_t hitsFromRpc, hitsFromDt, hitsFromCsc;
   Int_t hitsFromRpcSTA, hitsFromDtSTA, hitsFromCscSTA;
   Float_t eta, phi, pt;
   Float_t eta_STA, phi_STA, pt_STA;
+  Double_t d0;
 
   //for GLB
   Int_t region[kMax];
@@ -211,9 +229,22 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t0->Branch("eventNumber", &eventNumber,      "eventNumber/I");
   t0->Branch("totalEvents", &totalEvents,      "totalEvents/I");
   t0->Branch("angle",       &angle,            "angle/F");
-  t0->Branch("d0",          &d0,               "d0/D");
   t0->Branch("nTracks",     &nTracks,          "nTracks/I");
-  t0->Branch("nMuons",      &nMuons,           "nMuons/I");
+  t0->Branch("NrecoMuon",   &nMuons,           "NrecoMuon/I");
+  t0->Branch("dxy",         dxy,               "dxy[NrecoMuon]/F");
+  t0->Branch("recoMuonPt",  mupt,              "recoMuonPt[NrecoMuon]/F");
+  t0->Branch("recoMuonP",   mup,               "recoMuonP[NrecoMuon]/F");
+  t0->Branch("recoMuonPx",  mupx,              "recoMuonPx[NrecoMuon]/F");
+  t0->Branch("recoMuonPy",  mupy,              "recoMuonPy[NrecoMuon]/F");
+  t0->Branch("recoMuonPz",  mupz,              "recoMuonPz[NrecoMuon]/F");
+  t0->Branch("recoMuonPhi", muphi,             "recoMuonPhi[NrecoMuon]/F");
+  t0->Branch("recoMuonEta", mueta,             "recoMuonEta[NrecoMuon]/F");
+  t0->Branch("recoMuonEt",  muet,              "recoMuonEt[NrecoMuon]/F");
+  t0->Branch("recoMuonE",   mue,               "recoMuonE[NrecoMuon]/F");
+  t0->Branch("isTrackerMu", isTrackerMu,       "isTrackerMu[NrecoMuon]/O");
+  t0->Branch("isStaMu",     isStaMu,           "isStaMu[NrecoMuon]/O");
+  t0->Branch("isGlobalMu",  isGlobalMu,        "isGlobalMu[NrecoMuon]/O");
+
 
   t1 = fs->make<TTree>("muon","");
   t1->Branch("Run",         &Run,              "Run/I");
@@ -358,16 +389,12 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
   //*  Calculate 3D angle for muons in order to remove cosmic muons *
   //*****************************************************************
 
-  bool isTrackerMu = false;
-  bool isStaMu = false;
-  bool isGlobalMu = false;
   vector<TLorentzVector> zmumu;
   angle = -1;
 
   for (int muidx=0; muidx< nMuons; muidx++) {  // loop on all muons
-    isTrackerMu = false;
-    isStaMu = false;
-    isGlobalMu = false;
+
+    TrackRef glbOfGlobalRef = (*muons)[muidx].globalTrack();
     float eta_ = ((*muons)[muidx]).eta();
     //float p_ = ((*muons)[muidx]).p();
     float px_ = ((*muons)[muidx]).px();
@@ -376,11 +403,11 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
     float energy_ = ((*muons)[muidx]).energy();
     //int charge_ = ((*muons)[muidx]).charge();
     
-    if ((*muons)[muidx].isTrackerMuon() && abs(eta_)<2.4) isTrackerMu = true;
-    if ((*muons)[muidx].isStandAloneMuon() && abs(eta_)<2.4) isStaMu = true;
-    if ((*muons)[muidx].isGlobalMuon() && abs(eta_)<2.4) isGlobalMu = true;
-
-    if (isGlobalMu) zmumu.push_back( TLorentzVector(px_,py_,pz_,energy_) );
+    if ( (*muons)[muidx].isGlobalMuon() && abs(eta_)<2.4) {
+      math::XYZPoint point(beamSpot.x0(),beamSpot.y0(), beamSpot.z0());
+      dxy[muidx] = -1.* glbOfGlobalRef->dxy(point);
+      zmumu.push_back( TLorentzVector(px_,py_,pz_,energy_) );
+    }
   }
 
 
@@ -399,7 +426,6 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
   // Finished calculation for 3D angle for muons 
   ///////////////////////////////////////////////////////////////////  
 
-
   /*
   cout << "Run " << Run << "  event " << eventNumber << endl;
   cout << " n CSC segments " << nCSCseg << endl;
@@ -412,11 +438,23 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
   vector<GlobalPoint> rpcGlobalPoints;
   for (int muidx=0; muidx< nMuons; muidx++) {  // loop on all muons
     if(Debug_) cout<< " mark 1 "<<endl;
-    isTrackerMu = false;
-    isStaMu = false;
-    isGlobalMu = false;
+    isTrackerMu[muidx] = false;
+    isStaMu[muidx] = false;
+    isGlobalMu[muidx] = false;
+    dxy[muidx] = 0;
     // vector of RpcRecHits associated to sta muon
     //    vector<RPCRecHit> RPCHistOnSta_List;
+
+    mupt[muidx] = ((*muons)[muidx]).pt();
+    mup[muidx] = ((*muons)[muidx]).p();
+    mupx[muidx] = ((*muons)[muidx]).px();
+    mupy[muidx] = ((*muons)[muidx]).py();
+    mupz[muidx] = ((*muons)[muidx]).pz();
+    muet[muidx] = ((*muons)[muidx]).et();
+    mue[muidx] = ((*muons)[muidx]).energy();
+    mueta[muidx] = ((*muons)[muidx]).eta();
+    muphi[muidx] = ((*muons)[muidx]).phi();
+    muchg[muidx] = ((*muons)[muidx]).charge();
     
     eta = ((*muons)[muidx]).eta();
     phi = ((*muons)[muidx]).phi();
@@ -424,18 +462,17 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
     //float p = ((*muons)[muidx]).p();
     //float charge = ((*muons)[muidx]).charge();
 
-    if ((*muons)[muidx].isTrackerMuon() && abs(eta)<1.6) isTrackerMu = true;
-    if ((*muons)[muidx].isStandAloneMuon() && abs(eta)<1.6) isStaMu = true;
-    if ((*muons)[muidx].isGlobalMuon() && abs(eta)<1.6) isGlobalMu = true;
-
-
-    if (isGlobalMu && isStaMu && abs(eta)<1.6) {
+    TrackRef glbOfGlobalRef = (*muons)[muidx].globalTrack();
+    if ( (*muons)[muidx].isTrackerMuon() ) isTrackerMu[muidx] = true;
+    if ( (*muons)[muidx].isStandAloneMuon() ) isStaMu[muidx] = true;
+    if ( (*muons)[muidx].isGlobalMuon() ) isGlobalMu[muidx] = true;
+    if ( (*muons)[muidx].isGlobalMuon() && abs(eta)<2.4) {
+      math::XYZPoint point(beamSpot.x0(),beamSpot.y0(), beamSpot.z0());
+      dxy[muidx] = -1.* glbOfGlobalRef->dxy(point);
+    }
+    
+    if (isGlobalMu[muidx] && isStaMu[muidx] && abs(eta)<1.6) {
       if(Debug_) cout<< " mark 2 "<<endl;
-      //initialize
-      d0 = 0;
-
-      TrackRef glbOfGlobalRef = (*muons)[muidx].globalTrack();
-      //TrackRef trkOfGlobalRef = (*muons)[muidx].track();
 
       /*
       float pt_track = trkOfGlobalRef->pt();
@@ -446,8 +483,7 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
       float normChi2_track = trkOfGlobalRef->normalizedChi2();
       */
 
-      math::XYZPoint point(beamSpot.x0(),beamSpot.y0(), beamSpot.z0());
-      d0 = -1.* glbOfGlobalRef->dxy(point);
+      d0 = dxy[muidx];
       //cout << "dxy: "<<glbOfGlobalRef->dxy()<<" "<<d0<< endl;
 
       // temporary part
