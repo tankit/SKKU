@@ -24,7 +24,7 @@ tightMuonsForZ = cms.EDFilter("MuonSelector",
 
 generalTracksFilter = cms.EDFilter("TrackCountFilter",
                                    src = cms.InputTag('generalTracks'),
-                                   cut = cms.string('pt > 5'),
+                                   cut = cms.string('pt > 5 && abs(eta)<2.4'),
                                    minNumber = cms.uint32(2)
                                    )
 
