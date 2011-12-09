@@ -9,12 +9,13 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 process.load("Configuration.StandardSequences.Geometry_cff")
-process.load("Configuration.StandardSequences.MagneticField_38T_cff")
+process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 #process.GlobalTag.globaltag = 'START42_V12::All' #Summer11 MC
-process.GlobalTag.globaltag = 'GR_R_42_V14::All' #2011A data
+#process.GlobalTag.globaltag = 'GR_R_42_V14::All' #2011A data
+process.GlobalTag.globaltag = 'GR_R_42_V21A::All' #2011A data
 
 ##from Configuration.PyReleaseValidation.autoCond import autoCond
 ##--This file is getting obsolete, please use Configuration.AlCa.autoCond instead
@@ -38,14 +39,15 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
+    #'rfio:/castor/cern.ch/user/h/hkseo/data/Run2011A/ZMuSkim/Run2011A-ZMuSkim_55_1_0IG.root'
     #'file:/korserv001/hkseo/data/Run2011A/SingleMu-ZMuSkim/Run2011A-ZMuSkim_55_1_0IG.root'
-    'rfio:/castor/cern.ch/user/h/hkseo/data/Run2011A/ZMuSkim/Run2011A-ZMuSkim_55_1_0IG.root'
+    'file:/korserv001/mskim/rpc/PromptReco-v4_163592_0A68E6C1-377B-E011-8BC8-00237DA28240.root'
     )
 )
 
 # TagMu Skim
-#process.load("SKKU.RecHitAnal.TagMuSkim_cff")
-process.load("TagMuSkim_cff")
+process.load("SKKU.RecHitAnal.TagMuSkim_cff")
+#process.load("TagMuSkim_cff")
 
 # Good vertex requirement
 process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
@@ -54,7 +56,6 @@ process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
                                            maxAbsZ = cms.double(24),
                                            maxd0 = cms.double(2)
                                            )
-
 
 process.p1 = cms.Path(process.primaryVertexFilter*process.TagMuSelSeq)
 #process.p1 = cms.Path(process.diMuonSelSeq*process.demo)
