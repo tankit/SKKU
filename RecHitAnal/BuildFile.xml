@@ -37,6 +37,3 @@
 <use   name="FWCore/ParameterSet"/>
 <flags   EDM_PLUGIN="1"/>
 <use   name="CommonTools/UtilAlgos"/>
-<export>
-  <lib   name="1"/>
-</export>
