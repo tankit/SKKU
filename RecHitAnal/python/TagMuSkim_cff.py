@@ -4,6 +4,7 @@ import FWCore.ParameterSet.Config as cms
 import copy
 from HLTrigger.HLTfilters.hltHighLevel_cfi import *
 ZMuHLTFilter = copy.deepcopy(hltHighLevel)
+#ZMuHLTFilter.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT") #default for Data
 ZMuHLTFilter.throw = cms.bool(False)
 ZMuHLTFilter.HLTPaths = ["HLT_Mu*","HLT_IsoMu*","HLT_DoubleMu*"]
 
@@ -30,9 +31,9 @@ generalTracksFilter = cms.EDFilter("TrackCountFilter",
 
 # TagMu Skim sequence
 TagMuSelSeq = cms.Sequence(ZMuHLTFilter *
-                            looseMuonsForZ *
-                            tightMuonsForZ *
-                            generalTracksFilter
-                            )
+                           looseMuonsForZ *
+                           tightMuonsForZ *
+                           generalTracksFilter
+                           )
 
 
