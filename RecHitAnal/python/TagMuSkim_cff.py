@@ -19,7 +19,7 @@ looseMuonsForZ = cms.EDFilter("MuonSelector",
 
 tightMuonsForZ = cms.EDFilter("MuonSelector",
                              src = cms.InputTag("looseMuonsForZ"),
-                             cut = cms.string('pt > 15 && globalTrack().normalizedChi2<10.0 && isolationR03().sumPt<3.0 && (isolationR03().emEt+isolationR03().hadEt+isolationR03().sumPt)<0.2*pt && globalTrack().hitPattern().numberOfValidTrackerHits>10'),
+                             cut = cms.string('pt > 15 && globalTrack().normalizedChi2<10.0 && isolationR03().sumPt<3.0 && (isolationR03().emEt+isolationR03().hadEt+isolationR03().sumPt)<0.2*pt && track().hitPattern().numberOfValidTrackerHits()>10'),
                              filter = cms.bool(True)                                
                              )
 
