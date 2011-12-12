@@ -63,7 +63,7 @@ process.p1 = cms.Path(process.primaryVertexFilter*process.TagMuSelSeq)
 
 # Output module configuration
 process.out = cms.OutputModule("PoolOutputModule",
-                               fileName = cms.untracked.string('Skim.root'),
+                               fileName = cms.untracked.string('SingleMuSkim.root'),
                                # save only events passing the full path
                                SelectEvents   = cms.untracked.PSet( SelectEvents = cms.vstring('p1') )
                                )
