@@ -46,8 +46,8 @@ process.source = cms.Source("PoolSource",
 )
 
 # TagMu Skim
-process.load("SKKU.RecHitAnal.TagMuSkim_cff")
-#process.load("TagMuSkim_cff")
+#process.load("SKKU.RecHitAnal.TagMuSkim_cff")
+process.load("TagMuSkim_cff")
 
 # Good vertex requirement
 process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
