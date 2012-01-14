@@ -19,20 +19,22 @@ looseMuonsForZ = cms.EDFilter("MuonSelector",
 
 tightMuonsForZ = cms.EDFilter("MuonSelector",
                              src = cms.InputTag("looseMuonsForZ"),
-                             cut = cms.string('pt > 15 && globalTrack().normalizedChi2<10.0 && isolationR03().sumPt<3.0 && (isolationR03().emEt+isolationR03().hadEt+isolationR03().sumPt)<0.2*pt && track().hitPattern().numberOfValidTrackerHits()>10'),
+                             cut = cms.string('pt > 15 && globalTrack().normalizedChi2<10.0 && isolationR03().sumPt<3.0 && (isolationR03().emEt+isolationR03().hadEt+isolationR03().sumPt)<0.2*pt && track().hitPattern().numberOfValidTrackerHits()>10 && numberOfMatches>1'),
                              filter = cms.bool(True)                                
                              )
 
 generalTracksFilter = cms.EDFilter("TrackCountFilter",
                                    src = cms.InputTag('generalTracks'),
-                                   cut = cms.string('pt > 5 && abs(eta)<2.4'),
+                                   #cut = cms.string('pt > 5 && abs(eta)<2.4'),
+                                   cut = cms.string('pt > 15 && abs(eta)<2.4'),
                                    minNumber = cms.uint32(2) 
                                    )
 
 goodTracks = cms.EDFilter("TrackSelector",
                           src = cms.InputTag("generalTracks"), # or cms.InputTag("standAloneMuons","UpdatedAtVtx"),
+                          cut = cms.string(""),
                           #cut = cms.string("numberOfValidHits >= 10 && normalizedChi2 < 5 && abs(d0) < 2 && abs(dz) < 30"),
-                          cut = cms.string("numberOfValidHits >= 10"),
+                          #cut = cms.string("numberOfValidHits >= 10"),
                           )
 
 trackCands  = cms.EDProducer("ConcreteChargedCandidateProducer",
@@ -42,8 +44,8 @@ trackCands  = cms.EDProducer("ConcreteChargedCandidateProducer",
 
 trackProbes = cms.EDFilter("CandViewRefSelector",
                            src = cms.InputTag("trackCands"),
-                           #cut = cms.string("pt>15 && abs(eta)<1.8"),
-                           cut = cms.string("pt>5 && abs(eta)<1.8"),
+                           cut = cms.string("pt>15 && abs(eta)<1.8"),
+                           #cut = cms.string("pt>5 && abs(eta)<1.8"),
                            )
 
 # build Z-> MuMu candidates
