@@ -15,7 +15,7 @@ ZMuHLTFilter.HLTPaths = ["HLT_Mu*","HLT_IsoMu*"]
 looseMuonsForZ = cms.EDFilter("MuonSelector",
                              src = cms.InputTag("muons"),
                              #cut = cms.string('pt > 10 && abs(eta)<2.4 && isGlobalMuon = 1 && isTrackerMuon = 1 && abs(innerTrack().dxy)<2.0'),
-                             cut = cms.string('pt > 10 && abs(eta)<2.4 && isGlobalMuon = 1 && && abs(innerTrack().dxy)<2.0'),
+                             cut = cms.string('pt > 10 && abs(eta)<2.4 && isGlobalMuon = 1 && abs(innerTrack().dxy)<2.0'),
                              filter = cms.bool(True)
                              )
 
