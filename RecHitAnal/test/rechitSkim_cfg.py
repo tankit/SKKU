@@ -24,10 +24,11 @@ process.source = cms.Source("PoolSource",
 )
 
 # WZMu Skim
-process.load("DPGAnalysis.Skims.WZMuSkim_cff")
+process.load("DPGAnalysis.Skims.ZMuSkim_cff")
 process.Zskim = cms.Sequence(
-    process.WZMuHLTFilter *
-    process.goodMuonsForZ *
+    process.ZMuHLTFilter *
+    process.looseMuonsForZ *
+    process.tightMuonsForZ *
     process.dimuons *
     process.dimuonsFilter
     )
