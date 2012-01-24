@@ -44,7 +44,7 @@ process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
                                            )
 
 
-process.p1 = cms.Path(process.Zskim*process.primaryVertexFilter)
+process.p1 = cms.Path(process.primaryVertexFilter*process.Zskim)
 #process.p1 = cms.Path(process.diMuonSelSeq*process.demo)
 #process.p2 = cms.Path(process.pfMetWMuNuSeq*process.demo)
 
