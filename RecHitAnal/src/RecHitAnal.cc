@@ -13,8 +13,8 @@
 //                                                                                                                               
 // Original Author:  Hyunkwan Seo,588 R-009,+41227678393,                                                                        
 //         Created:  Fri Jun 17 17:45:39 CEST 2011<<<<<<< RecHitAnal.cc
-// $Id: RecHitAnal.cc,v 1.5 2011/07/28 14:25:25 hkseo Exp $=======
-// $Id: RecHitAnal.cc,v 1.5 2011/07/28 14:25:25 hkseo Exp $>>>>>>> 1.4
+// $Id: RecHitAnal.cc,v 1.6 2011/08/04 14:49:39 hkseo Exp $=======
+// $Id: RecHitAnal.cc,v 1.6 2011/08/04 14:49:39 hkseo Exp $>>>>>>> 1.4
 //                                                                                                                               
 //    
 
@@ -127,7 +127,7 @@ private:
  
   // ----------member data ---------------------------
   int fBX;
-  int fOrbit;  
+  int fOrbit;
 
   //Tree for each event
   TTree *t0; 
@@ -137,6 +137,8 @@ private:
   Float_t angle;
   Int_t nTracks;
   Int_t nMuons;
+  Int_t nCSCseg;
+  Int_t nDTseg;
   Float_t dxy[kMaxMu];
   Float_t mupt[kMaxMu];
   Float_t mup[kMaxMu];
@@ -152,6 +154,7 @@ private:
   bool isTrackerMu[kMaxMu];
   bool isStaMu[kMaxMu];
   bool isGlobalMu[kMaxMu];
+  bool isMatchToNoRPC[kMaxMu];
 
   // Tree for each muon
   TTree *t1; 
@@ -160,6 +163,7 @@ private:
   Float_t eta, phi, pt;
   Float_t eta_STA, phi_STA, pt_STA;
   Double_t d0;
+  Bool_t matchToNoRPC;
 
   //for GLB
   Int_t region[kMax];
@@ -184,6 +188,7 @@ private:
   InputTag DT4DSegments_;
   InputTag CSCSegments_;
   InputTag muons_;
+  InputTag globalMuonsNoRPC_;
   InputTag StandAloneMuons_;
   InputTag genTracksLabel_;
 
@@ -218,9 +223,9 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   DT4DSegments_ = cfg.getParameter<InputTag>("DT4DSegments");
   CSCSegments_ = cfg.getParameter<InputTag>("CSCSegments");
   muons_ = cfg.getParameter<InputTag>("muons");
+  globalMuonsNoRPC_ = cfg.getParameter<InputTag>("globalMuonsNoRPC");
   StandAloneMuons_ = cfg.getParameter<InputTag>("StandAloneMuons");
   genTracksLabel_ = cfg.getParameter<InputTag>("generalTracks");
-  RPCRecHits_ = cfg.getParameter<InputTag>("RPCRecHits"); 
 
 
   //create the Tree and branches
@@ -230,6 +235,8 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t0->Branch("totalEvents", &totalEvents,      "totalEvents/I");
   t0->Branch("angle",       &angle,            "angle/F");
   t0->Branch("nTracks",     &nTracks,          "nTracks/I");
+  t0->Branch("nCSCseg",     &nCSCseg,          "nCSCseg/I");
+  t0->Branch("nDTseg",      &nDTseg,           "nDTseg/I");
   t0->Branch("NrecoMuon",   &nMuons,           "NrecoMuon/I");
   t0->Branch("dxy",         dxy,               "dxy[NrecoMuon]/F");
   t0->Branch("recoMuonPt",  mupt,              "recoMuonPt[NrecoMuon]/F");
@@ -244,6 +251,7 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t0->Branch("isTrackerMu", isTrackerMu,       "isTrackerMu[NrecoMuon]/O");
   t0->Branch("isStaMu",     isStaMu,           "isStaMu[NrecoMuon]/O");
   t0->Branch("isGlobalMu",  isGlobalMu,        "isGlobalMu[NrecoMuon]/O");
+  t0->Branch("isMatchToNoRPC",  isMatchToNoRPC,  "isMatchToNoRPC[NrecoMuon]/O");
 
 
   t1 = fs->make<TTree>("muon","");
@@ -251,6 +259,7 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t1->Branch("eventNumber", &eventNumber,      "eventNumber/I");
   t1->Branch("angle",       &angle,            "angle/F");
   t1->Branch("d0",          &d0,               "d0/D");
+  t1->Branch("matchToNoRPC",&matchToNoRPC,     "matchToNoRPC/O");
   t1->Branch("nTracks",     &nTracks,          "nTracks/I");
   t1->Branch("nMuons",      &nMuons,           "nMuons/I");
   t1->Branch("nRpcHit",     &hitsFromRpc,      "nRpcHit/I");
@@ -314,6 +323,7 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
   fBX        = event.bunchCrossing();  // LHC bunch crossing
   fOrbit     = event.orbitNumber();
   //cout << "BX " << fBX << "   orbit " << fOrbit << endl;
+  //cout <<Run<<" "<<eventNumber<<endl;
 
  
   // Get the DT 4D segment collection from the event
@@ -350,6 +360,10 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
   Handle< View<Muon> > muons;      
   event.getByLabel(muons_,muons);
 
+  Handle< View<Muon> > globalMuonsNoRPC;
+  event.getByLabel(globalMuonsNoRPC_,globalMuonsNoRPC);
+
+
   //Input general tracks
   Handle<reco::TrackCollection> generalTracks;
   event.getByLabel(genTracksLabel_, generalTracks);
@@ -375,10 +389,11 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
   typedef RPCRecHitCollection::const_iterator RecHitIter;
   ///  int nStandAloneMuons = StandAloneMuons->size();
 
-  int nCSCseg = allCSCSegments->size();
-  int nDTseg = allDT4DSegments->size();
+  nCSCseg = allCSCSegments->size();
+  nDTseg = allDT4DSegments->size();
   int nRPCRecHits = rpcRecHits->size();
   nMuons = muons->size();
+  int nMuonsNoRPC = globalMuonsNoRPC->size();
   int nStaMuons = StandAloneMuons->size();
   nTracks = generalTracks->size();
 
@@ -407,7 +422,9 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
       math::XYZPoint point(beamSpot.x0(),beamSpot.y0(), beamSpot.z0());
       dxy[muidx] = -1.* glbOfGlobalRef->dxy(point);
       zmumu.push_back( TLorentzVector(px_,py_,pz_,energy_) );
+      
     }
+
   }
 
 
@@ -441,7 +458,9 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
     isTrackerMu[muidx] = false;
     isStaMu[muidx] = false;
     isGlobalMu[muidx] = false;
+    isMatchToNoRPC[muidx] = false;
     dxy[muidx] = 0;
+
     // vector of RpcRecHits associated to sta muon
     //    vector<RPCRecHit> RPCHistOnSta_List;
 
@@ -470,8 +489,17 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
       math::XYZPoint point(beamSpot.x0(),beamSpot.y0(), beamSpot.z0());
       dxy[muidx] = -1.* glbOfGlobalRef->dxy(point);
     }
+
+    //check if muon is matched to mNoRPC
+    for(int i=0; i<nMuonsNoRPC; i++) {
+      TLorentzVector t1(mupx[muidx], mupy[muidx], mupz[muidx], mup[muidx]);
+      TLorentzVector t2( ((*globalMuonsNoRPC)[i]).px(), ((*globalMuonsNoRPC)[i]).py(), ((*globalMuonsNoRPC)[i]).pz(), ((*globalMuonsNoRPC)[i]).p() );
+      if (t2.DeltaR(t1)<0.01) isMatchToNoRPC[muidx] = true;
+    }
+    matchToNoRPC = isMatchToNoRPC[muidx];
     
     if (isGlobalMu[muidx] && isStaMu[muidx] && abs(eta)<1.6) {
+      //if (isGlobalMu[muidx] && abs(eta)<1.6) {
       if(Debug_) cout<< " mark 2 "<<endl;
 
       /*
