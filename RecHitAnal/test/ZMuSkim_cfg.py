@@ -27,13 +27,6 @@ process.source = cms.Source("PoolSource",
 
 # WZMu Skim
 process.load("DPGAnalysis.Skims.ZMuSkim_cff")
-process.Zskim = cms.Sequence(
-    process.ZMuHLTFilter *
-    process.looseMuonsForZ *
-    process.tightMuonsForZ *
-    process.dimuons *
-    process.dimuonsFilter
-    )
 
 # Good vertex requirement
 process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
@@ -44,7 +37,7 @@ process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
                                            )
 
 
-process.p1 = cms.Path(process.primaryVertexFilter*process.Zskim)
+process.p1 = cms.Path(process.primaryVertexFilter*process.diMuonSelSeq)
 #process.p1 = cms.Path(process.diMuonSelSeq*process.demo)
 #process.p2 = cms.Path(process.pfMetWMuNuSeq*process.demo)
 
