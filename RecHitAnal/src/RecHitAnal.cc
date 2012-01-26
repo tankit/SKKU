@@ -13,8 +13,8 @@
 //                                                                                                                               
 // Original Author:  Hyunkwan Seo,588 R-009,+41227678393,                                                                        
 //         Created:  Fri Jun 17 17:45:39 CEST 2011<<<<<<< RecHitAnal.cc
-// $Id: RecHitAnal.cc,v 1.6 2011/08/04 14:49:39 hkseo Exp $=======
-// $Id: RecHitAnal.cc,v 1.6 2011/08/04 14:49:39 hkseo Exp $>>>>>>> 1.4
+// $Id: RecHitAnal.cc,v 1.7 2012/01/24 01:11:46 hkseo Exp $=======
+// $Id: RecHitAnal.cc,v 1.7 2012/01/24 01:11:46 hkseo Exp $>>>>>>> 1.4
 //                                                                                                                               
 //    
 
@@ -160,6 +160,7 @@ private:
   TTree *t1; 
   Int_t hitsFromRpc, hitsFromDt, hitsFromCsc;
   Int_t hitsFromRpcSTA, hitsFromDtSTA, hitsFromCscSTA;
+  Int_t nValidMuonRPCHits, rpcStationsWithValidHits;
   Float_t eta, phi, pt;
   Float_t eta_STA, phi_STA, pt_STA;
   Double_t d0;
@@ -263,6 +264,8 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t1->Branch("nTracks",     &nTracks,          "nTracks/I");
   t1->Branch("nMuons",      &nMuons,           "nMuons/I");
   t1->Branch("nRpcHit",     &hitsFromRpc,      "nRpcHit/I");
+  t1->Branch("nValidMuonRpcHit",        &nValidMuonRPCHits,        "nValidMuonRpcHit/I");
+  t1->Branch("rpcStationsWithHits",     &rpcStationsWithValidHits, "rpcStationsWithHits/I");
   t1->Branch("nDtHit",      &hitsFromDt,       "nDtHit/I");
   t1->Branch("nCscHit",     &hitsFromCsc,      "nCscHit/I");
   t1->Branch("eta",         &eta,              "eta/F");
@@ -501,6 +504,9 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
     if (isGlobalMu[muidx] && isStaMu[muidx] && abs(eta)<1.6) {
       //if (isGlobalMu[muidx] && abs(eta)<1.6) {
       if(Debug_) cout<< " mark 2 "<<endl;
+
+      nValidMuonRPCHits = glbOfGlobalRef->hitPattern().numberOfValidMuonRPCHits();
+      rpcStationsWithValidHits = glbOfGlobalRef->hitPattern().rpcStationsWithValidHits();
 
       /*
       float pt_track = trkOfGlobalRef->pt();
