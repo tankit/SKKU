@@ -41,7 +41,7 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
     #'rfio:/castor/cern.ch/user/h/hkseo/data/Run2011A/ZMuSkim/Run2011A-ZMuSkim_55_1_0IG.root'
     #'file:/korserv001/hkseo/data/Run2011A/SingleMu-ZMuSkim/Run2011A-ZMuSkim_55_1_0IG.root'
-    'file:/korserv001/mskim/rpc/PromptReco-v4_163592_0A68E6C1-377B-E011-8BC8-00237DA28240.root'
+    'file:/korserv001/mskim/rpc/SingleMu_2011B_RECO_PromptReco-v1_175834_0201AF20-BFDB-E011-A808-0019B9F72F97.root'
     )
 )
 
