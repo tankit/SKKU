@@ -7,9 +7,9 @@
 #include "TGraphAsymmErrors.h"
 #include <map>
 #include <fstream.h>
-//#include "/afs/cern.ch/user/m/mskim/public/styleTnP.h"
+////#include "/afs/cern.ch/user/m/mskim/public/styleTnP.h"
 
-void Effplot(TString var="eta"){
+void Effplot(TString var="eta", Float_t hmin = 0.0){
 
   //gROOT->LoadMacro("/afs/cern.ch/user/m/mskim/public/tdrStyle.C");
   //setTDRStyle();
@@ -96,7 +96,7 @@ void Effplot(TString var="eta"){
 
   gr_Iso->GetXaxis()->SetLimits(Xmin,Xmax);
   gr_Iso->SetMaximum(1.1);  
-  gr_Iso->SetMinimum(0.4);
+  gr_Iso->SetMinimum(hmin);
   gr_Iso->GetXaxis()->SetTitle(Form("%s",xtitle.Data()));
   gr_Iso->GetYaxis()->SetTitle(Form("%s",ytitle.Data()));
 
@@ -114,7 +114,8 @@ void Effplot(TString var="eta"){
 
   gr_Iso->Draw("APZ"); 
   gr_Isomc->Draw("PZsame"); 
-  TLegend *lIso= new TLegend(0.83,0.82,0.95,0.92);
+  //TLegend *lIso= new TLegend(0.83,0.82,0.95,0.92);
+  TLegend *lIso= new TLegend(0.5,0.2,0.75,0.3);
   lIso->SetBorderSize(0);
   lIso->SetTextFont(42);
   lIso->SetTextSize(0.04);
