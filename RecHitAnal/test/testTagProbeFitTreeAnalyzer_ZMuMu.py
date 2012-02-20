@@ -10,9 +10,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     # IO parameters:
-    #InputFileNames = cms.vstring("data_tree_new.root"),
-    #InputFileNames = cms.vstring("mc_tree_new.root"),
-    InputFileNames = cms.vstring("newerdata_tree.root"),                                            
+    InputFileNames = cms.vstring("tree.root"),                                            
     InputDirectoryName = cms.string("muonEffs"),
     InputTreeName = cms.string("fitter_tree"),
     OutputFileName = cms.string("testTagProbeFitTreeAnalyzer_ZMuMu.root"),
