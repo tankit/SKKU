@@ -6,7 +6,8 @@ import FWCore.ParameterSet.Config as cms
 ##  \___\___/|_| |_|___/\__\__,_|_| |_|\__|___/
 ##
 ################################################
-MC_flag = True
+MC_flag = False
+#MC_flag = True
 GLOBAL_TAG = 'GR_R_42_V21A::All'
 if MC_flag:
     GLOBAL_TAG = 'START42_V12::All'
