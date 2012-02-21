@@ -12,8 +12,9 @@ GLOBAL_TAG = 'GR_R_42_V21A::All'
 if MC_flag:
     GLOBAL_TAG = 'START42_V12::All'
 
-HLTPath1 = "HLT_IsoMu24_v8"
-HLTPath2 = "HLT_IsoMu24_v9"
+#HLTPath1 = "HLT_IsoMu24_v1"
+#HLTPath2 = "HLT_IsoMu24_v8"
+#HLTPath3 = "HLT_IsoMu24_v9"
 HLTProcessName = "HLT"
 
 RECOProcess = "RECO"
@@ -107,7 +108,7 @@ import copy
 from HLTrigger.HLTfilters.hltHighLevel_cfi import *
 process.ZMuHLTFilter = copy.deepcopy(hltHighLevel)
 process.ZMuHLTFilter.throw = cms.bool(False)
-process.ZMuHLTFilter.HLTPaths = [HLTPath1,HLTPath2]
+#process.ZMuHLTFilter.HLTPaths = [HLTPath1,HLTPath2,HLTPath3]
 
 process.HLTFilter = cms.Sequence(process.ZMuHLTFilter)
 
@@ -115,13 +116,18 @@ process.HLTFilter = cms.Sequence(process.ZMuHLTFilter)
 process.PassingHLT = cms.EDProducer("trgMatchedMuonProducer",
                                     InputProducer = cms.InputTag("muons"),
                                     hltTags = cms.VInputTag(
-                                    cms.InputTag(HLTPath1,"", HLTProcessName),
-                                    cms.InputTag(HLTPath2,"", HLTProcessName)
+                                    #cms.InputTag(HLTPath1,"", HLTProcessName),
+                                    #cms.InputTag(HLTPath2,"", HLTProcessName),
+                                    #cms.InputTag(HLTPath3,"", HLTProcessName)
                                     ),
                                     triggerEventTag = cms.untracked.InputTag("hltTriggerSummaryAOD","",HLTProcessName),
                                     triggerResultsTag = cms.untracked.InputTag("TriggerResults","",HLTProcessName)
                                     )
 
+for version in range(1,11):
+    process.PassingHLT.hltTags.append(cms.InputTag("HLT_IsoMu24_v%d::%s" % (version, HLTProcessName)))
+    process.ZMuHLTFilter.HLTPaths.append("HLT_IsoMu24_v%d" % version)
+    
 ## Tags. In a real analysis we should require that the tag muon fires the trigger, 
 ##       that's easy with PAT muons but not RECO/AOD ones, so we won't do it here
 ##       (the J/Psi example shows it)
@@ -129,6 +135,12 @@ process.glbMuons = cms.EDFilter("MuonRefSelector",
     src = cms.InputTag("muons"),
     cut = cms.string("isGlobalMuon && pt > 20 && abs(eta) < 2"), 
 )
+
+#if MC_flag:
+#    process.tagMuons = process.glbMuons.clone()
+#else:
+#    process.tagMuons = process.PassingHLT.clone()
+#    process.tagMuons.InputProducer = cms.InputTag("glbMuons")
 
 process.tagMuons = process.PassingHLT.clone()
 process.tagMuons.InputProducer = cms.InputTag("glbMuons")
