@@ -37,7 +37,7 @@ void Effplot(TString var="eta", Float_t hmin = 0.0){
 
   TString xtitle = "Probe #eta";  TString htitle = "A RooPlot of Probe #eta";
   if(var=="pt") {
-    Xmin = 20, Xmax = 250;
+    Xmin = 20, Xmax = 100;
     xtitle = "Probe P_{t} (GeV/c)";
     htitle = "A RooPlot of Probe P_{t}";
   }
@@ -93,6 +93,7 @@ void Effplot(TString var="eta", Float_t hmin = 0.0){
   
   /////////////////////////////////////////////////////////
   cIso=new TCanvas("cIso","cIso",700,500);
+  gPad->SetFillColor(0);
 
   gr_Iso->GetXaxis()->SetLimits(Xmin,Xmax);
   gr_Iso->SetMaximum(1.1);  
