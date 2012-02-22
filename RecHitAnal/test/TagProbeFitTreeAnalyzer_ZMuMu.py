@@ -34,9 +34,9 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 
     # defines all the discrete variables of the probes available in the input tree and intended for use in the efficiency calculations
     Categories = cms.PSet(
-        PassingMediumMuons = cms.vstring("", "dummy[pass=1,fail=0]")
-        #PassingMediumMuons = cms.vstring("PassingMediumMuons", "dummy[pass=1,fail=0]")
-        #passingMediumMuonsNoRPC = cms.vstring("", "dummy[pass=1,fail=0]")
+        #PassingMediumMuons = cms.vstring("", "dummy[pass=1,fail=0]")
+        PassingMediumMuons = cms.vstring("PassingMediumMuons", "dummy[pass=1,fail=0]")
+        #passingMediumMuonsNoRPC = cms.vstring("passingMediumMuonsNoRPC", "dummy[pass=1,fail=0]")
     ),
 
     # defines all the PDFs that will be available for the efficiency calculations; uses RooFit's "factory" syntax;
@@ -82,6 +82,23 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
                 pt = cms.vdouble(20, 30, 40, 50, 60, 100, 250)
             ),
             #first string is the default followed by binRegExp - PDFname pairs
+            BinToPDFmap = cms.vstring("twoVoigtians")
+        ),
+        eta = cms.PSet(
+            EfficiencyCategoryAndState = cms.vstring("PassingMediumMuons","pass"),
+            UnbinnedVariables = cms.vstring("mass"),
+            BinnedVariables = cms.PSet(
+                #eta = cms.vdouble(-1.8, -1.5, -1.2, -0.9, -0.6, -0.3,
+                #                  0.0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8)
+                #eta = cms.vdouble(-1.8, -1.6, -1.4, -1.2, -1.0, -0.8,
+                #                  -0.6, -0.4, -0.2, 
+                #                  0.0, 0.2, 0.4, 0.6, 0.8,
+                #                  1.0, 1.2, 1.4, 1.6, 1.8)
+                eta = cms.vdouble(-1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8,
+                                  -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1,
+                                  0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,
+                                  0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8)
+            ),
             BinToPDFmap = cms.vstring("twoVoigtians")
         ),
     )
