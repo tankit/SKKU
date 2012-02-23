@@ -9,7 +9,7 @@
 #include <fstream.h>
 ////#include "/afs/cern.ch/user/m/mskim/public/styleTnP.h"
 
-void Effplot(TString var="eta", Float_t hmin = 0.0){
+void Effplot(TString var="eta", Float_t hmin = 0.0, Float_t hmax = 1.1){
 
   //gROOT->LoadMacro("/afs/cern.ch/user/m/mskim/public/tdrStyle.C");
   //setTDRStyle();
@@ -96,7 +96,7 @@ void Effplot(TString var="eta", Float_t hmin = 0.0){
   gPad->SetFillColor(0);
 
   gr_Iso->GetXaxis()->SetLimits(Xmin,Xmax);
-  gr_Iso->SetMaximum(1.1);  
+  gr_Iso->SetMaximum(hmax);  
   gr_Iso->SetMinimum(hmin);
   gr_Iso->GetXaxis()->SetTitle(Form("%s",xtitle.Data()));
   gr_Iso->GetYaxis()->SetTitle(Form("%s",ytitle.Data()));
@@ -106,6 +106,12 @@ void Effplot(TString var="eta", Float_t hmin = 0.0){
   gr_Iso->SetLineWidth(2);
   //gr_Iso->SetMarkerSize(1.1);
   gr_Iso->SetMarkerStyle(20);
+
+  gr_Isomc->GetXaxis()->SetLimits(Xmin,Xmax);
+  gr_Isomc->SetMaximum(hmax);
+  gr_Isomc->SetMinimum(hmin);
+  gr_Isomc->GetXaxis()->SetTitle(Form("%s",xtitle.Data()));
+  gr_Isomc->GetYaxis()->SetTitle(Form("%s",ytitle.Data()));
 
   gr_Isomc->SetLineColor(2);
   gr_Isomc->SetMarkerColor(2);
