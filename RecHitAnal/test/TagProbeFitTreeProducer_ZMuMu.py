@@ -308,6 +308,14 @@ process.tpPairs = cms.EDProducer("CandViewShallowCloneCombiner",
     cut   = cms.string("40 < mass < 200"),
 )
 
+## Match muons to MC
+process.muMcMatch = cms.EDProducer("MCTruthDeltaRMatcherNew",
+    pdgId = cms.vint32(13),
+    src = cms.InputTag("muons"),
+    distMin = cms.double(0.3),
+    matched = cms.InputTag("genParticles")
+)
+
 ## Make the tree
 process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
     # pairs
@@ -346,30 +354,56 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
 ##   |  __/ (_| | |_| | | |
 ##   |_|   \__,_|\__|_| |_|
 ##                         
-process.tagAndProbe = cms.Path(
-    process.HLTFilter *
-    #process.runfilter *
-    (process.muontrackingNoRPC+process.muonIdProducerSequenceNoRPC) *
-    process.PassingHLT *
-    process.tightMuons *    
-    process.tagMuons *
-    process.goodTracks *
-    process.trackCands *
-    process.trackProbes *
-    process.LooseMuons *
-    process.LooseMuonsNoRPC *
-    process.MediumMuons *
-    process.MediumMuonsNoRPC *
-    process.tkToLooseMuons *
-    process.tkToLooseMuonsNoRPC *
-    process.tkToMediumMuons *
-    process.tkToMediumMuonsNoRPC *
-    process.passingLooseMuons *
-    process.passingLooseMuonsNoRPC *
-    process.passingMediumMuons *
-    process.passingMediumMuonsNoRPC *
-    process.tpPairs *
-    process.muonEffs
+if MC_flag:
+    process.tagAndProbe = cms.Path(
+        process.HLTFilter *
+        (process.muontrackingNoRPC+process.muonIdProducerSequenceNoRPC) *
+        process.PassingHLT *
+        process.tightMuons *
+        process.tagMuons *
+        process.goodTracks *
+        process.trackCands *
+        process.trackProbes *
+        process.LooseMuons *
+        process.LooseMuonsNoRPC *
+        process.MediumMuons *
+        process.MediumMuonsNoRPC *
+        process.tkToLooseMuons *
+        process.tkToLooseMuonsNoRPC *
+        process.tkToMediumMuons *
+        process.tkToMediumMuonsNoRPC *
+        process.passingLooseMuons *
+        process.passingLooseMuonsNoRPC *
+        process.passingMediumMuons *
+        process.passingMediumMuonsNoRPC *
+        (process.tpPairs + process.muMcMatch) *
+        process.muonEffs
+    )
+else:
+    process.tagAndProbe = cms.Path(
+        process.HLTFilter *
+        #process.runfilter *
+        (process.muontrackingNoRPC+process.muonIdProducerSequenceNoRPC) *
+        process.PassingHLT *
+        process.tightMuons *    
+        process.tagMuons *
+        process.goodTracks *
+        process.trackCands *
+        process.trackProbes *
+        process.LooseMuons *
+        process.LooseMuonsNoRPC *
+        process.MediumMuons *
+        process.MediumMuonsNoRPC *
+        process.tkToLooseMuons *
+        process.tkToLooseMuonsNoRPC *
+        process.tkToMediumMuons *
+        process.tkToMediumMuonsNoRPC *
+        process.passingLooseMuons *
+        process.passingLooseMuonsNoRPC *
+        process.passingMediumMuons *
+        process.passingMediumMuonsNoRPC *
+        process.tpPairs *
+        process.muonEffs
     )
 
 process.TFileService = cms.Service("TFileService",
