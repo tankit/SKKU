@@ -128,7 +128,7 @@ process.PassingHLT = cms.EDProducer("trgMatchedMuonProducer",
                                     triggerResultsTag = cms.untracked.InputTag("TriggerResults","",HLTProcessName)
                                     )
 
-for version in range(1,11):
+for version in range(1,21):
     process.PassingHLT.hltTags.append(cms.InputTag("HLT_IsoMu24_v%d::%s" % (version, HLTProcessName)))
     process.ZMuHLTFilter.HLTPaths.append("HLT_IsoMu24_v%d" % version)
 
@@ -340,7 +340,7 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
         #passingIso = cms.string("(isolationR03.hadEt+isolationR03.emEt+isolationR03.sumPt) < 0.1 * pt"),
     ),
     # mc-truth info
-    isMC = cms.bool(MC_flag),
+    isMC = cms.bool(False), #--False in case of track as probe although it is MC (otherwise, an error!)
     motherPdgId = cms.vint32(22,23),
     makeMCUnbiasTree = cms.bool(True),
     checkMotherInUnbiasEff = cms.bool(True),
