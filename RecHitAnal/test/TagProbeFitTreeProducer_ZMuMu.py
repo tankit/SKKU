@@ -311,7 +311,14 @@ process.tpPairs = cms.EDProducer("CandViewShallowCloneCombiner",
 ## Match muons to MC
 process.muMcMatch = cms.EDProducer("MCTruthDeltaRMatcherNew",
     pdgId = cms.vint32(13),
-    src = cms.InputTag("muons"),
+    src = cms.InputTag("tagMuons"), #"muons"),
+    distMin = cms.double(0.3),
+    matched = cms.InputTag("genParticles")
+)
+
+process.muMcMatchProbe = cms.EDProducer("MCTruthDeltaRMatcherNew",
+    pdgId = cms.vint32(13),
+    src = cms.InputTag("trackProbes"),
     distMin = cms.double(0.3),
     matched = cms.InputTag("genParticles")
 )
@@ -340,13 +347,14 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
         #passingIso = cms.string("(isolationR03.hadEt+isolationR03.emEt+isolationR03.sumPt) < 0.1 * pt"),
     ),
     # mc-truth info
-    isMC = cms.bool(False), #--False in case of track as probe although it is MC (otherwise, an error!)
+    isMC = cms.bool(MC_flag),
     motherPdgId = cms.vint32(22,23),
     makeMCUnbiasTree = cms.bool(True),
     checkMotherInUnbiasEff = cms.bool(True),
     tagMatches = cms.InputTag("muMcMatch"),
-    probeMatches  = cms.InputTag("muMcMatch"),
-    allProbes     = cms.InputTag("probeMuons"),
+    probeMatches  = cms.InputTag("muMcMatchProbe"),
+    allProbes     = cms.InputTag("trackProbes"),
+
 )
 ##    ____       _   _     
 ##   |  _ \ __ _| |_| |__  
@@ -376,7 +384,7 @@ if MC_flag:
         process.passingLooseMuonsNoRPC *
         process.passingMediumMuons *
         process.passingMediumMuonsNoRPC *
-        (process.tpPairs + process.muMcMatch) *
+        (process.tpPairs + process.muMcMatch + process.muMcMatchProbe) *
         process.muonEffs
     )
 else:
