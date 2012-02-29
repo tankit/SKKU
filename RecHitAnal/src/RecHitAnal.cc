@@ -13,8 +13,8 @@
 //                                                                                                                               
 // Original Author:  Hyunkwan Seo,588 R-009,+41227678393,                                                                        
 //         Created:  Fri Jun 17 17:45:39 CEST 2011<<<<<<< RecHitAnal.cc
-// $Id: RecHitAnal.cc,v 1.7 2012/01/24 01:11:46 hkseo Exp $=======
-// $Id: RecHitAnal.cc,v 1.7 2012/01/24 01:11:46 hkseo Exp $>>>>>>> 1.4
+// $Id: RecHitAnal.cc,v 1.8 2012/01/26 16:28:41 hkseo Exp $=======
+// $Id: RecHitAnal.cc,v 1.8 2012/01/26 16:28:41 hkseo Exp $>>>>>>> 1.4
 //                                                                                                                               
 //    
 
@@ -32,6 +32,9 @@
 
 #include "RecoMuon/MeasurementDet/interface/MuonDetLayerMeasurements.h"
 #include "RecoMuon/TrackingTools/interface/MuonServiceProxy.h"
+#include "RecoMuon/TransientTrackingRecHit/interface/MuonTransientTrackingRecHit.h"
+#include "RecoMuon/TrackingTools/interface/SegmentsTrackAssociator.h"
+#include "RecoMuon/Navigation/interface/DirectMuonNavigation.h"
 
 #include "DataFormats/RPCDigi/interface/RPCDigi.h"
 #include <DataFormats/RPCRecHit/interface/RPCRecHit.h>
@@ -49,10 +52,10 @@
 #include "DataFormats/GeometrySurface/interface/LocalError.h"
 #include "DataFormats/GeometryVector/interface/LocalPoint.h"
 #include "DataFormats/GeometrySurface/interface/Surface.h"
-#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 #include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/GeometrySurface/interface/Surface.h"
 #include "TrackPropagation/SteppingHelixPropagator/interface/SteppingHelixPropagator.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 #include "TrackingTools/Records/interface/TrackingComponentsRecord.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -64,17 +67,23 @@
 #include "DataFormats/MuonDetId/interface/RPCDetId.h"
 #include "DataFormats/MuonDetId/interface/MuonSubdetId.h"
 #include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
 #include "DQMServices/Core/interface/DQMStore.h"
 #include "DQMServices/Core/interface/MonitorElement.h"
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
 #include "DQM/RPCMonitorDigi/interface/utils.h"
+#include "DQMOffline/Muon/src/SegmentTrackAnalyzer.h"
+
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
-#include "RecoMuon/Navigation/interface/DirectMuonNavigation.h"
 
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "DataFormats/DTRecHit/interface/DTRecSegment4DCollection.h"
 #include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
 #include "DataFormats/DTRecHit/interface/DTRecHitCollection.h"
+#include "DataFormats/SiStripDetId/interface/SiStripDetId.h"
+#include "DataFormats/SiPixelDetId/interface/PixelSubdetector.h"
+
 // global trigger stuff
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetup.h"
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
@@ -108,6 +117,7 @@ using namespace std;
 using namespace reco;
 
 static const int kMax = 10;
+static const int kMaxSegm = 20;
 static const int kMaxMu = 10000;
 
 //
@@ -161,10 +171,14 @@ private:
   Int_t hitsFromRpc, hitsFromDt, hitsFromCsc;
   Int_t hitsFromRpcSTA, hitsFromDtSTA, hitsFromCscSTA;
   Int_t nValidMuonRPCHits, rpcStationsWithValidHits;
+  Int_t nValidHits, nValidMuonHits, nValidTrackerHits;
+  int segmFromDt, segmFromCsc;
   Float_t eta, phi, pt;
   Float_t eta_STA, phi_STA, pt_STA;
+  Float_t normChi2;
   Double_t d0;
   Bool_t matchToNoRPC;
+  Bool_t isSTA;
 
   //for GLB
   Int_t region[kMax];
@@ -174,6 +188,13 @@ private:
   Int_t station[kMax];  // 1-4 for barrel, disk 1-3 for endcaps 
   Int_t sublayer[kMax]; // 1 (in) or 2 (out) just for barrel RB1 and RB2  
   Float_t recX[kMax];
+  Int_t hitsFromSegmDt[kMaxSegm];
+  Int_t hitsFromSegmCsc[kMaxSegm];
+  Float_t chi2FromSegmDt[kMaxSegm];
+  Float_t chi2FromSegmCsc[kMaxSegm];
+  Float_t ndofFromSegmDt[kMaxSegm];
+  Float_t ndofFromSegmCsc[kMaxSegm];
+
   //for STA
   Int_t regionSTA[kMax];
   Int_t ringSTA[kMax];
@@ -192,6 +213,9 @@ private:
   InputTag globalMuonsNoRPC_;
   InputTag StandAloneMuons_;
   InputTag genTracksLabel_;
+
+  SegmentsTrackAssociator* theSegmentsAssociator;
+
 
   //Service<TFileService> fs;
 };
@@ -213,8 +237,9 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
    //now do what ever initialization is needed
   Service<TFileService> fs;
 
-  //const ParameterSet SegmentsTrackAssociatorParameters = cfg.getParameter<ParameterSet>("SegmentsTrackAssociatorParameters");
-  //theSegmentsAssociator = new SegmentsTrackAssociator(SegmentsTrackAssociatorParameters);
+  const ParameterSet SegmentsTrackAssociatorParameters = cfg.getParameter<ParameterSet>("SegmentsTrackAssociatorParameters");
+  theSegmentsAssociator = new SegmentsTrackAssociator(SegmentsTrackAssociatorParameters);
+  //theSegmentsAssociator = new SegmentsTrackAssociator("SegmentsTrackAssociatorParameters");
   
   //debug
   Debug_ = cfg.getUntrackedParameter<bool>("Debug",false);
@@ -261,16 +286,23 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t1->Branch("angle",       &angle,            "angle/F");
   t1->Branch("d0",          &d0,               "d0/D");
   t1->Branch("matchToNoRPC",&matchToNoRPC,     "matchToNoRPC/O");
+  t1->Branch("isStaMu",     &isSTA,            "isStaMu/O");
   t1->Branch("nTracks",     &nTracks,          "nTracks/I");
   t1->Branch("nMuons",      &nMuons,           "nMuons/I");
   t1->Branch("nRpcHit",     &hitsFromRpc,      "nRpcHit/I");
+  t1->Branch("nValidHits",              &nValidHits,               "nValidHits/I");
+  t1->Branch("nValidMuonHits",          &nValidMuonHits,           "nValidMuonHits/I");
+  t1->Branch("nValidTrackerHits",       &nValidTrackerHits,        "nValidTrackerHits/I");
   t1->Branch("nValidMuonRpcHit",        &nValidMuonRPCHits,        "nValidMuonRpcHit/I");
   t1->Branch("rpcStationsWithHits",     &rpcStationsWithValidHits, "rpcStationsWithHits/I");
   t1->Branch("nDtHit",      &hitsFromDt,       "nDtHit/I");
   t1->Branch("nCscHit",     &hitsFromCsc,      "nCscHit/I");
+  t1->Branch("nDtSegm",     &segmFromDt,       "nDtSegm/I");
+  t1->Branch("nCscSegm",    &segmFromCsc,      "nCscSegm/I");
   t1->Branch("eta",         &eta,              "eta/F");
   t1->Branch("phi",         &phi,              "phi/F");
   t1->Branch("pt",          &pt,               "pt/F");
+  t1->Branch("normChi2",    &normChi2,         "normChi2/F");
   t1->Branch("nRpcHitSTA",  &hitsFromRpcSTA,   "nRpcHitSTA/I");
   t1->Branch("nDtHitSTA",   &hitsFromDtSTA,    "nDtHitSTA/I");
   t1->Branch("nCscHitSTA",  &hitsFromCscSTA,   "nCscHitSTA/I");
@@ -278,15 +310,22 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t1->Branch("phiSTA",      &phi_STA,          "phi/F");
   t1->Branch("ptSTA",       &pt_STA,           "pt/F");
 
-  // For global muons
-  t1->Branch("region",      region,            "region[nRpcHit]/I");
-  t1->Branch("ring",        ring,              "ring[nRpcHit]/I");
-  t1->Branch("sector",      sector,            "sector[nRpcHit]/I");
-  t1->Branch("subsector",   subsector,         "subsector[nRpcHit]/I");
-  t1->Branch("station",     station,           "station[nRpcHit]/I");
-  t1->Branch("sublayer",    sublayer,          "sublayer[nRpcHit]/I");
-  t1->Branch("localX",      recX,              "localX[nRpcHit]/F");
-  // For standalone muons
+  // For global muons RPCHits
+  t1->Branch("region",          region,            "region[nRpcHit]/I");
+  t1->Branch("ring",            ring,              "ring[nRpcHit]/I");
+  t1->Branch("sector",          sector,            "sector[nRpcHit]/I");
+  t1->Branch("subsector",       subsector,         "subsector[nRpcHit]/I");
+  t1->Branch("station",         station,           "station[nRpcHit]/I");
+  t1->Branch("sublayer",        sublayer,          "sublayer[nRpcHit]/I");
+  t1->Branch("localX",          recX,              "localX[nRpcHit]/F");
+  t1->Branch("hitsFromSegmDt",  hitsFromSegmDt,    "hitsFromSegmDt[nDtSegm]/I");
+  t1->Branch("hitsFromSegmCsc", hitsFromSegmCsc,   "hitsFromSegmCsc[nCscSegm]/I");
+  t1->Branch("chi2FromSegmDt",  chi2FromSegmDt,    "chi2FromSegmDt[nDtSegm]/F");
+  t1->Branch("chi2FromSegmCsc", chi2FromSegmCsc,   "chi2FromSegmCsc[nCscSegm]/F");
+  t1->Branch("ndofFromSegmDt",  ndofFromSegmDt,    "ndofFromSegmDt[nDtSegm]/F");
+  t1->Branch("ndofFromSegmCsc", ndofFromSegmCsc,   "ndofFromSegmCsc[nCscSegm]/F");
+
+  // For standalone muons RPCHits
   t1->Branch("regionSTA",   regionSTA,         "regionSTA[nRpcHitSTA]/I");
   t1->Branch("ringSTA",     ringSTA,           "ringSTA[nRpcHitSTA]/I");
   t1->Branch("sectorSTA",   sectorSTA,         "sectorSTA[nRpcHitSTA]/I");
@@ -500,13 +539,18 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
       if (t2.DeltaR(t1)<0.01) isMatchToNoRPC[muidx] = true;
     }
     matchToNoRPC = isMatchToNoRPC[muidx];
+    isSTA = isStaMu[muidx];
     
-    if (isGlobalMu[muidx] && isStaMu[muidx] && abs(eta)<1.6) {
-      //if (isGlobalMu[muidx] && abs(eta)<1.6) {
+    //if (isGlobalMu[muidx] && isStaMu[muidx] && abs(eta)<1.6) {
+    if (isGlobalMu[muidx] && abs(eta)<1.6) {
       if(Debug_) cout<< " mark 2 "<<endl;
 
       nValidMuonRPCHits = glbOfGlobalRef->hitPattern().numberOfValidMuonRPCHits();
+      nValidHits = glbOfGlobalRef->hitPattern().numberOfValidHits();
+      nValidMuonHits = glbOfGlobalRef->hitPattern().numberOfValidMuonHits();
+      nValidTrackerHits = glbOfGlobalRef->hitPattern().numberOfValidTrackerHits();
       rpcStationsWithValidHits = glbOfGlobalRef->hitPattern().rpcStationsWithValidHits();
+      normChi2 = glbOfGlobalRef->normalizedChi2();
 
       /*
       float pt_track = trkOfGlobalRef->pt();
@@ -526,8 +570,7 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
       //      eta = eta_track;
 
       // get segments from track
-      //MuonTransientTrackingRecHit::MuonRecHitContainer segments = theSegmentsAssociator->associate(event, eventSetup, (reco::Track)*staOfGlobalRef );
-
+      MuonTransientTrackingRecHit::MuonRecHitContainer segments = theSegmentsAssociator->associate(event, eventSetup, (reco::Track)*glbOfGlobalRef);
       // hit counters
       hitsFromDt=0;
       hitsFromCsc=0;
@@ -535,12 +578,40 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
       int hitsFromTk=0;
       int hitsFromTrack=0;
       int validHitsFromTrack=0;
-      int hitsFromSegmDt=0;
-      int hitsFromSegmCsc=0;
-      // segment counters
-      int segmFromDt=0;
-      int segmFromCsc=0;
 
+      // segment counters
+      segmFromDt=0;
+      segmFromCsc=0;
+
+      for (MuonTransientTrackingRecHit::MuonRecHitContainer::const_iterator segment=segments.begin(); segment!=segments.end(); segment++) {
+        DetId id = (*segment)->geographicalId();
+	int hitsFromSegmDt_=0;
+	int hitsFromSegmCsc_=0;	
+
+        // hits from DT segments
+        if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::DT ) {
+          const DTRecSegment4D *seg4D = dynamic_cast<const DTRecSegment4D*>((*segment)->hit());
+          if((*seg4D).hasPhi())
+            hitsFromSegmDt_+=(*seg4D).phiSegment()->specificRecHits().size();
+          if((*seg4D).hasZed())
+            hitsFromSegmDt_+=(*seg4D).zSegment()->specificRecHits().size();
+	  hitsFromSegmDt[segmFromDt] = hitsFromSegmDt_;
+	  chi2FromSegmDt[segmFromDt] = (*seg4D).chi2(); 
+	  ndofFromSegmDt[segmFromDt] = (*seg4D).degreesOfFreedom();
+          ++segmFromDt;
+        }
+        // hits from CSC segments
+        if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::CSC ) {
+          hitsFromSegmCsc_+=(*segment)->recHits().size();
+	  hitsFromSegmCsc[segmFromCsc] = hitsFromSegmCsc_;
+	  chi2FromSegmCsc[segmFromCsc] = (*segment)->chi2();
+	  ndofFromSegmCsc[segmFromCsc] = (*segment)->degreesOfFreedom();
+          segmFromCsc++;
+        }
+
+      }    // end for muonTransientTrackingRecHit                
+      
+      
       // hits from track (the part concerning the rechits of rpc. info from Davide)
       bool fbarrel[6], fendcap[3]; // flag of layers crossed
       for (int i=0; i<6; i++) fbarrel[i] = false;
