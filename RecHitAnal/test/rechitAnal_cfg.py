@@ -1,13 +1,13 @@
 import FWCore.ParameterSet.Config as cms
-process = cms.Process("Demo2")
+process = cms.Process("RPCAnal")
 
 # initialize MessageLogger and output report
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.GlobalTag.globaltag = "START42_V12::All"
-#process.GlobalTag.globaltag = "GR_R_42_V14::All"
+#process.GlobalTag.globaltag = "START42_V12::All"
+process.GlobalTag.globaltag = "GR_R_42_V14::All"
 process.prefer("GlobalTag")
 
 process.load("Configuration.StandardSequences.Geometry_cff")
@@ -19,8 +19,9 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
-'/../user/g/ggeorge/mileva/reco_newCls/DYToMuMu_M60_RECO_Eta16_newCLS_1.root',
-'/../user/g/ggeorge/mileva/reco_newCls/DYToMuMu_M60_RECO_Eta16_newCLS_10.root'
+    'file:/tmp/hkseo/Skim-ProbeF-Run2011A-PromptReco-v6_1.root',
+    'file:/tmp/hkseo/Skim-ProbeF-Run2011A-PromptReco-v6_2.root',
+    'file:/tmp/hkseo/Skim-ProbeF-Run2011A-PromptReco-v6_3.root'
     )
 )
 
@@ -56,7 +57,7 @@ process.muonIdProducerSequenceNoRPC = cms.Sequence(
 ###############################################
 
 ### HLT filter
-HLTPath = "HLT_IsoMu24_v1"
+HLTPath = "HLT_IsoMu24_v*"
 HLTProcessName = "HLT"
 import copy
 from HLTrigger.HLTfilters.hltHighLevel_cfi import *
@@ -75,7 +76,7 @@ process.GlobalMuonsNoRPC = cms.EDFilter("MuonSelector",
                                         )
 
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string('RPCRecHit_mc_tree.root')
+                                   fileName = cms.string('/tmp/hkseo/RPCRecHit_data_tree.root')
                                    )
 
 process.demo = cms.EDAnalyzer('RecHitAnal',
@@ -83,10 +84,15 @@ process.demo = cms.EDAnalyzer('RecHitAnal',
                               RPCRecHits = cms.InputTag("rpcRecHits"),
                               DT4DSegments = cms.InputTag("dt4DSegments"),
                               CSCSegments = cms.InputTag("cscSegments"),
-                              muons = cms.InputTag("goodMuonsForZ"),
-                              globalMuonsNoRPC = cms.InputTag("GlobalMuonsNoRPC"),
+                              muons = cms.InputTag("tightMuons"),
+                              globalMuonsNoRPC = cms.InputTag("tightMuonsNoRPC"),
                               StandAloneMuons = cms.InputTag("standAloneMuonsNoRPC"),
-                              generalTracks = cms.InputTag("generalTracks")
+                              generalTracks = cms.InputTag("generalTracks"),
+                              SegmentsTrackAssociatorParameters = cms.PSet(
+    segmentsDt = cms.untracked.InputTag("dt4DSegments"),
+    SelectedSegments = cms.untracked.InputTag("SelectedSegments"),
+    segmentsCSC = cms.untracked.InputTag("cscSegments")
+    ),
                               )
 
 # WZMu Skim
@@ -107,10 +113,10 @@ process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
                                            )
 
 process.p1 = cms.Path(
-    process.HLTFilter *
-    process.Zskim *
-    process.primaryVertexFilter *
-    (process.muontrackingNoRPC+process.muonIdProducerSequenceNoRPC) *
-    process.GlobalMuonsNoRPC *
+    #process.HLTFilter *
+    #process.Zskim *
+    #process.primaryVertexFilter *
+    #(process.muontrackingNoRPC+process.muonIdProducerSequenceNoRPC) *
+    #process.GlobalMuonsNoRPC *
     process.demo
     )
