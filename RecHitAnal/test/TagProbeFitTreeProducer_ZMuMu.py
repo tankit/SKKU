@@ -6,6 +6,7 @@ import FWCore.ParameterSet.Config as cms
 ##  \___\___/|_| |_|___/\__\__,_|_| |_|\__|___/
 ##
 ################################################
+maxDxy = 0.2
 MC_flag = False
 #MC_flag = True
 GLOBAL_TAG = 'GR_R_42_V21A::All'
@@ -139,7 +140,7 @@ for version in range(1,21):
 
 process.promptMuons = cms.EDFilter("PromptMuonSelector",
     src = cms.InputTag("muons"),
-    maxDxy = cms.untracked.double(0.2),
+    maxDxy = cms.untracked.double(maxDxy),
     beamSpot = cms.InputTag("offlineBeamSpot"),
 )
 process.promptMuonsNoRPC = process.promptMuons.clone(src = cms.InputTag("muonsNoRPC"))
@@ -179,7 +180,7 @@ process.trackCands  = cms.EDProducer("ConcreteChargedCandidateProducer",
 process.promptTrackCands = cms.EDFilter("PromptTrackCandSelector",
     src = cms.InputTag("trackCands"),
     beamSpot = cms.InputTag("offlineBeamSpot"),
-    maxDxy = cms.untracked.double(0.2),
+    maxDxy = cms.untracked.double(maxDxy),
 )
 
 process.trackProbes = cms.EDFilter("CandViewRefSelector",
