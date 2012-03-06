@@ -35,7 +35,7 @@ private:
 PromptMuonSelector::PromptMuonSelector(const edm::ParameterSet& pset)
 {
   beamSpotLabel_ = pset.getParameter<edm::InputTag>("beamSpot");
-  muonLabel_ = pset.getParameter<edm::InputTag>("muon");
+  muonLabel_ = pset.getParameter<edm::InputTag>("src");
   maxDxy_ = pset.getUntrackedParameter<double>("maxDxy", 0.2);
 
   produces<std::vector<reco::Muon> >("");
@@ -59,16 +59,17 @@ bool PromptMuonSelector::filter(edm::Event& event, const edm::EventSetup& eventS
   for ( edm::View<reco::Muon>::const_iterator muon = muonHandle->begin();
         muon != muonHandle->end(); ++muon )
   {
+    if ( not muon->isTrackerMuon() ) continue;
     if ( abs(muon->innerTrack()->dxy(beamSpot)) < maxDxy_ )
     {
       promptMuons->push_back(*muon);
     } 
   }
+  const bool isEmpty = promptMuons->empty();
 
   event.put(promptMuons);
 
-  if ( promptMuons->empty() ) return false;
-  return true;
+  return !isEmpty;
 }
 
 DEFINE_FWK_MODULE(PromptMuonSelector);
