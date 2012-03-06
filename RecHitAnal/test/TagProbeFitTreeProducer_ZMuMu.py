@@ -48,7 +48,7 @@ process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
 #        'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_1.root'
 
-        'file:/korserv001/ehkwon/Run2011A-PromptReco-v6/SingleMuSkim_1_1_tVc.root',
+#        'file:/korserv001/ehkwon/Run2011A-PromptReco-v6/SingleMuSkim_1_1_tVc.root',
 #        'file:/korserv001/ehkwon/Run2011A-PromptReco-v6/SingleMuSkim_100_1_r0U.root',
 #        'file:/korserv001/ehkwon/Run2011A-PromptReco-v6/SingleMuSkim_101_1_smF.root',
 #        'file:/korserv001/ehkwon/Run2011A-PromptReco-v6/SingleMuSkim_102_1_B8w.root',
@@ -56,7 +56,7 @@ process.source = cms.Source("PoolSource",
 
 #        'file:/korserv001/mskim/rpc/SingleMu_2011B_RECO_PromptReco-v1_175834_0201AF20-BFDB-E011-A808-0019B9F72F97.root'
 
-#'/../user/e/ehkwon/Skim/2012Jan08/Run2011A-PromptReco-v6/SingleMuSkim_100_1_r0U.root',
+'/../user/e/ehkwon/Skim/2012Jan08/Run2011A-PromptReco-v6/SingleMuSkim_100_1_r0U.root',
 #'/../user/e/ehkwon/Skim/2012Jan08/Run2011A-PromptReco-v6/SingleMuSkim_101_1_smF.root',
 #'/../user/e/ehkwon/Skim/2012Jan08/Run2011A-PromptReco-v6/SingleMuSkim_102_1_B8w.root',
 #'/../user/e/ehkwon/Skim/2012Jan08/Run2011A-PromptReco-v6/SingleMuSkim_103_1_WID.root'
@@ -118,7 +118,7 @@ process.muonIdProducerSequenceNoRPC = cms.Sequence(
 
 # Trigger  ##################
 process.PassingHLT = cms.EDProducer("trgMatchedMuonProducer",
-                                    InputProducer = cms.InputTag("muons"),
+                                    InputProducer = cms.InputTag("promptMuons"),
                                     hltTags = cms.VInputTag(
                                     #cms.InputTag(HLTPath1,"", HLTProcessName),
                                     #cms.InputTag(HLTPath2,"", HLTProcessName),
@@ -137,10 +137,17 @@ for version in range(1,21):
 ##       (the J/Psi example shows it)
 #PASS_HLT = "!triggerObjectMatchesByPath('%s').empty()" % ("HLT_Mu30_v7",);
 
+process.promptMuons = cms.EDFilter("PromptMuonSelector",
+    src = cms.InputTag("muons"),
+    maxDxy = cms.untracked.double(0.2),
+    beamSpot = cms.InputTag("offlineBeamSpot"),
+)
+process.promptMuonsNoRPC = process.promptMuons.clone(src = cms.InputTag("muonsNoRPC"))
+
 process.tightMuons = cms.EDFilter("MuonSelector",
-                                src = cms.InputTag("muons"),
+                                src = cms.InputTag("promptMuons"),
                                 cut = cms.string("isGlobalMuon && isTrackerMuon && isolationR03().sumPt<3.0"
-                                                 "&& abs(innerTrack().dxy)<1.0 && pt > 20 && abs(eta) < 2.4"
+                                                 "&& pt > 20 && abs(eta) < 2.4"
                                                  "&& track().hitPattern().numberOfValidPixelHits() > 0" #--added by Minsuk on Feb 17, 2012
                                                  "&& track().hitPattern().numberOfValidTrackerHits() > 10"
                                                  "&& innerTrack().numberOfValidHits()>10 && globalTrack().normalizedChi2()<10.0"
@@ -169,8 +176,14 @@ process.trackCands  = cms.EDProducer("ConcreteChargedCandidateProducer",
                                      particleType = cms.string("mu+"),     # this is needed to define a mass
                                      )
 
+process.promptTrackCands = cms.EDFilter("PromptTrackCandSelector",
+    src = cms.InputTag("trackCands"),
+    beamSpot = cms.InputTag("offlineBeamSpot"),
+    maxDxy = cms.untracked.double(0.2),
+)
+
 process.trackProbes = cms.EDFilter("CandViewRefSelector",
-                                   src = cms.InputTag("trackCands"),
+                                   src = cms.InputTag("promptTrackCands"),
                                    cut = cms.string("abs(eta)<1.8"),
                                    )
 
@@ -180,10 +193,10 @@ process.trackProbes = cms.EDFilter("CandViewRefSelector",
 ############
 
 process.LooseMuons = cms.EDFilter("MuonSelector",
-                                  src = cms.InputTag("muons"),
+                                  src = cms.InputTag("promptMuons"),
                                   cut = cms.string("isGlobalMuon"
                                                    #"&& numberOfMatches > 1"
-                                                   "&& abs(innerTrack().dxy)<2.0 && pt > 0 && abs(eta) < 2.4"
+                                                   "&& pt > 0 && abs(eta) < 2.4"
                                                    "&& globalTrack().normalizedChi2()<10.0"
                                                    #"&& globalTrack().hitPattern().numberOfValidMuonHits()>0"
                                                    "&& track().hitPattern().numberOfValidPixelHits() > 0"
@@ -194,10 +207,10 @@ process.LooseMuons = cms.EDFilter("MuonSelector",
 
 
 process.LooseMuonsNoRPC = cms.EDFilter("MuonSelector",
-                                       src = cms.InputTag("muonsNoRPC"),
+                                       src = cms.InputTag("promptMuonsNoRPC"),
                                        cut = cms.string("isGlobalMuon"
                                                         #"&& numberOfMatches > 1"
-                                                        "&& abs(innerTrack().dxy)<2.0 && pt > 0 && abs(eta) < 2.4"
+                                                        "&& pt > 0 && abs(eta) < 2.4"
                                                         "&& globalTrack().normalizedChi2()<10.0"
                                                         #"&& globalTrack().hitPattern().numberOfValidMuonHits()>0"
                                                         "&& track().hitPattern().numberOfValidPixelHits() > 0"
@@ -209,13 +222,13 @@ process.LooseMuonsNoRPC = cms.EDFilter("MuonSelector",
 
 process.MediumMuons = cms.EDFilter("MuonSelector",
                                    src = cms.InputTag("LooseMuons"),
-                                   cut = cms.string("numberOfMatches > 1"), 
+                                   cut = cms.string("numberOfMatches > 1 && globalTrack().hitPattern().numberOfValidMuonHits()>0"), 
                                    )
 
 
 process.MediumMuonsNoRPC = cms.EDFilter("MuonSelector",
                                         src = cms.InputTag("LooseMuonsNoRPC"),
-                                        cut = cms.string("numberOfMatches > 1"), 
+                                        cut = cms.string("numberOfMatches > 1 && globalTrack().hitPattern().numberOfValidMuonHits()>0"), 
                                         )
 
 
@@ -225,7 +238,7 @@ process.MediumMuonsNoRPC = cms.EDFilter("MuonSelector",
 ########################
 
 process.tkToLooseMuons = cms.EDProducer("MatcherUsingTracks",
-                                     src     = cms.InputTag("trackCands"), # all tracks are available for matching
+                                     src     = cms.InputTag("promptTrackCands"), # all tracks are available for matching
                                      matched = cms.InputTag("LooseMuons"), # to all global muons
                                      algorithm = cms.string("byDirectComparison"), # check that they
                                      srcTrack = cms.string("tracker"),             # have the same
@@ -239,7 +252,7 @@ process.tkToLooseMuons = cms.EDProducer("MatcherUsingTracks",
                                      )
 
 process.tkToLooseMuonsNoRPC = cms.EDProducer("MatcherUsingTracks",
-                                     src     = cms.InputTag("trackCands"), # all tracks are available for matching
+                                     src     = cms.InputTag("promptTrackCands"), # all tracks are available for matching
                                      matched = cms.InputTag("LooseMuonsNoRPC"), # to all global muons
                                      algorithm = cms.string("byDirectComparison"), # check that they
                                      srcTrack = cms.string("tracker"),             # have the same
@@ -253,7 +266,7 @@ process.tkToLooseMuonsNoRPC = cms.EDProducer("MatcherUsingTracks",
                                      )
 
 process.tkToMediumMuons = cms.EDProducer("MatcherUsingTracks",
-                                     src     = cms.InputTag("trackCands"), # all tracks are available for matching
+                                     src     = cms.InputTag("promptTrackCands"), # all tracks are available for matching
                                      matched = cms.InputTag("MediumMuons"), # to all global muons
                                      algorithm = cms.string("byDirectComparison"), # check that they
                                      srcTrack = cms.string("tracker"),             # have the same
@@ -267,7 +280,7 @@ process.tkToMediumMuons = cms.EDProducer("MatcherUsingTracks",
                                      )
 
 process.tkToMediumMuonsNoRPC = cms.EDProducer("MatcherUsingTracks",
-                                     src     = cms.InputTag("trackCands"), # all tracks are available for matching
+                                     src     = cms.InputTag("promptTrackCands"), # all tracks are available for matching
                                      matched = cms.InputTag("MediumMuonsNoRPC"), # to all global muons
                                      algorithm = cms.string("byDirectComparison"), # check that they
                                      srcTrack = cms.string("tracker"),             # have the same
@@ -366,11 +379,14 @@ if MC_flag:
     process.tagAndProbe = cms.Path(
         process.HLTFilter *
         (process.muontrackingNoRPC+process.muonIdProducerSequenceNoRPC) *
+        process.promptMuons *
+        process.promptMuonsNoRPC *
         process.PassingHLT *
         process.tightMuons *
         process.tagMuons *
         process.goodTracks *
         process.trackCands *
+        process.promptTrackCands *
         process.trackProbes *
         process.LooseMuons *
         process.LooseMuonsNoRPC *
@@ -392,11 +408,14 @@ else:
         process.HLTFilter *
         #process.runfilter *
         (process.muontrackingNoRPC+process.muonIdProducerSequenceNoRPC) *
+        process.promptMuons *
+        process.promptMuonsNoRPC *
         process.PassingHLT *
         process.tightMuons *    
         process.tagMuons *
         process.goodTracks *
         process.trackCands *
+        process.promptTrackCands *
         process.trackProbes *
         process.LooseMuons *
         process.LooseMuonsNoRPC *
