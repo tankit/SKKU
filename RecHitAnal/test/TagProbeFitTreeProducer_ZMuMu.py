@@ -195,7 +195,8 @@ process.trackProbes = cms.EDFilter("CandViewRefSelector",
 
 process.LooseMuons = cms.EDFilter("MuonSelector",
                                   src = cms.InputTag("promptMuons"),
-                                  cut = cms.string("isGlobalMuon"
+                                  cut = cms.string("isGlobalMuon && isTrackerMuon && isolationR03().sumPt<3.0"
+                                                   "&& (isolationR03().sumPt+isolationR03().emEt+isolationR03().hadEt)<0.1*pt"
                                                    #"&& numberOfMatches > 1"
                                                    "&& pt > 0 && abs(eta) < 2.4"
                                                    "&& globalTrack().normalizedChi2()<10.0"
