@@ -213,7 +213,8 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
         eta = cms.string("eta"),
         pt  = cms.string("pt"),
         ## a method of the reco::Muon object (thanks to the 3.4.X StringParser)
-        nsegm = cms.string("numberOfMatches"), 
+        nsegm_old = cms.string("numberOfMatches"),
+        nsegm = cms.string("numberOfMatchedStations"), 
         ## this one is an external variable
         #drj = cms.InputTag("drToNearestJet"),
         drj = cms.InputTag("muonDRToNearestJet"),

@@ -153,7 +153,7 @@ process.tightMuons = cms.EDFilter("MuonSelector",
                                                  "&& track().hitPattern().numberOfValidTrackerHits() > 10"
                                                  "&& innerTrack().numberOfValidHits()>10 && globalTrack().normalizedChi2()<10.0"
                                                  "&& globalTrack().hitPattern().numberOfValidMuonHits()>0"
-                                                 "&& numberOfMatches>1"
+                                                 "&& numberOfMatchedStations>1" #--updated from numberOfMatches by Minsuk on May 12, 2012
                                                  "&& (isolationR03().sumPt+isolationR03().emEt+isolationR03().hadEt)<0.1*pt"
                                                  ), 
                                 )
@@ -197,7 +197,7 @@ process.LooseMuons = cms.EDFilter("MuonSelector",
                                   src = cms.InputTag("promptMuons"),
                                   cut = cms.string("isGlobalMuon && isTrackerMuon && isolationR03().sumPt<3.0"
                                                    "&& (isolationR03().sumPt+isolationR03().emEt+isolationR03().hadEt)<0.1*pt"
-                                                   #"&& numberOfMatches > 1"
+                                                   #"&& numberOfMatchedStations > 1"
                                                    "&& pt > 0 && abs(eta) < 2.4"
                                                    "&& globalTrack().normalizedChi2()<10.0"
                                                    #"&& globalTrack().hitPattern().numberOfValidMuonHits()>0"
@@ -211,7 +211,7 @@ process.LooseMuons = cms.EDFilter("MuonSelector",
 process.LooseMuonsNoRPC = cms.EDFilter("MuonSelector",
                                        src = cms.InputTag("promptMuonsNoRPC"),
                                        cut = cms.string("isGlobalMuon"
-                                                        #"&& numberOfMatches > 1"
+                                                        #"&& numberOfMatchedStations > 1"
                                                         "&& pt > 0 && abs(eta) < 2.4"
                                                         "&& globalTrack().normalizedChi2()<10.0"
                                                         #"&& globalTrack().hitPattern().numberOfValidMuonHits()>0"
@@ -224,13 +224,13 @@ process.LooseMuonsNoRPC = cms.EDFilter("MuonSelector",
 
 process.MediumMuons = cms.EDFilter("MuonSelector",
                                    src = cms.InputTag("LooseMuons"),
-                                   cut = cms.string("numberOfMatches > 1 && globalTrack().hitPattern().numberOfValidMuonHits()>0"), 
+                                   cut = cms.string("numberOfMatchedStations > 1 && globalTrack().hitPattern().numberOfValidMuonHits()>0"), 
                                    )
 
 
 process.MediumMuonsNoRPC = cms.EDFilter("MuonSelector",
                                         src = cms.InputTag("LooseMuonsNoRPC"),
-                                        cut = cms.string("numberOfMatches > 1 && globalTrack().hitPattern().numberOfValidMuonHits()>0"), 
+                                        cut = cms.string("numberOfMatchedStations > 1 && globalTrack().hitPattern().numberOfValidMuonHits()>0"), 
                                         )
 
 
