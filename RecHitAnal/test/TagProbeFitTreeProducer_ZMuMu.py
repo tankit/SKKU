@@ -210,7 +210,8 @@ process.LooseMuons = cms.EDFilter("MuonSelector",
 
 process.LooseMuonsNoRPC = cms.EDFilter("MuonSelector",
                                        src = cms.InputTag("promptMuonsNoRPC"),
-                                       cut = cms.string("isGlobalMuon"
+                                       cut = cms.string("isGlobalMuon && isTrackerMuon && isolationR03().sumPt<3.0"
+                                                        "&& (isolationR03().sumPt+isolationR03().emEt+isolationR03().hadEt)<0.1*pt"
                                                         #"&& numberOfMatchedStations > 1"
                                                         "&& pt > 0 && abs(eta) < 2.4"
                                                         "&& globalTrack().normalizedChi2()<10.0"
