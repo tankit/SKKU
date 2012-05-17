@@ -39,12 +39,12 @@ process.out = cms.OutputModule("PoolOutputModule",
 from Configuration.EventContent.EventContent_cff import RECOSIMEventContent
 process.out.outputCommands += RECOSIMEventContent.outputCommands
 
-process.muidRPCMuBasic = cms.EDProducer("MuonSelectionTypeValueMapProducer",
+process.muidRPCMuMedium = cms.EDProducer("MuonSelectionTypeValueMapProducer",
     inputMuonCollection = cms.InputTag("muons1stStep"),
-    selectionType = cms.string('RPCMuBasic'),
+    selectionType = cms.string('RPCMuMedium'),
 )
 
-process.muonSelectionTypeSequence += process.muidRPCMuBasic
+process.muonSelectionTypeSequence += process.muidRPCMuMedium
 process.p = cms.Path(
     process.RawToDigi
   * process.localreco * process.globalreco

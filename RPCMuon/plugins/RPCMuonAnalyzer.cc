@@ -45,11 +45,12 @@ private:
   TH1F* hNMuon_;
   TH1F* hNRPCMuon_;
   TH1F* hNGlbPromptT_;
-  TH1F* hNRPCMuBasic_;
+  TH1F* hNRPCMuMedium_;
 
   TH2F* hIdCorrelation_;
-  TH2F* hBarrel_IdCorrelation_;
-  TH2F* hEndcap_IdCorrelation_;
+  TH2F* hIdCorrelationB_;
+  TH2F* hIdCorrelationO_;
+  TH2F* hIdCorrelationE_;
 };
 
 RPCMuonAnalyzer::RPCMuonAnalyzer(const edm::ParameterSet& pset)
@@ -62,27 +63,31 @@ RPCMuonAnalyzer::RPCMuonAnalyzer(const edm::ParameterSet& pset)
   hNMuon_       = fs->make<TH1F>("hNMuon"      , "Number of muons;Number of muons", 10, 0, 10);
   hNRPCMuon_    = fs->make<TH1F>("hNRPCMuon"   , "Number of RPC muons;Number of muons", 10, 0, 10);
   hNGlbPromptT_ = fs->make<TH1F>("hNGlbPromptT", "Number of GlobalMuPromptTight muons;Number of muons", 10, 0, 10);
-  hNRPCMuBasic_ = fs->make<TH1F>("hNRPCMuBasic", "Number of RPCMuBasic muons;Number of muons", 10, 0, 10);
+  hNRPCMuMedium_ = fs->make<TH1F>("hNRPCMuMedium", "Number of RPCMuMedium muons;Number of muons", 10, 0, 10);
 
   const char* idNames[] = {
-    "All", "Glb", "Sta", "Trk", "RPC", "GlbPromptT", "RPCBasic", "RPCLoose", "RPCVeryLoose"
+    "All", "Glb", "Sta", "Trk", "RPC", "GlbPromptT", "RPCVeryLoose", "RPCLoose", "RPCMedium"
   };
   const int nId = sizeof(idNames)/sizeof(const char*);
   hIdCorrelation_ = fs->make<TH2F>("hIdCorrelation", "ID correlation", nId, 0, nId, nId, 0, nId);
-  hBarrel_IdCorrelation_ = fs->make<TH2F>("hIdCorrelationBarrel", "ID correlation (Barrel)", nId, 0, nId, nId, 0, nId);
-  hEndcap_IdCorrelation_ = fs->make<TH2F>("hIdCorrelationEndcap", "ID correlation (Endcap)", nId, 0, nId, nId, 0, nId);
+  hIdCorrelationB_ = fs->make<TH2F>("hIdCorrelationBarrel", "ID correlation (Barrel)", nId, 0, nId, nId, 0, nId);
+  hIdCorrelationO_ = fs->make<TH2F>("hIdCorrelationOverlap", "ID correlation (Overlap)", nId, 0, nId, nId, 0, nId);
+  hIdCorrelationE_ = fs->make<TH2F>("hIdCorrelationEndcap", "ID correlation (Endcap)", nId, 0, nId, nId, 0, nId);
   for ( int i=0; i<nId; ++i )
   {
     hIdCorrelation_->GetXaxis()->SetBinLabel(i+1, idNames[i]);
     hIdCorrelation_->GetYaxis()->SetBinLabel(i+1, idNames[i]);
-    hBarrel_IdCorrelation_->GetXaxis()->SetBinLabel(i+1, idNames[i]);
-    hBarrel_IdCorrelation_->GetYaxis()->SetBinLabel(i+1, idNames[i]);
-    hEndcap_IdCorrelation_->GetXaxis()->SetBinLabel(i+1, idNames[i]);
-    hEndcap_IdCorrelation_->GetYaxis()->SetBinLabel(i+1, idNames[i]);
+    hIdCorrelationB_->GetXaxis()->SetBinLabel(i+1, idNames[i]);
+    hIdCorrelationB_->GetYaxis()->SetBinLabel(i+1, idNames[i]);
+    hIdCorrelationO_->GetXaxis()->SetBinLabel(i+1, idNames[i]);
+    hIdCorrelationO_->GetYaxis()->SetBinLabel(i+1, idNames[i]);
+    hIdCorrelationE_->GetXaxis()->SetBinLabel(i+1, idNames[i]);
+    hIdCorrelationE_->GetYaxis()->SetBinLabel(i+1, idNames[i]);
   }
   hIdCorrelation_->SetOption("COLZ");
-  hBarrel_IdCorrelation_->SetOption("COLZ");
-  hEndcap_IdCorrelation_->SetOption("COLZ");
+  hIdCorrelationB_->SetOption("COLZ");
+  hIdCorrelationO_->SetOption("COLZ");
+  hIdCorrelationE_->SetOption("COLZ");
 }
 
 void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& eventSetup)
@@ -92,7 +97,7 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
   
   int nMuon = muonHandle->size();
   int nGlbPromptT = 0;
-  int nRPCMuon = 0, nRPCMuBasic = 0;
+  int nRPCMuon = 0, nRPCMuMedium = 0;
   for ( edm::View<reco::Muon>::const_iterator muon = muonHandle->begin();
         muon != muonHandle->end(); ++muon )
   {
@@ -105,16 +110,16 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
       muon->isGlobalMuon(), muon->isStandAloneMuon(), muon->isTrackerMuon(),
       muon->isRPCMuon(), 
       muon::isGoodMuon(*muon, muon::GlobalMuonPromptTight),
-      muon::isGoodMuon(*muon, muon::RPCMuBasic),
-      muon::isGoodMuon(*muon, muon::RPCMuLoose),
       muon::isGoodMuon(*muon, muon::RPCMuVeryLoose),
+      muon::isGoodMuon(*muon, muon::RPCMuLoose),
+      muon::isGoodMuon(*muon, muon::RPCMuMedium),
     };
 
     if ( idFlags[4] )
     {
       ++nRPCMuon;
 
-      if ( idFlags[6] ) ++nRPCMuBasic;
+      if ( idFlags[6] ) ++nRPCMuMedium;
     }
 
     if ( idFlags[5] ) ++nGlbPromptT;
@@ -127,8 +132,9 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
         if ( idFlags[i] and idFlags[j] )
         {
           hIdCorrelation_->Fill(i,j);
-          if ( abseta < 1.6 ) hBarrel_IdCorrelation_->Fill(i,j);
-          else hEndcap_IdCorrelation_->Fill(i,j);
+          if ( abseta < 0.8 ) hIdCorrelationB_->Fill(i,j);
+          else if ( abseta < 1.2 ) hIdCorrelationO_->Fill(i,j);
+          else hIdCorrelationE_->Fill(i,j);
         }
       }
     }
@@ -136,7 +142,7 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
 
   hNMuon_->Fill(nMuon);
   hNRPCMuon_->Fill(nRPCMuon);
-  hNRPCMuBasic_->Fill(nRPCMuBasic);
+  hNRPCMuMedium_->Fill(nRPCMuMedium);
   hNGlbPromptT_->Fill(nGlbPromptT);
 }
 
