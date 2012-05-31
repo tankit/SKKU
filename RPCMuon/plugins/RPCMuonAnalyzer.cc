@@ -70,7 +70,7 @@ RPCMuonAnalyzer::RPCMuonAnalyzer(const edm::ParameterSet& pset)
   hNTrkArbitrated_ = fs->make<TH1F>("hNTrkArbitrated", "Number of TrkMuArbitrated muons;Number of muons", 10, 0, 10);
 
   const char* idNames[] = {
-    "All", "AllGlb", "AllSta", "AllTrk", "AllRPCMu", "RPCMuLoose", "RPCMuMedium", "RPCMuTight", "TrkMuArbitrated", "GlbPromptTight"
+    "All", "AllGlbMu", "AllStaMu", "AllTrkMu", "AllRPCMu", "RPCMuLoose", "RPCMuMedium", "RPCMuTight", "TrkMuArbitrated", "GlbPromptTight"
   };
   const int nId = sizeof(idNames)/sizeof(const char*);
   hIdCorrelation_ = fs->make<TH2F>("hIdCorrelation", "ID correlation", nId, 0, nId, nId, 0, nId);
