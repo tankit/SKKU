@@ -39,6 +39,7 @@ public:
 
 private:
   edm::InputTag muonLabel_;
+  int minPtTrk_;
 
   TTree* tree_;
 
@@ -46,6 +47,7 @@ private:
   TH1F* hNRPCMuon_;
   TH1F* hNGlbPromptT_;
   TH1F* hNRPCMuMedium_;
+  TH1F* hNTrkArbitrated_;
 
   TH2F* hIdCorrelation_;
   TH2F* hIdCorrelationB_;
@@ -56,6 +58,7 @@ private:
 RPCMuonAnalyzer::RPCMuonAnalyzer(const edm::ParameterSet& pset)
 {
   muonLabel_ = pset.getUntrackedParameter<edm::InputTag>("muon");
+  minPtTrk_  = pset.getUntrackedParameter<int>("minPtTrk");
 
   edm::Service<TFileService> fs;
   tree_ = fs->make<TTree>("tree", "tree");
@@ -64,9 +67,10 @@ RPCMuonAnalyzer::RPCMuonAnalyzer(const edm::ParameterSet& pset)
   hNRPCMuon_    = fs->make<TH1F>("hNRPCMuon"   , "Number of RPC muons;Number of muons", 10, 0, 10);
   hNGlbPromptT_ = fs->make<TH1F>("hNGlbPromptT", "Number of GlobalMuPromptTight muons;Number of muons", 10, 0, 10);
   hNRPCMuMedium_ = fs->make<TH1F>("hNRPCMuMedium", "Number of RPCMuMedium muons;Number of muons", 10, 0, 10);
+  hNTrkArbitrated_ = fs->make<TH1F>("hNTrkArbitrated", "Number of TrkMuArbitrated muons;Number of muons", 10, 0, 10);
 
   const char* idNames[] = {
-    "All", "AllGlb", "AllSta", "AllTrk", "AllRPCMu", "RPCMuLoose", "RPCMuMedium", "RPCMuTight", "GlbPromptTight"
+    "All", "AllGlb", "AllSta", "AllTrk", "AllRPCMu", "RPCMuLoose", "RPCMuMedium", "RPCMuTight", "TrkMuArbitrated", "GlbPromptTight"
   };
   const int nId = sizeof(idNames)/sizeof(const char*);
   hIdCorrelation_ = fs->make<TH2F>("hIdCorrelation", "ID correlation", nId, 0, nId, nId, 0, nId);
@@ -96,12 +100,13 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
   event.getByLabel(muonLabel_, muonHandle);
   
   int nMuon = muonHandle->size();
-  int nGlbPromptT = 0;
+  int nGlbPromptT = 0, nTrkArbitrated = 0;
   int nRPCMuon = 0, nRPCMuMedium = 0;
   for ( edm::View<reco::Muon>::const_iterator muon = muonHandle->begin();
         muon != muonHandle->end(); ++muon )
   {
-    if ( muon->pt() < 5 ) continue;
+ 
+    if ( muon->pt() < minPtTrk_ ) continue; 
     const double abseta = abs(muon->eta());
     if ( abseta > 2.1 ) continue;
 
@@ -112,6 +117,7 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
       muon->isRPCMuon() && muon::isGoodMuon(*muon, muon::RPCMu, 1, 20, 4, 1e9, 1e9, 1e9, 1e9, reco::Muon::NoArbitration, false, false),
       muon::isGoodMuon(*muon, muon::RPCMuMedium),
       muon->isRPCMuon() && muon::isGoodMuon(*muon, muon::RPCMu, 3, 20, 4, 1e9, 1e9, 1e9, 1e9, reco::Muon::NoArbitration, false, false),
+      muon::isGoodMuon(*muon, muon::TrackerMuonArbitrated),
       muon::isGoodMuon(*muon, muon::GlobalMuonPromptTight),
     };
 
@@ -122,7 +128,8 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
       if ( idFlags[6] ) ++nRPCMuMedium;
     }
 
-    if ( idFlags[8] ) ++nGlbPromptT;
+    if ( idFlags[8] ) ++nTrkArbitrated;
+    if ( idFlags[9] ) ++nGlbPromptT;
 
     // Fill correlation matrix
     for ( int i=0, n=sizeof(idFlags)/sizeof(const bool); i<n; ++i )
@@ -144,6 +151,7 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
   hNRPCMuon_->Fill(nRPCMuon);
   hNRPCMuMedium_->Fill(nRPCMuMedium);
   hNGlbPromptT_->Fill(nGlbPromptT);
+  hNTrkArbitrated_->Fill(nTrkArbitrated);
 }
 
 #include "FWCore/Framework/interface/MakerMacros.h"
