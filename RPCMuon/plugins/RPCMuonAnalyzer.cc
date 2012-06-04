@@ -70,7 +70,7 @@ RPCMuonAnalyzer::RPCMuonAnalyzer(const edm::ParameterSet& pset)
   hNTrkArbitrated_ = fs->make<TH1F>("hNTrkArbitrated", "Number of TrkMuArbitrated muons;Number of muons", 10, 0, 10);
 
   const char* idNames[] = {
-    "All", "AllGlbMu", "AllStaMu", "AllTrkMu", "AllRPCMu", "RPCMuLoose", "RPCMuMedium", "RPCMuTight", "TrkMuArbitrated", "GlbPromptTight"
+    "All", "AllGlbMu", "AllStaMu", "AllTrkMu", "AllRPCMu", "RPCMuMedium", "RPCMuTight", "TrkMuArbitrated", "GlbPromptTight"
   };
   const int nId = sizeof(idNames)/sizeof(const char*);
   hIdCorrelation_ = fs->make<TH2F>("hIdCorrelation", "ID correlation", nId, 0, nId, nId, 0, nId);
@@ -114,7 +114,6 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
       true,
       muon->isGlobalMuon(), muon->isStandAloneMuon(), muon->isTrackerMuon(),
       muon->isRPCMuon(), 
-      muon->isRPCMuon() && muon::isGoodMuon(*muon, muon::RPCMu, 1, 20, 4, 1e9, 1e9, 1e9, 1e9, reco::Muon::NoArbitration, false, false),
       muon::isGoodMuon(*muon, muon::RPCMuMedium),
       muon->isRPCMuon() && muon::isGoodMuon(*muon, muon::RPCMu, 3, 20, 4, 1e9, 1e9, 1e9, 1e9, reco::Muon::NoArbitration, false, false),
       muon::isGoodMuon(*muon, muon::TrackerMuonArbitrated),
@@ -125,11 +124,11 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
     {
       ++nRPCMuon;
 
-      if ( idFlags[6] ) ++nRPCMuMedium;
+      if ( idFlags[5] ) ++nRPCMuMedium;
     }
 
-    if ( idFlags[8] ) ++nTrkArbitrated;
-    if ( idFlags[9] ) ++nGlbPromptT;
+    if ( idFlags[7] ) ++nTrkArbitrated;
+    if ( idFlags[8] ) ++nGlbPromptT;
 
     // Fill correlation matrix
     for ( int i=0, n=sizeof(idFlags)/sizeof(const bool); i<n; ++i )
