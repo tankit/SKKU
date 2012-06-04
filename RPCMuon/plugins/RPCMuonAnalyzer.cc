@@ -39,7 +39,7 @@ public:
 
 private:
   edm::InputTag muonLabel_;
-  int minPtTrk_;
+  double minPtTrk_;
 
   TTree* tree_;
 
@@ -58,7 +58,7 @@ private:
 RPCMuonAnalyzer::RPCMuonAnalyzer(const edm::ParameterSet& pset)
 {
   muonLabel_ = pset.getUntrackedParameter<edm::InputTag>("muon");
-  minPtTrk_  = pset.getUntrackedParameter<int>("minPtTrk");
+  minPtTrk_  = pset.getUntrackedParameter<double>("minPtTrk");
 
   edm::Service<TFileService> fs;
   tree_ = fs->make<TTree>("tree", "tree");
