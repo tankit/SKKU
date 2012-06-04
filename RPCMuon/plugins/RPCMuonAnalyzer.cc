@@ -115,7 +115,7 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
       muon->isGlobalMuon(), muon->isStandAloneMuon(), muon->isTrackerMuon(),
       muon->isRPCMuon(), 
       muon::isGoodMuon(*muon, muon::RPCMuMedium),
-      muon->isRPCMuon() && muon::isGoodMuon(*muon, muon::RPCMu, 3, 20, 4, 1e9, 1e9, 1e9, 1e9, reco::Muon::NoArbitration, false, false),
+      muon->isRPCMuon() && muon::isGoodMuon(*muon, muon::RPCMu, 3, 20, 4, 1e9, 1e9, 1e9, 1e9, reco::Muon::RPCHitAndTrackArbitration, false, false),
       muon::isGoodMuon(*muon, muon::TrackerMuonArbitrated),
       muon::isGoodMuon(*muon, muon::GlobalMuonPromptTight),
     };
