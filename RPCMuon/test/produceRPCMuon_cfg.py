@@ -10,7 +10,7 @@ process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.GlobalTag.globaltag = 'START52_V5::All'
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(1000)
 )   
 
 process.source = cms.Source("PoolSource",
@@ -39,12 +39,12 @@ process.out = cms.OutputModule("PoolOutputModule",
 from Configuration.EventContent.EventContent_cff import RECOSIMEventContent
 process.out.outputCommands += RECOSIMEventContent.outputCommands
 
-process.muidRPCMuMedium = cms.EDProducer("MuonSelectionTypeValueMapProducer",
+process.muidRPCMuLoose = cms.EDProducer("MuonSelectionTypeValueMapProducer",
     inputMuonCollection = cms.InputTag("muons1stStep"),
-    selectionType = cms.string('RPCMuMedium'),
+    selectionType = cms.string('RPCMuLoose'),
 )
 
-process.muonSelectionTypeSequence += process.muidRPCMuMedium
+process.muonSelectionTypeSequence += process.muidRPCMuLoose
 process.p = cms.Path(
     process.RawToDigi
   * process.localreco * process.globalreco
@@ -67,7 +67,7 @@ process.TFileService = cms.Service("TFileService",
 
 process.rpcMuAna = cms.EDAnalyzer("RPCMuonAnalyzer",
     muon = cms.untracked.InputTag("muons"),
-    minPtTrk = cms.untracked.int32(5),
+    minPtTrk = cms.untracked.double(3),
 )
 
 process.p += process.rpcMuAna

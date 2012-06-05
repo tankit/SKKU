@@ -48,6 +48,8 @@ private:
   TH1F* hNGlbPromptT_;
   TH1F* hNRPCMuMedium_;
   TH1F* hNTrkArbitrated_;
+  TH1F* hNRPCMuLoose_;
+  TH1F* hNRPCMuTight_;
 
   TH2F* hIdCorrelation_;
   TH2F* hIdCorrelationB_;
@@ -68,9 +70,11 @@ RPCMuonAnalyzer::RPCMuonAnalyzer(const edm::ParameterSet& pset)
   hNGlbPromptT_ = fs->make<TH1F>("hNGlbPromptT", "Number of GlobalMuPromptTight muons;Number of muons", 10, 0, 10);
   hNRPCMuMedium_ = fs->make<TH1F>("hNRPCMuMedium", "Number of RPCMuMedium muons;Number of muons", 10, 0, 10);
   hNTrkArbitrated_ = fs->make<TH1F>("hNTrkArbitrated", "Number of TrkMuArbitrated muons;Number of muons", 10, 0, 10);
+  hNRPCMuLoose_  = fs->make<TH1F>("hNRPCMuLoose"   , "Number of RPC muons;Number of muons", 10, 0, 10);
+  hNRPCMuTight_  = fs->make<TH1F>("hNRPCMuTight"   , "Number of RPC muons;Number of muons", 10, 0, 10);
 
   const char* idNames[] = {
-    "All", "AllGlbMu", "AllStaMu", "AllTrkMu", "AllRPCMu", "RPCMuMedium", "RPCMuTight", "TrkMuArbitrated", "GlbPromptTight"
+    "All", "AllGlbMu", "AllStaMu", "AllTrkMu", "AllRPCMu", "RPCMuLoose", "RPCMuMedium", "RPCMuTight", "TrkMuArbitrated", "GlbPromptTight"
   };
   const int nId = sizeof(idNames)/sizeof(const char*);
   hIdCorrelation_ = fs->make<TH2F>("hIdCorrelation", "ID correlation", nId, 0, nId, nId, 0, nId);
@@ -101,7 +105,7 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
   
   int nMuon = muonHandle->size();
   int nGlbPromptT = 0, nTrkArbitrated = 0;
-  int nRPCMuon = 0, nRPCMuMedium = 0;
+  int nRPCMuon = 0, nRPCMuMedium = 0, nRPCMuLoose = 0, nRPCMuTight = 0;
   for ( edm::View<reco::Muon>::const_iterator muon = muonHandle->begin();
         muon != muonHandle->end(); ++muon )
   {
@@ -113,22 +117,26 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
     const bool idFlags[] = {
       true,
       muon->isGlobalMuon(), muon->isStandAloneMuon(), muon->isTrackerMuon(),
-      muon->isRPCMuon(), 
-      muon::isGoodMuon(*muon, muon::RPCMuMedium),
+      muon->isRPCMuon(),
+      muon::isGoodMuon(*muon, muon::RPCMuLoose),
+      muon::isGoodMuon(*muon, muon::RPCMuLoose) && muon->numberOfMatchedStations(reco::Muon::RPCHitAndTrackArbitration)>1,
       muon->isRPCMuon() && muon::isGoodMuon(*muon, muon::RPCMu, 3, 20, 4, 1e9, 1e9, 1e9, 1e9, reco::Muon::RPCHitAndTrackArbitration, false, false),
       muon::isGoodMuon(*muon, muon::TrackerMuonArbitrated),
       muon::isGoodMuon(*muon, muon::GlobalMuonPromptTight),
+  
     };
 
     if ( idFlags[4] )
     {
       ++nRPCMuon;
 
-      if ( idFlags[5] ) ++nRPCMuMedium;
+      if ( idFlags[5] ) ++nRPCMuLoose;
+      if ( idFlags[6] ) ++nRPCMuMedium;
+      if ( idFlags[7] ) ++nRPCMuTight;
     }
 
-    if ( idFlags[7] ) ++nTrkArbitrated;
-    if ( idFlags[8] ) ++nGlbPromptT;
+    if ( idFlags[8] ) ++nTrkArbitrated;
+    if ( idFlags[9] ) ++nGlbPromptT;
 
     // Fill correlation matrix
     for ( int i=0, n=sizeof(idFlags)/sizeof(const bool); i<n; ++i )
@@ -151,6 +159,8 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
   hNRPCMuMedium_->Fill(nRPCMuMedium);
   hNGlbPromptT_->Fill(nGlbPromptT);
   hNTrkArbitrated_->Fill(nTrkArbitrated);
+  hNRPCMuLoose_->Fill(nRPCMuLoose);
+  hNRPCMuTight_->Fill(nRPCMuTight);
 }
 
 #include "FWCore/Framework/interface/MakerMacros.h"
