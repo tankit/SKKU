@@ -1,5 +1,6 @@
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonDetId/interface/MuonSubdetId.h"
+#include "DataFormats/MuonDetId/interface/RPCDetId.h"
 
 using namespace reco;
 
@@ -59,6 +60,17 @@ int Muon::numberOfMatches( ArbitrationType type ) const
    for( std::vector<MuonChamberMatch>::const_iterator chamberMatch = muMatches_.begin();
          chamberMatch != muMatches_.end(); chamberMatch++ )
    {
+      if(type == RPCHitAndTrackArbitration) {
+         if(chamberMatch->rpcMatches.empty()) continue;
+         matches += chamberMatch->rpcMatches.size();
+         //for( std::vector<MuonRPCHitMatch>::const_iterator rpcMatch = chamberMatch->rpcMatches.begin();
+         //      rpcMatch != chamberMatch->rpcMatches.end(); rpcMatch++ )
+         //{
+         //   matches++;
+         //}
+         continue;
+      }
+
       if(chamberMatch->segmentMatches.empty()) continue;
       if(type == NoArbitration) {
          matches++;
@@ -114,9 +126,29 @@ unsigned int Muon::stationMask( ArbitrationType type ) const
 {
    unsigned int totMask(0);
    unsigned int curMask(0);
+
    for( std::vector<MuonChamberMatch>::const_iterator chamberMatch = muMatches_.begin();
          chamberMatch != muMatches_.end(); chamberMatch++ )
    {
+      if(type == RPCHitAndTrackArbitration) {
+	 if(chamberMatch->rpcMatches.empty()) continue;
+
+	 RPCDetId rollId = chamberMatch->id.rawId();
+	 const int region    = rollId.region();
+	 int rpcIndex = 1; if (region!=0) rpcIndex = 2; 
+
+         for( std::vector<MuonRPCHitMatch>::const_iterator rpcMatch = chamberMatch->rpcMatches.begin();
+               rpcMatch != chamberMatch->rpcMatches.end(); rpcMatch++ )
+         {
+            curMask = 1<<( (chamberMatch->station()-1)+4*(rpcIndex-1) );
+
+            // do not double count
+            if(!(totMask & curMask))
+               totMask += curMask;
+         }
+         continue;
+      }
+
       if(chamberMatch->segmentMatches.empty()) continue;
       if(type == NoArbitration) {
          curMask = 1<<( (chamberMatch->station()-1)+4*(chamberMatch->detector()-1) );

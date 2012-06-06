@@ -165,7 +165,7 @@ namespace reco {
 
 
     /// define arbitration schemes
-    enum ArbitrationType { NoArbitration, SegmentArbitration, SegmentAndTrackArbitration, SegmentAndTrackArbitrationCleaned };
+    enum ArbitrationType { NoArbitration, SegmentArbitration, SegmentAndTrackArbitration, SegmentAndTrackArbitrationCleaned, RPCHitAndTrackArbitration };
     
     ///
     /// ====================== USEFUL METHODs ===========================

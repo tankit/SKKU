@@ -91,6 +91,7 @@ class MuonIdProducer : public edm::EDProducer {
    bool          isGoodTrack( const reco::Track& track );
    
    bool          isGoodTrackerMuon( const reco::Muon& muon );
+   bool          isGoodRPCMuon( const reco::Muon& muon );
    
    // check number of common DetIds for a given trackerMuon and a stand alone
    // muon track
@@ -110,7 +111,6 @@ class MuonIdProducer : public edm::EDProducer {
 
    MuonTimingFiller* theTimingFiller_;
 
-   double minPtTrk_;
    // selections
    double minPt_;
    double minP_;

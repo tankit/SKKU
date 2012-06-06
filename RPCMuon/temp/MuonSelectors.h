@@ -46,7 +46,8 @@ namespace muon {
       // what we feel is more suggestive of the algorithm name. This will be
       // less confusing for future generations of CMS members, I hope...
       TMLastStationOptimizedBarrelLowPtLoose = 22, // combination of TMLastStation and TMOneStation but with low pT optimization in barrel only
-      TMLastStationOptimizedBarrelLowPtTight = 23  // combination of TMLastStation and TMOneStation but with low pT optimization in barrel only
+      TMLastStationOptimizedBarrelLowPtTight = 23,  // combination of TMLastStation and TMOneStation but with low pT optimization in barrel only
+      RPCMuLoose = 30 
    };
 
    /// a lightweight "map" for selection type string label and enum value
@@ -60,7 +61,7 @@ namespace muon {
    // ===========================================================================
    //                               Support functions
    // 
-   enum AlgorithmType { TMLastStation, TM2DCompatibility, TMOneStation };
+   enum AlgorithmType { TMLastStation, TM2DCompatibility, TMOneStation, RPCMu };
    
    // specialized GoodMuon functions called from main wrapper
    bool isGoodMuon( const reco::Muon& muon, 
