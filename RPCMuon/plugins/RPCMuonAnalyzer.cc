@@ -46,7 +46,7 @@ private:
 
   Int_t runNumber, eventNumber, nMuon, nSelMuon;
   Double_t muPt, muP, muEta, muPhi;
-  Bool_t trkMu, trkMuLoose, rpcMu, rpcMuLoose, rpcMuMedium, rpcMuTight;
+  Bool_t trkMu, trkMuArb, rpcMu, rpcMuLoose, rpcMuMedium, rpcMuTight;
   Bool_t staMu, glbMu, glbMuPromptT, glbMuLoose, glbMuMedium, glbMuTight;
 
   TH1F* hNMuon_;
@@ -81,7 +81,7 @@ RPCMuonAnalyzer::RPCMuonAnalyzer(const edm::ParameterSet& pset)
   tree_->Branch("muEta",        &muEta,        "muEta/D");
   tree_->Branch("muPhi",        &muPhi,        "muPhi/D");
   tree_->Branch("trkMu",        &trkMu,        "trkMu/B");
-  tree_->Branch("trkMuLoose",   &trkMuLoose,   "trkMuLoose/B");
+  tree_->Branch("trkMuArb",     &trkMuArb,     "trkMuArb/B");
   tree_->Branch("rpcMu",        &rpcMu,        "rpcMu/B");
   tree_->Branch("rpcMuLoose",   &rpcMuLoose,   "rpcMuLoose/B");
   tree_->Branch("rpcMuMedium",  &rpcMuMedium,  "rpcMuMedium/B");
@@ -144,7 +144,7 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
         muon != muonHandle->end(); ++muon )
   {
 
-    glbMu = staMu = trkMu = rpcMu = rpcMuLoose = rpcMuMedium = rpcMuTight = trkMuLoose = glbMuLoose = glbMuPromptT = glbMuMedium = glbMuTight = false; 
+    glbMu = staMu = trkMu = rpcMu = rpcMuLoose = rpcMuMedium = rpcMuTight = trkMuArb = glbMuLoose = glbMuPromptT = glbMuMedium = glbMuTight = false; 
     if ( muon->pt() < minPtTrk_ ) continue; 
     const double abseta = abs(muon->eta());
     if ( abseta > maxEtaTrk_ ) continue;
@@ -197,7 +197,7 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
       if ( idFlags[7] ) { ++nRPCMuTight;  rpcMuTight  = true; }
     }
 
-    if ( idFlags[8] )  { ++nTrkArbitrated; trkMuLoose   = true; }
+    if ( idFlags[8] )  { ++nTrkArbitrated; trkMuArb = true; }
     if ( idFlags[9] ) glbMuLoose = true;
     if ( idFlags[10] ) { ++nGlbPromptT;    glbMuPromptT = true; }
     if ( idFlags[11] ) glbMuMedium = true;
