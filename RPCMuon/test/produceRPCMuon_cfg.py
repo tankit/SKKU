@@ -68,6 +68,7 @@ process.TFileService = cms.Service("TFileService",
 process.rpcMuAna = cms.EDAnalyzer("RPCMuonAnalyzer",
     muon = cms.untracked.InputTag("muons"),
     minPtTrk = cms.untracked.double(3),
+    maxEtaTrk = cms.untracked.double(1.6),
 )
 
 process.p += process.rpcMuAna
