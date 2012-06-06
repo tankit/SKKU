@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <vector>
 
 using namespace std;
 using namespace edm;
@@ -44,19 +45,37 @@ private:
 
   TTree* tree_;
 
+  std::vector<float> muPt;
+  std::vector<float> muP;
+  std::vector<float> muEta;
+  std::vector<float> muPhi;
+  std::vector<bool> trkMu;
+  std::vector<bool> trkMuArb;
+  std::vector<bool> rpcMu;
+  std::vector<bool> rpcMuLoose;
+  std::vector<bool> rpcMuMedium;
+  std::vector<bool> rpcMuTight;
+  std::vector<bool> staMu;
+  std::vector<bool> glbMu;
+  std::vector<bool> glbMuLoose;
+  std::vector<bool> glbMuPromptT;
+  std::vector<bool> glbMuMedium;
+  std::vector<bool> glbMuTight;
+
   Int_t runNumber, eventNumber, nMuon, nSelMuon;
-  Double_t muPt, muP, muEta, muPhi;
-  Bool_t trkMu, trkMuArb, rpcMu, rpcMuLoose, rpcMuMedium, rpcMuTight;
-  Bool_t staMu, glbMu, glbMuPromptT, glbMuLoose, glbMuMedium, glbMuTight;
+  Int_t nGlbMuon, nStaMuon, nTrkMuon;
+  Int_t nGlbPromptT, nTrkMuArb, nGlbMuLoose, nGlbMuMedium, nGlbMuTight;
+  Int_t nRPCMuon, nRPCMuMedium, nRPCMuLoose, nRPCMuTight;
 
   TH1F* hNMuon_;
   TH1F* hNRPCMuon_;
   TH1F* hNGlbPromptT_;
   TH1F* hNRPCMuMedium_;
-  TH1F* hNTrkArbitrated_;
+  TH1F* hNTrkMuArb_;
   TH1F* hNRPCMuLoose_;
   TH1F* hNRPCMuTight_;
   TH1F* hNGlbMuTight_;
+  TH1F* hNTrkMuon_;
 
   TH2F* hIdCorrelation_;
   TH2F* hIdCorrelationB_;
@@ -76,31 +95,44 @@ RPCMuonAnalyzer::RPCMuonAnalyzer(const edm::ParameterSet& pset)
   tree_->Branch("eventNumber",  &eventNumber,  "eventNumber/I");
   tree_->Branch("nMuon",        &nMuon,        "nMuon/I");
   tree_->Branch("nSelMuon",     &nSelMuon,     "nSelMuon/I");
-  tree_->Branch("muPt",         &muPt,         "muPt/D");
-  tree_->Branch("muP",          &muP,          "muP/D");
-  tree_->Branch("muEta",        &muEta,        "muEta/D");
-  tree_->Branch("muPhi",        &muPhi,        "muPhi/D");
-  tree_->Branch("trkMu",        &trkMu,        "trkMu/B");
-  tree_->Branch("trkMuArb",     &trkMuArb,     "trkMuArb/B");
-  tree_->Branch("rpcMu",        &rpcMu,        "rpcMu/B");
-  tree_->Branch("rpcMuLoose",   &rpcMuLoose,   "rpcMuLoose/B");
-  tree_->Branch("rpcMuMedium",  &rpcMuMedium,  "rpcMuMedium/B");
-  tree_->Branch("rpcMuTight",   &rpcMuTight,   "rpcMuTight/B");
-  tree_->Branch("staMu",        &staMu,        "staMu/B");
-  tree_->Branch("glbMu",        &glbMu,        "glbMu/B");
-  tree_->Branch("glbMuLoose",   &glbMuLoose,   "glbMuLoose/B");
-  tree_->Branch("glbMuPromptT", &glbMuPromptT, "glbMuPromptT/B");
-  tree_->Branch("glbMuMedium",  &glbMuMedium,  "glbMuMedium/B");
-  tree_->Branch("glbMuTight",   &glbMuTight,   "glbMuTight/B");
+  tree_->Branch("nRPCMuon",     &nRPCMuon,     "nRPCMuon/I");
+  tree_->Branch("nRPCMuLoose",  &nRPCMuLoose,  "nRPCMuLoose/I");
+  tree_->Branch("nRPCMuMedium", &nRPCMuMedium, "nRPCMuMedium/I");
+  tree_->Branch("nRPCMuTight",  &nRPCMuTight,  "nRPCMuTight/I");
+  tree_->Branch("nStaMuon",     &nStaMuon,     "nStaMuon/I");
+  tree_->Branch("nTrkMuon",     &nTrkMuon,     "nTrkMuon/I");
+  tree_->Branch("nTrkMuArb",    &nTrkMuArb,    "nTrkMuArb/I");
+  tree_->Branch("nGlbMuon",     &nGlbMuon,     "nGlbMuon/I");
+  tree_->Branch("nGlbMuLoose",  &nGlbMuLoose,  "nGlbMuLoose/I");
+  tree_->Branch("nGlbMuMedium", &nGlbMuMedium, "nGlbMuMedium/I");
+  tree_->Branch("nGlbMuTight",  &nGlbMuTight,  "nGlbMuTight/I");
+  tree_->Branch("nGlbPromptT",  &nGlbPromptT,  "nGlbPromptT/I");
+  tree_->Branch("muPt",         &muPt);
+  tree_->Branch("muP",          &muP);
+  tree_->Branch("muEta",        &muEta);
+  tree_->Branch("muPhi",        &muPhi);
+  tree_->Branch("trkMu",        &trkMu);
+  tree_->Branch("trkMuArb",     &trkMuArb);
+  tree_->Branch("rpcMu",        &rpcMu);
+  tree_->Branch("rpcMuLoose",   &rpcMuLoose);
+  tree_->Branch("rpcMuMedium",  &rpcMuMedium);
+  tree_->Branch("rpcMuTight",   &rpcMuTight);
+  tree_->Branch("staMu",        &staMu);
+  tree_->Branch("glbMu",        &glbMu);
+  tree_->Branch("glbMuLoose",   &glbMuLoose);
+  tree_->Branch("glbMuPromptT", &glbMuPromptT);
+  tree_->Branch("glbMuMedium",  &glbMuMedium);
+  tree_->Branch("glbMuTight",   &glbMuTight);
 
   hNMuon_       = fs->make<TH1F>("hNMuon"      , "Number of muons;Number of muons", 10, 0, 10);
   hNRPCMuon_    = fs->make<TH1F>("hNRPCMuon"   , "Number of RPC muons;Number of muons", 10, 0, 10);
   hNGlbPromptT_ = fs->make<TH1F>("hNGlbPromptT", "Number of GlobalMuPromptTight muons;Number of muons", 10, 0, 10);
   hNRPCMuMedium_ = fs->make<TH1F>("hNRPCMuMedium", "Number of RPCMuMedium muons;Number of muons", 10, 0, 10);
-  hNTrkArbitrated_ = fs->make<TH1F>("hNTrkArbitrated", "Number of TrkMuArbitrated muons;Number of muons", 10, 0, 10);
-  hNRPCMuLoose_  = fs->make<TH1F>("hNRPCMuLoose"   , "Number of RPC muons;Number of muons", 10, 0, 10);
-  hNRPCMuTight_  = fs->make<TH1F>("hNRPCMuTight"   , "Number of RPC muons;Number of muons", 10, 0, 10);
-  hNGlbMuTight_  = fs->make<TH1F>("hNGlbMuTight"   , "Number of RPC muons;Number of muons", 10, 0, 10);
+  hNTrkMuArb_    = fs->make<TH1F>("hNTrkMuArb"  , "Number of TrkMuArbitrated muons;Number of muons", 10, 0, 10);
+  hNRPCMuLoose_  = fs->make<TH1F>("hNRPCMuLoose", "Number of RPCMuLoose;Number of muons", 10, 0, 10);
+  hNRPCMuTight_  = fs->make<TH1F>("hNRPCMuTight", "Number of RPCMuTight;Number of muons", 10, 0, 10);
+  hNGlbMuTight_  = fs->make<TH1F>("hNGlbMuTight", "Number of GlbMuTight;Number of muons", 10, 0, 10);
+  hNTrkMuon_     = fs->make<TH1F>("hNTrkMuon"   , "Number of Tracker muons;Number of muons", 10, 0, 10);
 
   const char* idNames[] = {
     "All", "AllGlbMu", "AllStaMu", "AllTrkMu", "AllRPCMu", "RPCMuLoose", "RPCMuMedium", "RPCMuTight", "TrkMuArbitrated", "GlbMuLoose", "GlbPromptTight", "GlbMuMedium", "GlbMuTight"
@@ -137,22 +169,36 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
   edm::Handle<edm::View<reco::Muon> > muonHandle;
   event.getByLabel(muonLabel_, muonHandle);
   
+  muPt.clear();
+  muP.clear();
+  muEta.clear();
+  muPhi.clear();
+
+  trkMu.clear();
+  trkMuArb.clear();
+  rpcMu.clear();
+  rpcMuLoose.clear();
+  rpcMuMedium.clear();
+  rpcMuTight.clear();
+  staMu.clear();
+  glbMu.clear();
+  glbMuLoose.clear();
+  glbMuPromptT.clear();
+  glbMuMedium.clear();
+  glbMuTight.clear();
+
   nMuon = muonHandle->size(); nSelMuon = 0;
-  int nGlbPromptT = 0, nTrkArbitrated = 0, nGlbMuTight = 0;
-  int nRPCMuon = 0, nRPCMuMedium = 0, nRPCMuLoose = 0, nRPCMuTight = 0;
+  nGlbMuon = 0, nStaMuon = 0, nTrkMuon = 0;
+  nGlbPromptT = 0, nTrkMuArb = 0, nGlbMuLoose = 0, nGlbMuMedium = 0, nGlbMuTight = 0;
+  nRPCMuon = 0, nRPCMuMedium = 0, nRPCMuLoose = 0, nRPCMuTight = 0;
   for ( edm::View<reco::Muon>::const_iterator muon = muonHandle->begin();
         muon != muonHandle->end(); ++muon )
   {
 
-    glbMu = staMu = trkMu = rpcMu = rpcMuLoose = rpcMuMedium = rpcMuTight = trkMuArb = glbMuLoose = glbMuPromptT = glbMuMedium = glbMuTight = false; 
     if ( muon->pt() < minPtTrk_ ) continue; 
     const double abseta = abs(muon->eta());
     if ( abseta > maxEtaTrk_ ) continue;
 
-    muPt = muon->pt();
-    muP  = muon->p();
-    muEta = muon->eta();
-    muPhi = muon->phi(); 
     std::cout << " * Muon Pt = " << muon->pt() << ", P = " << muon->p() << ", Eta = " << muon->eta() << ", Phi = " << muon->phi() << std::endl;
 
     const bool idFlags[] = {
@@ -181,27 +227,45 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
     // or
     //GlobalMuonPromptTight && muon->numberOfMatchedStations(reco::Muon::SegmentAndTrackArbitration)>1
     //
-    //--Note for Z MC: 100% efficient with muon.globalTrack()->hitPattern().numberOfValidMuonHits()>0 because of "GlobalMuLoose = GlobalMuonPromptTight" and "GlobalMuMedium = GlobalMuTight"
+    //--Note for Z MC: how efficient with muon.globalTrack()->hitPattern().numberOfValidMuonHits()>0? e.g, "GlobalMuLoose vs. GlobalMuonPromptTight" and "GlobalMuMedium vs. GlobalMuTight"
 
     ++nSelMuon;
-    if ( idFlags[1] ) glbMu = true;
-    if ( idFlags[2] ) staMu = true;
-    if ( idFlags[3] ) trkMu = true;
+    if ( idFlags[1] ) ++nGlbMuon;
+    if ( idFlags[2] ) ++nStaMuon;
+    if ( idFlags[3] ) ++nTrkMuon;
 
     if ( idFlags[4] )
     {
-      ++nRPCMuon; rpcMu = true;
+      ++nRPCMuon;
 
-      if ( idFlags[5] ) { ++nRPCMuLoose;  rpcMuLoose  = true; }
-      if ( idFlags[6] ) { ++nRPCMuMedium; rpcMuMedium = true; }
-      if ( idFlags[7] ) { ++nRPCMuTight;  rpcMuTight  = true; }
+      if ( idFlags[5] ) ++nRPCMuLoose;
+      if ( idFlags[6] ) ++nRPCMuMedium;
+      if ( idFlags[7] ) ++nRPCMuTight;
     }
 
-    if ( idFlags[8] )  { ++nTrkArbitrated; trkMuArb = true; }
-    if ( idFlags[9] ) glbMuLoose = true;
-    if ( idFlags[10] ) { ++nGlbPromptT;    glbMuPromptT = true; }
-    if ( idFlags[11] ) glbMuMedium = true;
-    if ( idFlags[12] ) { ++nGlbMuTight; glbMuTight = true; }
+    if ( idFlags[8] ) ++nTrkMuArb;
+    if ( idFlags[9] ) ++nGlbMuLoose;
+    if ( idFlags[10] ) ++nGlbPromptT;
+    if ( idFlags[11] ) ++nGlbMuMedium;
+    if ( idFlags[12] ) ++nGlbMuTight;
+
+    muPt.push_back(muon->pt());
+    muP.push_back(muon->p());
+    muEta.push_back(muon->eta());
+    muPhi.push_back(muon->phi());
+
+    glbMu.push_back(idFlags[1]);
+    staMu.push_back(idFlags[2]);
+    trkMu.push_back(idFlags[3]);
+    rpcMu.push_back(idFlags[4]);
+    rpcMuLoose.push_back(idFlags[5]);
+    rpcMuMedium.push_back(idFlags[6]);
+    rpcMuTight.push_back(idFlags[7]);
+    trkMuArb.push_back(idFlags[8]);
+    glbMuLoose.push_back(idFlags[9]);
+    glbMuPromptT.push_back(idFlags[10]);
+    glbMuMedium.push_back(idFlags[11]);
+    glbMuTight.push_back(idFlags[12]);
 
     std::cout << " + idFlags [RPCMu, Loose, Medium, Tight] = " << idFlags[4] << " " << idFlags[5] << " " << idFlags[6] << " " << idFlags[7] << std::endl;
 
@@ -225,10 +289,11 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
   hNRPCMuon_->Fill(nRPCMuon);
   hNRPCMuMedium_->Fill(nRPCMuMedium);
   hNGlbPromptT_->Fill(nGlbPromptT);
-  hNTrkArbitrated_->Fill(nTrkArbitrated);
+  hNTrkMuArb_->Fill(nTrkMuArb);
   hNRPCMuLoose_->Fill(nRPCMuLoose);
   hNRPCMuTight_->Fill(nRPCMuTight);
   hNGlbMuTight_->Fill(nGlbMuTight);
+  hNTrkMuon_->Fill(nTrkMuon);
 
   tree_->Fill();
 
