@@ -10,7 +10,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     # IO parameters:
-    InputFileNames = cms.vstring("tree.root"),                                            
+    InputFileNames = cms.vstring("testTagProbeFitTreeProducer_ZMuMu.root"),                                            
     InputDirectoryName = cms.string("muonEffs"),
     InputTreeName = cms.string("fitter_tree"),
     OutputFileName = cms.string("testTagProbeFitTreeAnalyzer_ZMuMu.root"),
@@ -103,6 +103,27 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
             #BinToPDFmap = cms.vstring("twoVoigtians")
             #BinToPDFmap = cms.vstring("gaussPlusLinear")
         ),
+       
+        phi = cms.PSet(
+            EfficiencyCategoryAndState = cms.vstring("passingGlbIso","true"),
+            UnbinnedVariables = cms.vstring("mass"),
+            BinnedVariables = cms.PSet(
+                phi = cms.vdouble(-3.2, -2.56, -1.92, -1.28, -0.64, 0.0, 0.64, 1.28, 1.92, 2.56, 3.2),  
+                #phi = cms.vdouble(-3.2, -2.88, -2.56, -2.24, -1.92, -1.60, -1.28, -0.96, -0.64, -0.32, 0.0, 0.32, 0.64, 0.96, 1.28, 1.60, 1.92, 2.24, 2.56, 2.88, 3.2),
+            ),
+            BinToPDFmap = cms.vstring("breitWignerPlusExponential")
+        ),
+            
+#        eta_phi = cms.PSet(
+#            EfficiencyCategoryAndState =cms.vstring("passingGlbIso","true"),
+#            UnbinnedVariables = cms.vstring("mass"),
+#            BinnedVariables = cms.PSet(
+#                eta = cms.vdouble(-2.0, -1.6, -1.2, -0.8, -0.4, 0.0, 0.4, 0.8, 1.2, 1.6, 2.0),
+#                phi = cms.vdouble(-3.2, -2.56, -1.92, -1.28, -0.64, 0.0, 0.64, 1.28, 1.92, 2.56, 3.2),
+#                #phi = cms.vdouble(-3.2, -2.88, -2.56, -2.24, -1.92, -1.60, -1.28, -0.96, -0.64, -0.32, 0.0, 0.32, 0.64, 0.96, 1.28, 1.60, 1.92, 2.24, 2.56, 2.88),
+#            ),
+#            BinToPDFmap = cms.vstring("breitWignerPlusExponential")
+#        ),
     )
 )
 

@@ -6,11 +6,11 @@ import FWCore.ParameterSet.Config as cms
 ##  \___\___/|_| |_|___/\__\__,_|_| |_|\__|___/
 ##
 ################################################
-MC_flag = False
-#MC_flag = True
-GLOBAL_TAG = 'GR_R_42_V21A::All'
+#MC_flag = False
+MC_flag = True
+GLOBAL_TAG = 'GR_R_52_V8::All'
 if MC_flag:
-    GLOBAL_TAG = 'START42_V12::All'
+    GLOBAL_TAG = 'START52_V5::All'
 
 #HLTPath1 = "HLT_IsoMu24_v1"
 #HLTPath2 = "HLT_IsoMu24_v8"
@@ -23,7 +23,7 @@ JET_CUTS = "abs(eta)<2.6 && chargedHadronEnergyFraction>0 && electronEnergyFract
 
 process = cms.Process("TagProbe")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-process.load("Configuration.StandardSequences.Geometry_cff")
+process.load("Configuration.StandardSequences.GeometryDB_cff")
 process.GlobalTag.globaltag = GLOBAL_TAG
 
 ######### EXAMPLE CFG 
@@ -50,68 +50,10 @@ process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
 
 process.source = cms.Source("PoolSource", 
     fileNames = cms.untracked.vstring(
-        'file:/korserv001/ehkwon/SingleMu_2011B_RECO_PromptReco-v1_175834/0201AF20-BFDB-E011-A808-0019B9F72F97.root',
-        #'file:/korserv001/ehkwon/SingleMu_2011B_RECO_PromptReco-v1_175834/346EC6A2-8BDB-E011-8437-003048F11C5C.root',
-        #'file:/korserv001/ehkwon/SingleMu_2011B_RECO_PromptReco-v1_175834/409BF93C-8ADB-E011-BEE9-003048F117EA.root',
-        #'file:/korserv001/ehkwon/SingleMu_2011B_RECO_PromptReco-v1_175834/42512260-6DDB-E011-944D-001D09F231C9.root',
-        #'file:/korserv001/ehkwon/SingleMu_2011B_RECO_PromptReco-v1_175834/48BC67A0-A3DB-E011-B31F-BCAEC532972E.root',
-        #'file:/korserv001/ehkwon/SingleMu_2011B_RECO_PromptReco-v1_175834/5CBF4E7E-90DB-E011-B235-BCAEC5329709.root',
-        #'file:/korserv001/ehkwon/SingleMu_2011B_RECO_PromptReco-v1_175834/8EC621FE-D6DB-E011-A210-001D09F2512C.root',
-        #'file:/korserv001/ehkwon/SingleMu_2011B_RECO_PromptReco-v1_175834/A044F736-70DB-E011-82A8-BCAEC518FF91.root',
-        #'file:/korserv001/ehkwon/SingleMu_2011B_RECO_PromptReco-v1_175834/A6BE5182-90DB-E011-A54E-BCAEC518FF3C.root',
-        #'file:/korserv001/ehkwon/SingleMu_2011B_RECO_PromptReco-v1_175834/A8DD1F32-7EDB-E011-A951-003048F118C6.root',
-        #'file:/korserv001/ehkwon/SingleMu_2011B_RECO_PromptReco-v1_175834/BA65A25D-6DDB-E011-9DB9-003048F118AC.root'
-        
-        #'rfio:/castor/cern.ch/user/e/ehkwon/Skim/MC/DYToMuMu_M-20_TuneZ2_7TeV-pythia6/SingleMuSkim_9_1_iKA.root',
-        #'rfio:/castor/cern.ch/user/e/ehkwon/Skim/MC/DYToMuMu_M-20_TuneZ2_7TeV-pythia6/SingleMuSkim_2150_1_Tmw.root'
-        
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_1.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_2.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_3.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_4.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_5.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_6.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_7.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_8.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_9.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_10.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_11.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_12.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_13.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_14.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_15.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_16.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_17.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_18.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_19.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_20.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_21.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_22.root',
-        #'file:/korserv001/ehkwon/MC/DYToMuMu_M60_RECO_Eta16_oldCLS_23.root'
-        
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_0.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_1.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_2.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_3.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_4.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_5.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_6.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_7.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_8.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_9.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_10.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_11.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_12.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_13.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_14.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_15.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_16.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_17.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_18.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_19.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_20.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_21.root',
-        #'/../user/e/ehkwon/Skim/2012Jan20_MC/ZMuSkim_22.root'
+        '/store/relval/CMSSW_5_2_3/RelValZMM/GEN-SIM-RECO/START52_V5-v1/0043/0E187509-0D7A-E111-8FA3-001A928116C2.root',
+        '/store/relval/CMSSW_5_2_3/RelValZMM/GEN-SIM-RECO/START52_V5-v1/0043/1011EE9E-2B7A-E111-9349-0018F3D0970C.root',
+        '/store/relval/CMSSW_5_2_3/RelValZMM/GEN-SIM-RECO/START52_V5-v1/0043/5CAA0235-0F7A-E111-BA3E-0018F3D09690.root',
+        '/store/relval/CMSSW_5_2_3/RelValZMM/GEN-SIM-RECO/START52_V5-v1/0043/A29B9025-0E7A-E111-97E7-001A928116DE.root',
     )
 )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )    
@@ -138,9 +80,14 @@ process.PassingHLT = cms.EDProducer("trgMatchedMuonProducer",
                                     triggerResultsTag = cms.untracked.InputTag("TriggerResults","",HLTProcessName)
                                     )
 
-for version in range(1,11):
-    process.PassingHLT.hltTags.append(cms.InputTag("HLT_IsoMu24_v%d::%s" % (version, HLTProcessName)))
-    process.ZMuHLTFilter.HLTPaths.append("HLT_IsoMu24_v%d" % version)
+for version in range(1,21):
+    process.PassingHLT.hltTags.append(cms.InputTag("HLT_IsoMu24_eta2p1_v%d::%s" % (version, HLTProcessName)))
+    process.ZMuHLTFilter.HLTPaths.append("HLT_IsoMu24_eta2p1_v%d" % version)
+    #process.ZMuHLTFilter.HLTPaths.append("HLT_IsoMu20_eta2p1_v%d" % version)
+    #process.ZMuHLTFilter.HLTPaths.append("HLT_IsoMu30_eta2p1_v%d" % version)
+    #process.ZMuHLTFilter.HLTPaths.append("HLT_IsoMu34_eta2p1_v%d" % version)
+    #process.ZMuHLTFilter.HLTPaths.append("HLT_IsoMu40_eta2p1_v%d" % version)
+    ##process.ZMuHLTFilter.HLTPaths.append("HLT_Mu24_eta2p1_v%d" % version)
     
 ## Tags. In a real analysis we should require that the tag muon fires the trigger, 
 ##       that's easy with PAT muons but not RECO/AOD ones, so we won't do it here
