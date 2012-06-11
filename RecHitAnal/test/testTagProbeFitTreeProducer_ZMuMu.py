@@ -226,6 +226,7 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
         ## methods of reco::Candidate
         eta = cms.string("eta"),
         pt  = cms.string("pt"),
+        phi = cms.string("phi"),
         ## a method of the reco::Muon object (thanks to the 3.4.X StringParser)
         nsegm_old = cms.string("numberOfMatches"),
         nsegm = cms.string("numberOfMatchedStations"), 
