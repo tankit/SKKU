@@ -34,6 +34,20 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
+#process.hltTrigReport = cms.EDAnalyzer( 'HLTrigReport',
+#    HLTriggerResults = cms.InputTag( 'TriggerResults','','HLT' )
+#)
+#process.HLTAnalyzerEndpath = cms.EndPath( process.hltTrigReport )
+#process.MessageLogger.categories.append("HLTrigReport")
+
+# Good vertex requirement
+process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
+                                           vertexCollection = cms.InputTag('offlinePrimaryVertices'),
+                                           minimumNDOF = cms.uint32(4) ,
+                                           maxAbsZ = cms.double(24),
+                                           maxd0 = cms.double(2)
+                                           )
+
 process.source = cms.Source("PoolSource", 
     fileNames = cms.untracked.vstring(
         'file:/korserv001/ehkwon/SingleMu_2011B_RECO_PromptReco-v1_175834/0201AF20-BFDB-E011-A808-0019B9F72F97.root',
@@ -246,6 +260,7 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
 ## 'A*B' means 'B needs output of A'; # 'A+B' means 'if you want you can re-arrange the order'
 if MC_flag:
     process.tagAndProbe = cms.Path(
+        process.primaryVertexFilter *
         process.HLTFilter *
         process.PassingHLT *
         process.glbMuons *
@@ -256,6 +271,7 @@ if MC_flag:
     )
 else:
     process.tagAndProbe = cms.Path(
+        process.primaryVertexFilter *
         process.HLTFilter *
         process.PassingHLT *
         process.glbMuons *

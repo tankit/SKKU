@@ -38,12 +38,18 @@ process.load("Geometry.CommonDetUnit.globalTrackingGeometry_cfi")
 process.load("TrackPropagation.SteppingHelixPropagator.SteppingHelixPropagatorAny_cfi")
 process.load("TrackPropagation.SteppingHelixPropagator.SteppingHelixPropagatorAlong_cfi")
 process.load("TrackPropagation.SteppingHelixPropagator.SteppingHelixPropagatorOpposite_cfi")
-##process.GlobalTag.globaltag = cms.string('GR_R_42_V14::All')
-#process.GlobalTag.globaltag = cms.string('GR_R_42_V21A::All')
-#process.GlobalTag.globaltag = cms.string('START42_V12::All')
+
 process.GlobalTag.globaltag = GLOBAL_TAG
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+
+# Good vertex requirement
+process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
+                                           vertexCollection = cms.InputTag('offlinePrimaryVertices'),
+                                           minimumNDOF = cms.uint32(4) ,
+                                           maxAbsZ = cms.double(24),
+                                           maxd0 = cms.double(2)
+                                           )
 
 process.source = cms.Source("PoolSource", 
                             fileNames = cms.untracked.vstring(
@@ -380,6 +386,7 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
 ##                         
 if MC_flag:
     process.tagAndProbe = cms.Path(
+        process.primaryVertexFilter *
         process.HLTFilter *
         (process.muontrackingNoRPC+process.muonIdProducerSequenceNoRPC) *
         process.promptMuons *
@@ -408,6 +415,7 @@ if MC_flag:
     )
 else:
     process.tagAndProbe = cms.Path(
+        process.primaryVertexFilter *
         process.HLTFilter *
         #process.runfilter *
         (process.muontrackingNoRPC+process.muonIdProducerSequenceNoRPC) *
