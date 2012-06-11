@@ -111,7 +111,7 @@ process.muonsNoRPC.inputCollectionLabels = cms.VInputTag(
     cms.InputTag("globalMuonsNoRPC"),
     cms.InputTag("standAloneMuonsNoRPC","UpdatedAtVtx")
     )
-process.muonsNoRPC.fillGlobalTrackQuality = False
+process.muonsNoRPC.fillGlobalTrackQuality = cms.bool(False)
 
 process.muonIdProducerSequenceNoRPC = cms.Sequence(
     process.muonsNoRPC
