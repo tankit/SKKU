@@ -9,10 +9,10 @@
 #include <fstream.h>
 ////#include "/afs/cern.ch/user/m/mskim/public/styleTnP.h"
 
-void Effplot(TString var="eta", Float_t hmin = 0.0){
+void Effplot(TString var="eta", Float_t hmin = 0.0, Float_t hmax = 1.1){
 
-  gROOT->LoadMacro("./tdrStyle.C");
-  setTDRStyle();
+  //gROOT->LoadMacro("/afs/cern.ch/user/m/mskim/public/tdrStyle.C");
+  //setTDRStyle();
 
 //  using namespace std;
 //  ofstream fout; 
@@ -31,21 +31,7 @@ void Effplot(TString var="eta", Float_t hmin = 0.0){
   double Xmin = -1.8, Xmax = 1.8;
   Xmin = -2.0, Xmax = 2.0;
 
-//  TString FileIso="./data_eff.root", FileIso_mc="./mc_eff.root";
-//  TString FileIso="./Data_AbsEff_wRPC.root", FileIso_mc="./MC_AbsEff_wRPC.root";
-//  TString FileIso="./Data_eff_withRPC_loose.root", FileIso_2="./Data_eff_woRPC_loose.root";
-//  TString FileIso="./Data_eff_withRPC_medium.root", FileIso_2="./Data_eff_woRPC_medium.root";
-//  TString FileIso="./MC_eff_withRPC_loose.root", FileIso_2="./MC_eff_woRPC_loose.root";
-//  TString FileIso="./MC_eff_withRPC_medium.root",FileIso_2="./MC_eff_woRPC_medium.root";
-//  TString FileIso="./Data_eff_woRPC_loose.root", FileIso_2="./Data_eff_woRPC_medium.root";
-//  TString FileIso="./Data_eff_withRPC_tight.root", FileIso_2="./Data_eff_woRPC_tight.root";
-//  TString FileIso="./Eff_loose_wRPC.root", FileIso_2="./Eff_loose_woRPC.root"; 
-//  TString FileIso="./Eff_medium_wRPC.root", FileIso_2="./Eff_medium_woRPC.root"; 
-//  TString FileIso="./Eff_Data_loose_RPC_20120516.root", FileIso_2="./Eff_Data_loose_NoRPC_20120516.root";
-//  TString FileIso="./Eff_Data_medium_RPC_20120516.root", FileIso_2="./Eff_Data_medium_NoRPC_20120516.root";
-//  TString FileIso="./Eff_MC_loose_RPC_20120516.root", FileIso_2="./Eff_MC_loose_NoRPC_20120516.root";
-//  TString FileIso="./Eff_MC_medium_RPC_20120516.root", FileIso_2="./Eff_MC_medium_NoRPC_20120516.root";
-  TString FileIso="./Efficiency.root", FileIso_2="./Efficiency.root";
+  TString FileIso="./data_eff.root", FileIso_mc="./mc_eff.root";
 
   TString DirIso="muonEffs/"+var+"/fit_eff_plots";
 
@@ -54,8 +40,7 @@ void Effplot(TString var="eta", Float_t hmin = 0.0){
     Xmin = 20, Xmax = 100;
     xtitle = "Probe P_{t} (GeV/c)";
     htitle = "A RooPlot of Probe P_{t}";
-  }
-  else if(var=="phi") {
+  } else if(var=="phi") {
     Xmin = -3.2, Xmax = 3.2;
     xtitle = "Probe #phi";
     htitle = "A RooPlot of Probe #phi";
@@ -88,13 +73,10 @@ void Effplot(TString var="eta", Float_t hmin = 0.0){
   //////////////////////////////////////////////////////////////////////////
   
   cout << "///////////////////// Isolation (MC) ///////////////////////////" << endl;
-//  TFile * f_Iso_mc = new TFile(Form("%s",FileIso_mc.Data()));
-  TFile * f_Iso_mc = new TFile(Form("%s",FileIso_2.Data()));
-  
+  TFile * f_Iso_mc = new TFile(Form("%s",FileIso_mc.Data()));
   f_Iso_mc->cd(Form("%s",DirIso.Data()));
     
-//  TGraphAsymmErrors * gr_Isomc = new TGraphAsymmErrors();
-  TGraphAsymmErrors * gr_Iso2 = new TGraphAsymmErrors();
+  TGraphAsymmErrors * gr_Isomc = new TGraphAsymmErrors();
   TCanvas* c1 = (TCanvas*) gDirectory->FindKey(varDir)->ReadObj();
   TString obj1="";
   obj1 = "hxy_fit_eff";
@@ -109,11 +91,8 @@ void Effplot(TString var="eta", Float_t hmin = 0.0){
     double yerrlo = h1->GetErrorYlow(j);
     int eff =  h1->GetPoint(j,x,y);
     cout << "[" << x-xerrlo  << "," << x+xerrhi << "] "  << " eff (" << ibin << ") = " << y << " (+" << yerrhi << " -" << yerrlo << ")" << endl;
-//    gr_Isomc->SetPoint(j,x,y);
-//    gr_Isomc->SetPointError(j,xerrlo,xerrhi,yerrlo,yerrhi);          
-    
-    gr_Iso2->SetPoint(j,x,y);
-    gr_Iso2->SetPointError(j,xerrlo,xerrhi,yerrlo,yerrhi);
+    gr_Isomc->SetPoint(j,x,y);
+    gr_Isomc->SetPointError(j,xerrlo,xerrhi,yerrlo,yerrhi);          
   }
   
   /////////////////////////////////////////////////////////
@@ -121,7 +100,7 @@ void Effplot(TString var="eta", Float_t hmin = 0.0){
   gPad->SetFillColor(0);
 
   gr_Iso->GetXaxis()->SetLimits(Xmin,Xmax);
-  gr_Iso->SetMaximum(1.1);  
+  gr_Iso->SetMaximum(hmax);  
   gr_Iso->SetMinimum(hmin);
   gr_Iso->GetXaxis()->SetTitle(Form("%s",xtitle.Data()));
   gr_Iso->GetYaxis()->SetTitle(Form("%s",ytitle.Data()));
@@ -132,21 +111,20 @@ void Effplot(TString var="eta", Float_t hmin = 0.0){
   //gr_Iso->SetMarkerSize(1.1);
   gr_Iso->SetMarkerStyle(20);
 
-//  gr_Isomc->SetLineColor(2);
-//  gr_Isomc->SetMarkerColor(2);
-//  gr_Isomc->SetLineWidth(2);
-//  //gr_Isomc->SetMarkerSize(1.1);
-//  gr_Isomc->SetMarkerStyle(24);
+  gr_Isomc->GetXaxis()->SetLimits(Xmin,Xmax);
+  gr_Isomc->SetMaximum(hmax);
+  gr_Isomc->SetMinimum(hmin);
+  gr_Isomc->GetXaxis()->SetTitle(Form("%s",xtitle.Data()));
+  gr_Isomc->GetYaxis()->SetTitle(Form("%s",ytitle.Data()));
 
-  gr_Iso2->SetLineColor(2);
-  gr_Iso2->SetMarkerColor(2);
-  gr_Iso2->SetLineWidth(2);
-  gr_Iso2->SetMarkerStyle(24);
-
+  gr_Isomc->SetLineColor(2);
+  gr_Isomc->SetMarkerColor(2);
+  gr_Isomc->SetLineWidth(2);
+  //gr_Isomc->SetMarkerSize(1.1);
+  gr_Isomc->SetMarkerStyle(24);
 
   gr_Iso->Draw("APZ"); 
-//  gr_Isomc->Draw("PZsame"); 
-  gr_Iso2->Draw("PZsame");
+  gr_Isomc->Draw("PZsame"); 
   //TLegend *lIso= new TLegend(0.83,0.82,0.95,0.92);
   TLegend *lIso= new TLegend(0.5,0.2,0.75,0.3);
   lIso->SetBorderSize(0);
@@ -157,12 +135,9 @@ void Effplot(TString var="eta", Float_t hmin = 0.0){
   lIso->SetLineWidth(0.5);
   lIso->SetFillColor(0);
   lIso->SetFillStyle(1001);
-  
-//  lIso->AddEntry(gr_Isomc,"  MC","PL");
-//  lIso->AddEntry(gr_Iso,"  Data","PL");
-  
-  lIso->AddEntry(gr_Iso,"  with RPC", "PL");
-  lIso->AddEntry(gr_Iso2,"  w/o RPC", "PL");
+
+  lIso->AddEntry(gr_Isomc,"  MC","PL");
+  lIso->AddEntry(gr_Iso,"  Data","PL");
 
   lIso->Draw();
 
