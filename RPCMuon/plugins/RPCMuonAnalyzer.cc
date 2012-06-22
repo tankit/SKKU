@@ -61,6 +61,12 @@ private:
   std::vector<bool> glbMuPromptT;
   std::vector<bool> glbMuMedium;
   std::vector<bool> glbMuTight;
+  std::vector<int> nMatchesSegNoArb;
+  std::vector<int> nStationSegNoArb;
+  std::vector<int> nMatchesSegTrkArb;
+  std::vector<int> nStationSegTrkArb;
+  std::vector<int> nMatchesRPCTrkArb;
+  std::vector<int> nStationRPCTrkArb;
 
   Int_t runNumber, eventNumber, nMuon, nSelMuon;
   Int_t nGlbMuon, nStaMuon, nTrkMuon;
@@ -123,6 +129,12 @@ RPCMuonAnalyzer::RPCMuonAnalyzer(const edm::ParameterSet& pset)
   tree_->Branch("glbMuPromptT", &glbMuPromptT);
   tree_->Branch("glbMuMedium",  &glbMuMedium);
   tree_->Branch("glbMuTight",   &glbMuTight);
+  tree_->Branch("nMatchesSegNoArb",  &nMatchesSegNoArb);
+  tree_->Branch("nStationSegNoArb",  &nStationSegNoArb);
+  tree_->Branch("nMatchesSegTrkArb", &nMatchesSegTrkArb);
+  tree_->Branch("nStationSegTrkArb", &nStationSegTrkArb);
+  tree_->Branch("nMatchesRPCTrkArb", &nMatchesRPCTrkArb);
+  tree_->Branch("nStationRPCTrkArb", &nStationRPCTrkArb);
 
   hNMuon_       = fs->make<TH1F>("hNMuon"      , "Number of muons;Number of muons", 10, 0, 10);
   hNRPCMuon_    = fs->make<TH1F>("hNRPCMuon"   , "Number of RPC muons;Number of muons", 10, 0, 10);
@@ -186,6 +198,13 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
   glbMuPromptT.clear();
   glbMuMedium.clear();
   glbMuTight.clear();
+
+  nMatchesSegNoArb.clear();
+  nStationSegNoArb.clear();
+  nMatchesSegTrkArb.clear();
+  nStationSegTrkArb.clear();
+  nMatchesRPCTrkArb.clear();
+  nStationRPCTrkArb.clear();
 
   nMuon = muonHandle->size(); nSelMuon = 0;
   nGlbMuon = 0, nStaMuon = 0, nTrkMuon = 0;
@@ -266,6 +285,13 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
     glbMuPromptT.push_back(idFlags[10]);
     glbMuMedium.push_back(idFlags[11]);
     glbMuTight.push_back(idFlags[12]);
+
+    nMatchesSegNoArb.push_back(muon->numberOfMatches(reco::Muon::NoArbitration));
+    nStationSegNoArb.push_back(muon->numberOfMatchedStations(reco::Muon::NoArbitration));
+    nMatchesSegTrkArb.push_back(muon->numberOfMatches(reco::Muon::SegmentAndTrackArbitration));
+    nStationSegTrkArb.push_back(muon->numberOfMatchedStations(reco::Muon::SegmentAndTrackArbitration));
+    nMatchesRPCTrkArb.push_back(muon->numberOfMatches(reco::Muon::RPCHitAndTrackArbitration));
+    nStationRPCTrkArb.push_back(muon->numberOfMatchedStations(reco::Muon::RPCHitAndTrackArbitration));
 
     std::cout << " + idFlags [RPCMu, Loose, Medium, Tight] = " << idFlags[4] << " " << idFlags[5] << " " << idFlags[6] << " " << idFlags[7] << std::endl;
 
