@@ -91,7 +91,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
             #specifies the binning of parameters
             BinnedVariables = cms.PSet(
                 #pt = cms.vdouble(20, 30, 40, 50, 60, 100, 250)
-                pt = cms.vdouble(20, 25, 30, 35, 40, 45, 50, 55, 60, 80, 100, 150, 250)
+                pt = cms.vdouble(20, 25, 30, 35, 40, 45, 50, 55, 60, 100, 250)
             ),
             #first string is the default followed by binRegExp - PDFname pairs
             BinToPDFmap = cms.vstring("twoVoigtians")
