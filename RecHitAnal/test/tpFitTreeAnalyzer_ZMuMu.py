@@ -29,7 +29,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         mass = cms.vstring("Tag-Probe Mass", "75.0", "115.0", "GeV/c^{2}"),
         pt = cms.vstring("Probe p_{T}", "20", "500", "GeV/c"),
         eta = cms.vstring("Probe #eta", "-1.8", "1.8", ""),
-        phi = cms.vstring("Probe #phi", "-3.14", "3.14", "radian")
+        phi = cms.vstring("Probe #phi", "-3.14", "3.14", "radian"),
     ),
 
     # defines all the discrete variables of the probes available in the input tree and intended for use in the efficiency calculations
