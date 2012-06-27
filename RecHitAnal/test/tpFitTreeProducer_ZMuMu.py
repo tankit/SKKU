@@ -244,7 +244,7 @@ process.trackProbes = cms.EDFilter("CandViewRefSelector",
 # MUON ID
 ############
 
-process.LooseMuons = cms.EDFilter("MuonRefSelector",
+process.MediumMuons = cms.EDFilter("MuonRefSelector",
                                   src = cms.InputTag("promptMuons"),
                                   cut = cms.string("isGlobalMuon"
                                                    #"&& numberOfMatchedStations > 1"
@@ -258,7 +258,7 @@ process.LooseMuons = cms.EDFilter("MuonRefSelector",
                                   )
 
 
-process.LooseMuonsNoRPC = cms.EDFilter("MuonRefSelector",
+process.MediumMuonsNoRPC = cms.EDFilter("MuonRefSelector",
                                        src = cms.InputTag("promptMuonsNoRPC"),
                                        cut = cms.string("isGlobalMuon"
                                                         #"&& numberOfMatchedStations > 1"
@@ -272,7 +272,7 @@ process.LooseMuonsNoRPC = cms.EDFilter("MuonRefSelector",
                                        )
 
 
-process.MediumMuons = cms.EDFilter("MuonRefSelector",
+process.TightMuons = cms.EDFilter("MuonRefSelector",
                                   src = cms.InputTag("promptMuons"),
                                   cut = cms.string("isGlobalMuon"
                                                    "&& numberOfMatchedStations > 1"
@@ -286,7 +286,7 @@ process.MediumMuons = cms.EDFilter("MuonRefSelector",
                                    )
 
 
-process.MediumMuonsNoRPC = cms.EDFilter("MuonRefSelector",
+process.TightMuonsNoRPC = cms.EDFilter("MuonRefSelector",
                                        src = cms.InputTag("promptMuonsNoRPC"),
                                        cut = cms.string("isGlobalMuon"
                                                         "&& numberOfMatchedStations > 1"
@@ -304,34 +304,6 @@ process.MediumMuonsNoRPC = cms.EDFilter("MuonRefSelector",
 ########################
 # MATCH TRACK AND MUONS
 ########################
-
-process.tkToLooseMuons = cms.EDProducer("MatcherUsingTracks",
-                                     src     = cms.InputTag("promptTrackCands"), # all tracks are available for matching
-                                     matched = cms.InputTag("LooseMuons"), # to all global muons
-                                     algorithm = cms.string("byDirectComparison"), # check that they
-                                     srcTrack = cms.string("tracker"),             # have the same
-                                     srcState = cms.string("atVertex"),            # tracker track
-                                     matchedTrack = cms.string("tracker"),         # can't check ref
-                                     matchedState = cms.string("atVertex"),        # because of the
-                                     maxDeltaR        = cms.double(0.01),          # embedding.
-                                     maxDeltaLocalPos = cms.double(0.01),
-                                     maxDeltaPtRel    = cms.double(0.01),
-                                     sortBy           = cms.string("deltaR"),
-                                     )
-
-process.tkToLooseMuonsNoRPC = cms.EDProducer("MatcherUsingTracks",
-                                     src     = cms.InputTag("promptTrackCands"), # all tracks are available for matching
-                                     matched = cms.InputTag("LooseMuonsNoRPC"), # to all global muons
-                                     algorithm = cms.string("byDirectComparison"), # check that they
-                                     srcTrack = cms.string("tracker"),             # have the same
-                                     srcState = cms.string("atVertex"),            # tracker track
-                                     matchedTrack = cms.string("tracker"),         # can't check ref
-                                     matchedState = cms.string("atVertex"),        # because of the
-                                     maxDeltaR        = cms.double(0.01),          # embedding.
-                                     maxDeltaLocalPos = cms.double(0.01),
-                                     maxDeltaPtRel    = cms.double(0.01),
-                                     sortBy           = cms.string("deltaR"),
-                                     )
 
 process.tkToMediumMuons = cms.EDProducer("MatcherUsingTracks",
                                      src     = cms.InputTag("promptTrackCands"), # all tracks are available for matching
@@ -361,16 +333,34 @@ process.tkToMediumMuonsNoRPC = cms.EDProducer("MatcherUsingTracks",
                                      sortBy           = cms.string("deltaR"),
                                      )
 
+process.tkToTightMuons = cms.EDProducer("MatcherUsingTracks",
+                                     src     = cms.InputTag("promptTrackCands"), # all tracks are available for matching
+                                     matched = cms.InputTag("TightMuons"), # to all global muons
+                                     algorithm = cms.string("byDirectComparison"), # check that they
+                                     srcTrack = cms.string("tracker"),             # have the same
+                                     srcState = cms.string("atVertex"),            # tracker track
+                                     matchedTrack = cms.string("tracker"),         # can't check ref
+                                     matchedState = cms.string("atVertex"),        # because of the
+                                     maxDeltaR        = cms.double(0.01),          # embedding.
+                                     maxDeltaLocalPos = cms.double(0.01),
+                                     maxDeltaPtRel    = cms.double(0.01),
+                                     sortBy           = cms.string("deltaR"),
+                                     )
 
-process.passingLooseMuons = cms.EDProducer("MatchedCandidateSelector",
-                                       src   = cms.InputTag("trackProbes"),
-                                       match = cms.InputTag("tkToLooseMuons"),
-                                       )
+process.tkToTightMuonsNoRPC = cms.EDProducer("MatcherUsingTracks",
+                                     src     = cms.InputTag("promptTrackCands"), # all tracks are available for matching
+                                     matched = cms.InputTag("TightMuonsNoRPC"), # to all global muons
+                                     algorithm = cms.string("byDirectComparison"), # check that they
+                                     srcTrack = cms.string("tracker"),             # have the same
+                                     srcState = cms.string("atVertex"),            # tracker track
+                                     matchedTrack = cms.string("tracker"),         # can't check ref
+                                     matchedState = cms.string("atVertex"),        # because of the
+                                     maxDeltaR        = cms.double(0.01),          # embedding.
+                                     maxDeltaLocalPos = cms.double(0.01),
+                                     maxDeltaPtRel    = cms.double(0.01),
+                                     sortBy           = cms.string("deltaR"),
+                                     )
 
-process.passingLooseMuonsNoRPC = cms.EDProducer("MatchedCandidateSelector",
-                                       src   = cms.InputTag("trackProbes"),
-                                       match = cms.InputTag("tkToLooseMuonsNoRPC"),
-                                       )
 
 process.passingMediumMuons = cms.EDProducer("MatchedCandidateSelector",
                                        src   = cms.InputTag("trackProbes"),
@@ -382,12 +372,26 @@ process.passingMediumMuonsNoRPC = cms.EDProducer("MatchedCandidateSelector",
                                        match = cms.InputTag("tkToMediumMuonsNoRPC"),
                                        )
 
+process.passingTightMuons = cms.EDProducer("MatchedCandidateSelector",
+                                       src   = cms.InputTag("trackProbes"),
+                                       match = cms.InputTag("tkToTightMuons"),
+                                       )
+
+process.passingTightMuonsNoRPC = cms.EDProducer("MatchedCandidateSelector",
+                                       src   = cms.InputTag("trackProbes"),
+                                       match = cms.InputTag("tkToTightMuonsNoRPC"),
+                                       )
+
 
 ## Combine Tags and Probes into Z candidates, applying a mass cut
 process.tpPairs = cms.EDProducer("CandViewShallowCloneCombiner",
     decay = cms.string("tagMuons@+ trackProbes@-"), # charge coniugate states are implied
     cut   = cms.string("40 < mass < 200"),
 )
+#process.tpPairs = cms.EDProducer("CandViewShallowCloneCombiner",
+#    decay = cms.string("tagMuons@+ probeMuons@-"), # charge coniugate states are implied
+#    cut   = cms.string("40 < mass < 200"),
+#)
 
 ## Match muons to MC
 process.muMcMatch = cms.EDProducer("MCTruthDeltaRMatcherNew",
@@ -420,10 +424,10 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
     flags = cms.PSet(
         ProbeCand = cms.InputTag("trackProbes"),
         PassingProbeMuons = cms.InputTag("probeMuons"),
-        PassingLooseMuons = cms.InputTag("passingLooseMuons"),
         PassingMediumMuons = cms.InputTag("passingMediumMuons"),
-        PassingLooseMuonsNoRPC = cms.InputTag("passingLooseMuonsNoRPC"),
-        passingMediumMuonsNoRPC = cms.InputTag("passingMediumMuonsNoRPC"),
+        PassingTightMuons = cms.InputTag("passingTightMuons"),
+        PassingMediumMuonsNoRPC = cms.InputTag("passingMediumMuonsNoRPC"),
+        passingTightMuonsNoRPC = cms.InputTag("passingTightMuonsNoRPC"),
         ## two defined by simple string cuts
         #passingGlb = cms.string("isGlobalMuon"),
         #passingIso = cms.string("(isolationR03.hadEt+isolationR03.emEt+isolationR03.sumPt) < 0.1 * pt"),
@@ -453,23 +457,23 @@ if MC_flag:
         process.promptMuonsNoRPC *
         process.PassingHLT *
         process.tightMuons *
-        process.tagMuons * process.probeMuons *
+        (process.tagMuons + process.probeMuons) *
         process.goodTracks *
         process.trackCands *
         process.promptTrackCands *
         process.trackProbes *
-        process.LooseMuons *
-        process.LooseMuonsNoRPC *
         process.MediumMuons *
         process.MediumMuonsNoRPC *
-        process.tkToLooseMuons *
-        process.tkToLooseMuonsNoRPC *
+        process.TightMuons *
+        process.TightMuonsNoRPC *
         process.tkToMediumMuons *
         process.tkToMediumMuonsNoRPC *
-        process.passingLooseMuons *
-        process.passingLooseMuonsNoRPC *
+        process.tkToTightMuons *
+        process.tkToTightMuonsNoRPC *
         process.passingMediumMuons *
         process.passingMediumMuonsNoRPC *
+        process.passingTightMuons *
+        process.passingTightMuonsNoRPC *
         (process.tpPairs + process.muMcMatch + process.muMcMatchProbe) *
         process.muonEffs
     )
@@ -483,23 +487,23 @@ else:
         process.promptMuonsNoRPC *
         process.PassingHLT *
         process.tightMuons *    
-        process.tagMuons * process.probeMuons *
+        (process.tagMuons + process.probeMuons) *
         process.goodTracks *
         process.trackCands *
         process.promptTrackCands *
         process.trackProbes *
-        process.LooseMuons *
-        process.LooseMuonsNoRPC *
         process.MediumMuons *
         process.MediumMuonsNoRPC *
-        process.tkToLooseMuons *
-        process.tkToLooseMuonsNoRPC *
+        process.TightMuons *
+        process.TightMuonsNoRPC *
         process.tkToMediumMuons *
         process.tkToMediumMuonsNoRPC *
-        process.passingLooseMuons *
-        process.passingLooseMuonsNoRPC *
+        process.tkToTightMuons *
+        process.tkToTightMuonsNoRPC *
         process.passingMediumMuons *
         process.passingMediumMuonsNoRPC *
+        process.passingTightMuons *
+        process.passingTightMuonsNoRPC *
         process.tpPairs *
         process.muonEffs
     )
