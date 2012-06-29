@@ -245,7 +245,7 @@ process.trackProbes = cms.EDFilter("CandViewRefSelector",
 # MUON ID
 ############
 
-process.MediumMuons = cms.EDFilter("MuonRefSelector",
+process.MediumTightMuons = cms.EDFilter("MuonRefSelector",
                                   src = cms.InputTag("promptMuons"),
                                   cut = cms.string("isGlobalMuon"
                                                    #"&& numberOfMatchedStations > 1"
@@ -259,7 +259,7 @@ process.MediumMuons = cms.EDFilter("MuonRefSelector",
                                   )
 
 
-process.MediumMuonsNoRPC = cms.EDFilter("MuonRefSelector",
+process.MediumTightMuonsNoRPC = cms.EDFilter("MuonRefSelector",
                                        src = cms.InputTag("promptMuonsNoRPC"),
                                        cut = cms.string("isGlobalMuon"
                                                         #"&& numberOfMatchedStations > 1"
@@ -307,9 +307,9 @@ process.TightMuonsNoRPC = cms.EDFilter("MuonRefSelector",
 ########################
 #--https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonAnalysisMuonAssociators
 
-process.tkToMediumMuons = cms.EDProducer("MatcherUsingTracks",
+process.tkToMediumTightMuons = cms.EDProducer("MatcherUsingTracks",
                                      src     = cms.InputTag("promptTrackCands"), # all tracks are available for matching
-                                     matched = cms.InputTag("MediumMuons"), # to all global muons
+                                     matched = cms.InputTag("MediumTightMuons"), # to all global muons
                                      algorithm = cms.string("byDirectComparison"), # check that they
                                      srcTrack = cms.string("tracker"),             # have the same
                                      srcState = cms.string("atVertex"),            # tracker track
@@ -321,9 +321,9 @@ process.tkToMediumMuons = cms.EDProducer("MatcherUsingTracks",
                                      sortBy           = cms.string("deltaR"),
                                      )
 
-process.tkToMediumMuonsNoRPC = cms.EDProducer("MatcherUsingTracks",
+process.tkToMediumTightMuonsNoRPC = cms.EDProducer("MatcherUsingTracks",
                                      src     = cms.InputTag("promptTrackCands"), # all tracks are available for matching
-                                     matched = cms.InputTag("MediumMuonsNoRPC"), # to all global muons
+                                     matched = cms.InputTag("MediumTightMuonsNoRPC"), # to all global muons
                                      algorithm = cms.string("byDirectComparison"), # check that they
                                      srcTrack = cms.string("tracker"),             # have the same
                                      srcState = cms.string("atVertex"),            # tracker track
@@ -364,14 +364,14 @@ process.tkToTightMuonsNoRPC = cms.EDProducer("MatcherUsingTracks",
                                      )
 
 
-process.passingMediumMuons = cms.EDProducer("MatchedCandidateSelector",
+process.passingMediumTightMuons = cms.EDProducer("MatchedCandidateSelector",
                                        src   = cms.InputTag("trackProbes"),
-                                       match = cms.InputTag("tkToMediumMuons"),
+                                       match = cms.InputTag("tkToMediumTightMuons"),
                                        )
 
-process.passingMediumMuonsNoRPC = cms.EDProducer("MatchedCandidateSelector",
+process.passingMediumTightMuonsNoRPC = cms.EDProducer("MatchedCandidateSelector",
                                        src   = cms.InputTag("trackProbes"),
-                                       match = cms.InputTag("tkToMediumMuonsNoRPC"),
+                                       match = cms.InputTag("tkToMediumTightMuonsNoRPC"),
                                        )
 
 process.passingTightMuons = cms.EDProducer("MatchedCandidateSelector",
@@ -426,10 +426,10 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
     flags = cms.PSet(
         ProbeCand = cms.InputTag("trackProbes"),
         PassingProbeMuons = cms.InputTag("probeMuons"),
-        PassingMediumMuons = cms.InputTag("passingMediumMuons"),
+        PassingMediumTightMuons = cms.InputTag("passingMediumTightMuons"),
         PassingTightMuons = cms.InputTag("passingTightMuons"),
-        PassingMediumMuonsNoRPC = cms.InputTag("passingMediumMuonsNoRPC"),
-        passingTightMuonsNoRPC = cms.InputTag("passingTightMuonsNoRPC"),
+        PassingMediumTightMuonsNoRPC = cms.InputTag("passingMediumTightMuonsNoRPC"),
+        PassingTightMuonsNoRPC = cms.InputTag("passingTightMuonsNoRPC"),
         ## two defined by simple string cuts
         #passingGlb = cms.string("isGlobalMuon"),
         #passingIso = cms.string("(isolationR03.hadEt+isolationR03.emEt+isolationR03.sumPt) < 0.1 * pt"),
@@ -464,16 +464,16 @@ if MC_flag:
         process.trackCands *
         process.promptTrackCands *
         process.trackProbes *
-        process.MediumMuons *
-        process.MediumMuonsNoRPC *
+        process.MediumTightMuons *
+        process.MediumTightMuonsNoRPC *
         process.TightMuons *
         process.TightMuonsNoRPC *
-        process.tkToMediumMuons *
-        process.tkToMediumMuonsNoRPC *
+        process.tkToMediumTightMuons *
+        process.tkToMediumTightMuonsNoRPC *
         process.tkToTightMuons *
         process.tkToTightMuonsNoRPC *
-        process.passingMediumMuons *
-        process.passingMediumMuonsNoRPC *
+        process.passingMediumTightMuons *
+        process.passingMediumTightMuonsNoRPC *
         process.passingTightMuons *
         process.passingTightMuonsNoRPC *
         (process.tpPairs + process.muMcMatch + process.muMcMatchProbe) *
@@ -494,16 +494,16 @@ else:
         process.trackCands *
         process.promptTrackCands *
         process.trackProbes *
-        process.MediumMuons *
-        process.MediumMuonsNoRPC *
+        process.MediumTightMuons *
+        process.MediumTightMuonsNoRPC *
         process.TightMuons *
         process.TightMuonsNoRPC *
-        process.tkToMediumMuons *
-        process.tkToMediumMuonsNoRPC *
+        process.tkToMediumTightMuons *
+        process.tkToMediumTightMuonsNoRPC *
         process.tkToTightMuons *
         process.tkToTightMuonsNoRPC *
-        process.passingMediumMuons *
-        process.passingMediumMuonsNoRPC *
+        process.passingMediumTightMuons *
+        process.passingMediumTightMuonsNoRPC *
         process.passingTightMuons *
         process.passingTightMuonsNoRPC *
         process.tpPairs *

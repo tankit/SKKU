@@ -35,10 +35,10 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     # defines all the discrete variables of the probes available in the input tree and intended for use in the efficiency calculations
     Categories = cms.PSet(
         #PassingMediumMuons = cms.vstring("", "dummy[pass=1,fail=0]")
-        #PassingMediumMuons = cms.vstring("PassingMediumMuons", "dummy[pass=1,fail=0]")
-        PassingMediumMuonsNoRPC = cms.vstring("passingMediumMuonsNoRPC", "dummy[pass=1,fail=0]")
+        #PassingMediumTightMuons = cms.vstring("PassingMediumTightMuons", "dummy[pass=1,fail=0]")
+        PassingMediumTightMuonsNoRPC = cms.vstring("PassingMediumTightMuonsNoRPC", "dummy[pass=1,fail=0]")
         #PassingTightMuons = cms.vstring("PassingTightMuons", "dummy[pass=1,fail=0]")
-        #passingTightMuonsNoRPC = cms.vstring("passingTightMuonsNoRPC", "dummy[pass=1,fail=0]")
+        #PassingTightMuonsNoRPC = cms.vstring("PassingTightMuonsNoRPC", "dummy[pass=1,fail=0]")
     ),
 
     # defines all the PDFs that will be available for the efficiency calculations; uses RooFit's "factory" syntax;
@@ -81,10 +81,10 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         #the name of the parameter set becomes the name of the directory
         pt = cms.PSet(
             #specifies the efficiency of which category and state to measure 
-            #EfficiencyCategoryAndState = cms.vstring("PassingMediumMuons","pass"),
-            EfficiencyCategoryAndState = cms.vstring("PassingMediumMuonsNoRPC","pass"),
+            #EfficiencyCategoryAndState = cms.vstring("PassingMediumTightMuons","pass"),
+            EfficiencyCategoryAndState = cms.vstring("PassingMediumTightMuonsNoRPC","pass"),
             #EfficiencyCategoryAndState = cms.vstring("PassingTightMuons","pass"),
-            #EfficiencyCategoryAndState = cms.vstring("passingTightMuonsNoRPC","pass"),
+            #EfficiencyCategoryAndState = cms.vstring("PassingTightMuonsNoRPC","pass"),
 
             #specifies what unbinned variables to include in the dataset, the mass is needed for the fit
             UnbinnedVariables = cms.vstring("mass"),
@@ -98,10 +98,10 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
             #BinToPDFmap = cms.vstring("breitWignerPlusExponential")
         ),
         eta = cms.PSet(
-            #EfficiencyCategoryAndState = cms.vstring("PassingMediumMuons","pass"),
-            EfficiencyCategoryAndState = cms.vstring("PassingMediumMuonsNoRPC","pass"),
+            #EfficiencyCategoryAndState = cms.vstring("PassingMediumTightMuons","pass"),
+            EfficiencyCategoryAndState = cms.vstring("PassingMediumTightMuonsNoRPC","pass"),
             #EfficiencyCategoryAndState = cms.vstring("PassingTightMuons","pass"),
-            #EfficiencyCategoryAndState = cms.vstring("passingTightMuonsNoRPC","pass"),
+            #EfficiencyCategoryAndState = cms.vstring("PassingTightMuonsNoRPC","pass"),
             UnbinnedVariables = cms.vstring("mass"),
             BinnedVariables = cms.PSet(
                 #eta = cms.vdouble(-1.8, -1.5, -1.2, -0.9, -0.6, -0.3,
@@ -119,15 +119,15 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
             #BinToPDFmap = cms.vstring("breitWignerPlusExponential")
         ),
         phi = cms.PSet(
-            #EfficiencyCategoryAndState = cms.vstring("PassingMediumMuons","pass"),
-            EfficiencyCategoryAndState = cms.vstring("PassingMediumMuonsNoRPC","pass"),
+            #EfficiencyCategoryAndState = cms.vstring("PassingMediumTightMuons","pass"),
+            EfficiencyCategoryAndState = cms.vstring("PassingMediumTightMuonsNoRPC","pass"),
             #EfficiencyCategoryAndState = cms.vstring("PassingTightMuons","pass"),
-            #EfficiencyCategoryAndState = cms.vstring("passingTightMuonsNoRPC","pass"),
+            #EfficiencyCategoryAndState = cms.vstring("PassingTightMuonsNoRPC","pass"),
             UnbinnedVariables = cms.vstring("mass"),
             BinnedVariables = cms.PSet(
                 #phi = cms.vdouble(-3.2, -2.8, -2.4, -2.0, -1.6, -1.2, -0.8, -0.4, 0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8, 3.2) #nbin = 16
                 #phi = cms.vdouble(-3.2, -3.0, -2.8, -2.6, -2.4, -2.2, -2.0, -1.8, -1.6, -1.4, -1.2, -1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2) #nbin = 32
-                phi = cms.vdouble(-3.15, -2.945, -2.771, -2.697, -2.523, -2.349, -2.175, -2.001, -1.827, -1.653, -1.479, -1.305, -1.131, -0.957 -0.783, -0.609, -0.435, -0.261, -0.087, 0.087, 0.261, 0.435, 0.609, 0.783, 0.957, 1.131, 1.305, 1.479, 1.653, 1.827, 2.001, 2.175, 2.349, 2.523, 2.697, 2.771, 2.945, 3.15) #nbin=37
+                phi = cms.vdouble(-3.15, -2.945, -2.771, -2.697, -2.523, -2.349, -2.175, -2.001, -1.827, -1.653, -1.479, -1.305, -1.131, -0.957, -0.783, -0.609, -0.435, -0.261, -0.087, 0.087, 0.261, 0.435, 0.609, 0.783, 0.957, 1.131, 1.305, 1.479, 1.653, 1.827, 2.001, 2.175, 2.349, 2.523, 2.697, 2.771, 2.945, 3.15) #nbin=37
 
             ),
             BinToPDFmap = cms.vstring("twoVoigtians")
@@ -135,10 +135,10 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         ),
 
         eta_phi = cms.PSet(
-            #EfficiencyCategoryAndState = cms.vstring("PassingMediumMuons","pass"),
-            EfficiencyCategoryAndState = cms.vstring("PassingMediumMuonsNoRPC","pass"),
+            #EfficiencyCategoryAndState = cms.vstring("PassingMediumTightMuons","pass"),
+            EfficiencyCategoryAndState = cms.vstring("PassingMediumTightMuonsNoRPC","pass"),
             #EfficiencyCategoryAndState = cms.vstring("PassingTightMuons","pass"),
-            #EfficiencyCategoryAndState = cms.vstring("passingTightMuonsNoRPC","pass"),
+            #EfficiencyCategoryAndState = cms.vstring("PassingTightMuonsNoRPC","pass"),
             UnbinnedVariables = cms.vstring("mass"),
             BinnedVariables = cms.PSet(
                 eta = cms.vdouble(-1.8, -1.5, -1.2, -0.9, -0.6, -0.3,  0.0,  0.3,  0.6,  0.9,  1.2,  1.5,  1.8), #nbin = 12
@@ -146,7 +146,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
                 #eta = cms.vdouble(-1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8), #nbib = 36
                 phi = cms.vdouble(-3.2, -2.8, -2.4, -2.0, -1.6, -1.2, -0.8, -0.4, 0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8, 3.2) #nbin = 16
                 #phi = cms.vdouble(-3.2, -3.0, -2.8, -2.6, -2.4, -2.2, -2.0, -1.8, -1.6, -1.4, -1.2, -1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2) #nbin = 32
-                #phi = cms.vdouble(-3.15, -2.945, -2.771, -2.697, -2.523, -2.349, -2.175, -2.001, -1.827, -1.653, -1.479, -1.305, -1.131, -0.957 -0.783, -0.609, -0.435, -0.261, -0.087, 0.087, 0.261, 0.435, 0.609, 0.783, 0.957, 1.131, 1.305, 1.479, 1.653, 1.827, 2.001, 2.175, 2.349, 2.523, 2.697, 2.771, 2.945, 3.15) #nbin=37
+                #phi = cms.vdouble(-3.15, -2.945, -2.771, -2.697, -2.523, -2.349, -2.175, -2.001, -1.827, -1.653, -1.479, -1.305, -1.131, -0.957, -0.783, -0.609, -0.435, -0.261, -0.087, 0.087, 0.261, 0.435, 0.609, 0.783, 0.957, 1.131, 1.305, 1.479, 1.653, 1.827, 2.001, 2.175, 2.349, 2.523, 2.697, 2.771, 2.945, 3.15) #nbin=37
             ),
             BinToPDFmap = cms.vstring("twoVoigtians")
             #BinToPDFmap = cms.vstring("breitWignerPlusExponential")
