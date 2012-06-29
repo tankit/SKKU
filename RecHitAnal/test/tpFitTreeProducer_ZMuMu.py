@@ -148,6 +148,7 @@ process.muonIdProducerSequenceNoRPC = cms.Sequence(
 ##############
 # TAG MUON
 ##############
+#--https://twiki.cern.ch/twiki/bin/view/CMS/MuonTagAndProbe#TP_code_recipes
 
 # Trigger  ##################
 process.PassingHLT = cms.EDProducer("trgMatchedMuonProducer",
@@ -304,6 +305,7 @@ process.TightMuonsNoRPC = cms.EDFilter("MuonRefSelector",
 ########################
 # MATCH TRACK AND MUONS
 ########################
+#--https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonAnalysisMuonAssociators
 
 process.tkToMediumMuons = cms.EDProducer("MatcherUsingTracks",
                                      src     = cms.InputTag("promptTrackCands"), # all tracks are available for matching
