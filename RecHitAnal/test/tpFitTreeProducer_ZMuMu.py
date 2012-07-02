@@ -199,18 +199,7 @@ process.probeMuons = cms.EDFilter("MuonRefSelector",
     src = cms.InputTag("promptMuons"),
     #cut = cms.string("isTrackerMuon && pt > 10"), 
     #cut = cms.string("isTrackerMuon && pt > 20 && abs(eta)<1.8 && innerTrack.numberOfValidHits() >= 10"), 
-    ##cut = cms.string("isRPCMuon && pt > 20 && abs(eta)<1.8 && innerTrack.numberOfValidHits() >= 10"),
-    cut = cms.string("isGlobalMuon && pt > 20 && abs(eta) < 1.6"
-                     ##"&& isolationR03().sumPt<3.0 && (isolationR03().sumPt+isolationR03().emEt+isolationR03().hadEt)<0.1*pt"
-                     #"&& numberOfMatchedStations > 1"
-                     #"&& pt > 0 && abs(eta) < 2.4"
-                     "&& globalTrack().normalizedChi2()<10.0"
-                     #"&& globalTrack().hitPattern().numberOfValidMuonHits()>0"
-                     "&& track().hitPattern().numberOfValidPixelHits() > 0"
-                     "&& track().hitPattern().numberOfValidTrackerHits() > 10"
-                     "&& innerTrack().numberOfValidHits()>10"
-                     "&& abs(innerTrack().dxy)<2.0" #--added because of no IP cut from Jun 12, 2012
-                     ),
+    cut = cms.string("isRPCMuon && numberOfMatchedStations('RPCHitAndTrackArbitration') > 0 && pt > 20 && abs(eta)<1.8 && innerTrack.numberOfValidHits() >= 10"),
 )
 
 
@@ -425,7 +414,7 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
     # choice of what defines a 'passing' probe
     flags = cms.PSet(
         ProbeCand = cms.InputTag("trackProbes"),
-        PassingProbeMuons = cms.InputTag("probeMuons"),
+        #PassingProbeMuons = cms.InputTag("probeMuons"),
         PassingMediumTightMuons = cms.InputTag("passingMediumTightMuons"),
         PassingTightMuons = cms.InputTag("passingTightMuons"),
         PassingMediumTightMuonsNoRPC = cms.InputTag("passingMediumTightMuonsNoRPC"),
@@ -459,7 +448,7 @@ if MC_flag:
         process.promptMuonsNoRPC *
         process.PassingHLT *
         process.tightMuons *
-        (process.tagMuons + process.probeMuons) *
+        process.tagMuons * #(process.tagMuons + process.probeMuons) *
         process.goodTracks *
         process.trackCands *
         process.promptTrackCands *
@@ -489,7 +478,7 @@ else:
         process.promptMuonsNoRPC *
         process.PassingHLT *
         process.tightMuons *    
-        (process.tagMuons + process.probeMuons) *
+        process.tagMuons * #(process.tagMuons + process.probeMuons) *
         process.goodTracks *
         process.trackCands *
         process.promptTrackCands *
