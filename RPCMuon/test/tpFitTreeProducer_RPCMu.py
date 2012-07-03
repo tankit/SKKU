@@ -254,7 +254,7 @@ process.MediumTightMuons = cms.EDFilter("MuonRefSelector",
 
 process.MediumTightMuonsRPCMu = cms.EDFilter("MuonRefSelector",
                                        src = cms.InputTag("promptMuons"),
-                                       cut = cms.string("isRPCMuon && numberOfMatchedStations('RPCHitAndTrackArbitration') > 0"
+                                       cut = cms.string("isRPCMuon && numberOfMatchedStations('RPCHitAndTrackArbitration') > 1"
                                                         #"&& numberOfMatchedStations > 1"
                                                         "&& pt > 0 && abs(eta) < 2.4"
                                                         #"&& globalTrack().normalizedChi2()<10.0"
@@ -282,7 +282,7 @@ process.TightMuons = cms.EDFilter("MuonRefSelector",
 
 process.TightMuonsRPCMu = cms.EDFilter("MuonRefSelector",
                                        src = cms.InputTag("promptMuons"),
-                                       cut = cms.string("isRPCMuon && numberOfMatchedStations('RPCHitAndTrackArbitration') > 1"
+                                       cut = cms.string("isRPCMuon && numberOfMatchedStations('RPCHitAndTrackArbitration') > 1 && numberOfMatchedLayers('RPCHitAndTrackArbitration') > 2"
                                                         #"&& numberOfMatchedStations > 1"
                                                         "&& pt > 0 && abs(eta) < 2.4"
                                                         #"&& globalTrack().normalizedChi2()<10.0"
