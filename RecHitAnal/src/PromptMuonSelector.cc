@@ -62,12 +62,17 @@ bool PromptMuonSelector::filter(edm::Event& event, const edm::EventSetup& eventS
   for ( edm::View<reco::Muon>::const_iterator muon = muonHandle->begin();
         muon != muonHandle->end(); ++muon )
   {
-    if ( not muon->innerTrack().isAvailable() ) {
-      LogVerbatim("PromptMuonSelector") << "No inner tracks are available, skim the muon";
-      continue;
+    bool isGoodIP = false;
+    if ( muon->innerTrack().isAvailable() ) {
+      if ( abs(muon->innerTrack()->dxy(beamSpot)) < maxDxy_ ) isGoodIP = true;
+    } else {
+      if ( not muon->outerTrack().isAvailable() ) {
+	LogVerbatim("PromptMuonSelector") << "No referenced tracks are available, skim the muon";
+	continue;
+      }
+      if ( abs(muon->outerTrack()->dxy(beamSpot)) < maxDxy_ ) isGoodIP = true;
     }
-    if ( abs(muon->innerTrack()->dxy(beamSpot)) < maxDxy_ )
-    //if ( abs(muon->innerTrack()->dxy(beamSpot)) < maxDxy_ && abs(muon->innerTrack()->dz(beamSpot)) < maxDz_ )
+    if ( isGoodIP )
     {
       promptMuons->push_back(*muon);
     } 
