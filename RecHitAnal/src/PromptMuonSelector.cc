@@ -7,6 +7,7 @@
 
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackBase.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 
@@ -29,6 +30,7 @@ private:
   edm::InputTag beamSpotLabel_;
   edm::InputTag muonLabel_;
   double maxDxy_;
+  double maxDz_;
 
 };
 
@@ -37,6 +39,7 @@ PromptMuonSelector::PromptMuonSelector(const edm::ParameterSet& pset)
   beamSpotLabel_ = pset.getParameter<edm::InputTag>("beamSpot");
   muonLabel_ = pset.getParameter<edm::InputTag>("src");
   maxDxy_ = pset.getUntrackedParameter<double>("maxDxy", 0.2);
+  maxDz_ = pset.getUntrackedParameter<double>("maxDz", 0.5);
 
   produces<std::vector<reco::Muon> >("");
 }
@@ -59,8 +62,12 @@ bool PromptMuonSelector::filter(edm::Event& event, const edm::EventSetup& eventS
   for ( edm::View<reco::Muon>::const_iterator muon = muonHandle->begin();
         muon != muonHandle->end(); ++muon )
   {
-    if ( not muon->isTrackerMuon() ) continue;
+    if ( not muon->innerTrack().isAvailable() ) {
+      LogVerbatim("PromptMuonSelector") << "No inner tracks are available, skim the muon";
+      continue;
+    }
     if ( abs(muon->innerTrack()->dxy(beamSpot)) < maxDxy_ )
+    //if ( abs(muon->innerTrack()->dxy(beamSpot)) < maxDxy_ && abs(muon->innerTrack()->dz(beamSpot)) < maxDz_ )
     {
       promptMuons->push_back(*muon);
     } 
