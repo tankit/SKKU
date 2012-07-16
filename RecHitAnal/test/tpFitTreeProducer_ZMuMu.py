@@ -128,6 +128,11 @@ process.muonsNoRPC1stStep.fillGlobalTrackQuality = cms.bool(False)
 ##process.muonsNoRPC1stStep.CaloExtractorPSet.CenterConeOnCalIntersection = cms.bool(True)
 #process.muonsNoRPC1stStep.fillGlobalTrackRefits = cms.bool(False) #True by default
 
+#process.load("RecoParticleFlow.PFProducer.particleFlow_cfi")
+#process.particleFlowTmpNoRPC = process.muons1stStep.clone()
+#process.particleFlowTmpNoRPC.muons = cms.InputTag("muonsNoRPC1stStep")
+##process.particleFlowTmpNoRPC.muons = cms.InputTag("muonsNoRPC")
+
 process.load("RecoMuon.MuonIdentification.muons_cfi")
 process.muonsNoRPC = process.muons.clone()
 process.muonsNoRPC.InputMuons = cms.InputTag("muonsNoRPC1stStep")
@@ -174,20 +179,21 @@ for version in range(1,21):
 process.promptMuons = cms.EDFilter("PromptMuonSelector",
     src = cms.InputTag("muons"),
     maxDxy = cms.untracked.double(maxDxy),
-    beamSpot = cms.InputTag("offlineBeamSpot"),
+    #beamSpot = cms.InputTag("offlineBeamSpot"),
+    beamSpot = cms.InputTag("offlinePrimaryVertices"),
 )
 process.promptMuonsNoRPC = process.promptMuons.clone(src = cms.InputTag("muonsNoRPC"))
 
 process.tightMuons = cms.EDFilter("MuonRefSelector",
                                 src = cms.InputTag("promptMuons"),
-                                cut = cms.string("isGlobalMuon && isTrackerMuon && isolationR03().sumPt<3.0"
+                                cut = cms.string("isGlobalMuon && isTrackerMuon && isolationR03().sumPt<0.05*pt" #--updated by Minsuk on Jul 10, 2012
                                                  "&& pt > 20 && abs(eta) < 2.4"
-                                                 "&& track().hitPattern().numberOfValidPixelHits() > 0" #--added by Minsuk on Feb 17, 2012
-                                                 "&& track().hitPattern().numberOfValidTrackerHits() > 10"
-                                                 "&& innerTrack().numberOfValidHits()>10 && globalTrack().normalizedChi2()<10.0"
+                                                 "&& innerTrack().hitPattern().numberOfValidPixelHits() > 0" #--updated by Minsuk on Jul 10, 2012
+                                                 "&& track().hitPattern().trackerLayersWithMeasurement() > 5" #--added by Minsuk on Jul 10, 2012
+                                                 "&& globalTrack().normalizedChi2()<10.0"
                                                  "&& globalTrack().hitPattern().numberOfValidMuonHits()>0"
                                                  "&& numberOfMatchedStations>1" #--updated from numberOfMatches by Minsuk on May 12, 2012
-                                                 "&& (isolationR03().sumPt+isolationR03().emEt+isolationR03().hadEt)<0.1*pt"
+                                                 ##"&& (isolationR03().sumPt+isolationR03().emEt+isolationR03().hadEt)<0.1*pt" #--removed by Minsuk on Jul 10, 2012
                                                  ), 
                                 )
 
@@ -199,7 +205,7 @@ process.probeMuons = cms.EDFilter("MuonRefSelector",
     src = cms.InputTag("promptMuons"),
     #cut = cms.string("isTrackerMuon && pt > 10"), 
     #cut = cms.string("isTrackerMuon && pt > 20 && abs(eta)<1.8 && innerTrack.numberOfValidHits() >= 10"), 
-    cut = cms.string("isRPCMuon && numberOfMatchedStations('RPCHitAndTrackArbitration') > 0 && pt > 20 && abs(eta)<1.8 && innerTrack.numberOfValidHits() >= 10"),
+    cut = cms.string("isTrackerMuon && pt > 20 && abs(eta)<1.8 && track().hitPattern().numberOfValidPixelHits() > 0 && track().hitPattern().trackerLayersWithMeasurement() > 5"),
 )
 
 
@@ -211,6 +217,7 @@ process.goodTracks = cms.EDFilter("TrackSelector",
                                   src = cms.InputTag("generalTracks"), # or cms.InputTag("standAloneMuons","UpdatedAtVtx"),
                                   #cut = cms.string("numberOfValidHits >= 10 && normalizedChi2 < 5 && abs(d0) < 2 && abs(dz) < 30"),
                                   cut = cms.string("pt>20 && abs(eta)<2.4 && numberOfValidHits >= 10"),
+                                  #cut = cms.string("pt>20 && abs(eta)<2.4 && trackerLayersWithMeasurement > 5"),
                                   )
 
 process.trackCands  = cms.EDProducer("ConcreteChargedCandidateProducer",
@@ -220,8 +227,9 @@ process.trackCands  = cms.EDProducer("ConcreteChargedCandidateProducer",
 
 process.promptTrackCands = cms.EDFilter("PromptTrackCandSelector",
     src = cms.InputTag("trackCands"),
-    beamSpot = cms.InputTag("offlineBeamSpot"),
     maxDxy = cms.untracked.double(maxDxy),
+    #beamSpot = cms.InputTag("offlineBeamSpot"),
+    beamSpot = cms.InputTag("offlinePrimaryVertices"),                                       
 )
 
 process.trackProbes = cms.EDFilter("CandViewRefSelector",
@@ -233,6 +241,8 @@ process.trackProbes = cms.EDFilter("CandViewRefSelector",
 ############
 # MUON ID
 ############
+# For Baseline muon selections, go to https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Tight_Muon
+# track().hitPattern().numberOfValidPixelHits() -> innerTrack().hitPattern().numberOfValidPixelHits()
 
 process.MediumTightMuons = cms.EDFilter("MuonRefSelector",
                                   src = cms.InputTag("promptMuons"),
@@ -241,12 +251,11 @@ process.MediumTightMuons = cms.EDFilter("MuonRefSelector",
                                                    "&& pt > 0 && abs(eta) < 2.4"
                                                    "&& globalTrack().normalizedChi2()<10.0"
                                                    #"&& globalTrack().hitPattern().numberOfValidMuonHits()>0"
-                                                   "&& track().hitPattern().numberOfValidPixelHits() > 0"
-                                                   "&& track().hitPattern().numberOfValidTrackerHits() > 10"
-                                                   "&& innerTrack().numberOfValidHits()>10"
+                                                   "&& innerTrack().hitPattern().numberOfValidPixelHits() > 0"
+                                                   "&& track().hitPattern().trackerLayersWithMeasurement() > 5"
                                                    ), 
                                   )
-
+                                  
 
 process.MediumTightMuonsNoRPC = cms.EDFilter("MuonRefSelector",
                                        src = cms.InputTag("promptMuonsNoRPC"),
@@ -255,9 +264,8 @@ process.MediumTightMuonsNoRPC = cms.EDFilter("MuonRefSelector",
                                                         "&& pt > 0 && abs(eta) < 2.4"
                                                         "&& globalTrack().normalizedChi2()<10.0"
                                                         #"&& globalTrack().hitPattern().numberOfValidMuonHits()>0"
-                                                        "&& track().hitPattern().numberOfValidPixelHits() > 0"
-                                                        "&& track().hitPattern().numberOfValidTrackerHits() > 10"
-                                                        "&& innerTrack().numberOfValidHits()>10"
+                                                        "&& innerTrack().hitPattern().numberOfValidPixelHits() > 0"
+                                                        "&& track().hitPattern().trackerLayersWithMeasurement() > 5"
                                                         ), 
                                        )
 
@@ -269,9 +277,8 @@ process.TightMuons = cms.EDFilter("MuonRefSelector",
                                                    "&& pt > 0 && abs(eta) < 2.4"
                                                    "&& globalTrack().normalizedChi2()<10.0"
                                                    "&& globalTrack().hitPattern().numberOfValidMuonHits()>0"
-                                                   "&& track().hitPattern().numberOfValidPixelHits() > 0"
-                                                   "&& track().hitPattern().numberOfValidTrackerHits() > 10"
-                                                   "&& innerTrack().numberOfValidHits()>10"
+                                                   "&& innerTrack().hitPattern().numberOfValidPixelHits() > 0"
+                                                   "&& track().hitPattern().trackerLayersWithMeasurement() > 5"
                                                    ),
                                    )
 
@@ -283,9 +290,8 @@ process.TightMuonsNoRPC = cms.EDFilter("MuonRefSelector",
                                                         "&& pt > 0 && abs(eta) < 2.4"
                                                         "&& globalTrack().normalizedChi2()<10.0"
                                                         "&& globalTrack().hitPattern().numberOfValidMuonHits()>0"
-                                                        "&& track().hitPattern().numberOfValidPixelHits() > 0"
-                                                        "&& track().hitPattern().numberOfValidTrackerHits() > 10"
-                                                        "&& innerTrack().numberOfValidHits()>10"
+                                                        "&& innerTrack().hitPattern().numberOfValidPixelHits() > 0"
+                                                        "&& track().hitPattern().trackerLayersWithMeasurement() > 5"
                                                         ),
                                         )
 
@@ -410,6 +416,16 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
         eta = cms.string("eta"),
         phi = cms.string("phi"),
         pt  = cms.string("pt"),
+        ptErrorI  = cms.string("track.ptError/pt"),
+        p         = cms.string("p"),
+        abseta    = cms.string("abs(eta)"),
+        dxy = cms.string("track.dxy"),
+        d0  = cms.string("track.d0"),
+        dZ  = cms.string("track.dz"),        
+        nTrackerHits    = cms.string("track().hitPattern().numberOfValidTrackerHits()"),
+        nHits           = cms.string("track().numberOfValidHits()"),
+        nLayersWithHits = cms.string("track().hitPattern().trackerLayersWithMeasurement()"),
+      
     ),
     # choice of what defines a 'passing' probe
     flags = cms.PSet(
