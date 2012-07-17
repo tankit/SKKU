@@ -179,8 +179,7 @@ for version in range(1,21):
 process.promptMuons = cms.EDFilter("PromptMuonSelector",
     src = cms.InputTag("muons"),
     maxDxy = cms.untracked.double(maxDxy),
-    #beamSpot = cms.InputTag("offlineBeamSpot"),
-    beamSpot = cms.InputTag("offlinePrimaryVertices"),
+    beamSpot = cms.InputTag("offlineBeamSpot"),
 )
 process.promptMuonsNoRPC = process.promptMuons.clone(src = cms.InputTag("muonsNoRPC"))
 
@@ -228,8 +227,7 @@ process.trackCands  = cms.EDProducer("ConcreteChargedCandidateProducer",
 process.promptTrackCands = cms.EDFilter("PromptTrackCandSelector",
     src = cms.InputTag("trackCands"),
     maxDxy = cms.untracked.double(maxDxy),
-    #beamSpot = cms.InputTag("offlineBeamSpot"),
-    beamSpot = cms.InputTag("offlinePrimaryVertices"),                                       
+    beamSpot = cms.InputTag("offlineBeamSpot"),
 )
 
 process.trackProbes = cms.EDFilter("CandViewRefSelector",
@@ -421,7 +419,7 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
         abseta    = cms.string("abs(eta)"),
         dxy = cms.string("track.dxy"),
         d0  = cms.string("track.d0"),
-        dZ  = cms.string("track.dz"),        
+        dZ  = cms.string("track.dz"),
         nTrackerHits    = cms.string("track().hitPattern().numberOfValidTrackerHits()"),
         nHits           = cms.string("track().numberOfValidHits()"),
         nLayersWithHits = cms.string("track().hitPattern().trackerLayersWithMeasurement()"),
