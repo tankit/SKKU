@@ -9,9 +9,9 @@
 #include <fstream.h>
 ////#include "/afs/cern.ch/user/m/mskim/public/styleTnP.h"
 
-void Effplot(TString var="eta", Float_t hmin = 0.0, Float_t hmax = 1.1){
+void Effplot(TString var="eta", TString var2="", Float_t hmin = 0.0, Float_t hmax = 1.1){
 
-  //gROOT->LoadMacro("/afs/cern.ch/user/m/mskim/public/tdrStyle.C");
+  //gROOT->LoadMacro("./tdrStyle.C");
   //setTDRStyle();
 
 //  using namespace std;
@@ -21,19 +21,15 @@ void Effplot(TString var="eta", Float_t hmin = 0.0, Float_t hmax = 1.1){
 
   TString ytitle = "Efficiency";
 
-  //TString var = "muon_pt_eta";
-  //TString var1 = "eta";
-  //TString var2 = "pt_bin0";
-  //TString varDir = var1+"_PLOT_"+var2
-
   TString varDir = var+"_PLOT";
 
   double Xmin = -1.8, Xmax = 1.8;
-  Xmin = -2.0, Xmax = 2.0;
+  //Xmin = -2.0, Xmax = 2.0;
 
   TString FileIso="./data_eff.root", FileIso_mc="./mc_eff.root";
 
   TString DirIso="muonEffs/"+var+"/fit_eff_plots";
+  if(var2=="eta_phi") DirIso="muonEffs/"+var2+"/fit_eff_plots";
 
   TString xtitle = "Probe #eta";  TString htitle = "A RooPlot of Probe #eta";
   if(var=="pt") {
@@ -53,8 +49,9 @@ void Effplot(TString var="eta", Float_t hmin = 0.0, Float_t hmax = 1.1){
   TGraphAsymmErrors * gr_Iso = new TGraphAsymmErrors();
   TCanvas* c1 = (TCanvas*) gDirectory->FindKey(varDir)->ReadObj();
 
-  TString obj1="";
-  obj1 = "hxy_fit_eff"; //hard-coded: eta_PLOT_pt_bin0->GetListOfPrimitives()->At(2)->GetName()
+  //--The object name is hard-coded. How to get:
+  //--root[0] gDirectory->cd("/muonEffs/eta/fit_eff_plots"); eta_PLOT->GetListOfPrimitives()->At(1)->GetName()
+  TString obj1 = "hxy_fit_eff";
   RooHist* h1 = (RooHist*) c1->FindObject(obj1);
   int nbin = h1->GetMaxSize(); cout << nbin << endl;
   for(int j=0 ; j < nbin ; j++){
