@@ -31,7 +31,7 @@ void Effplot(TString var="eta", TString var2="", Float_t hmin = 0.0, Float_t hma
   TString DirIso="muonEffs/"+var+"/fit_eff_plots";
   if(var2=="eta_phi") {
     DirIso="muonEffs/"+var2+"/fit_eff_plots";
-    cout << " If eta (phi) is fixed, then draw phi (eta)" << endl;
+    if(var=="eta") cout << " Please give phi as a variable if eta is fixed in eta_phi" << endl;
   }
 
   TString xtitle = "Probe #eta";  TString htitle = "A RooPlot of Probe #eta";
