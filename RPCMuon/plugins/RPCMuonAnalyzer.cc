@@ -68,7 +68,7 @@ private:
   std::vector<int> nStationRPCTrkArb;
   std::vector<int> nLayerRPCTrkArb;
 
-  Int_t runNumber, eventNumber, nMuon, nSelMuon;
+  Int_t runNumber, eventNumber, nMuon;
   Int_t nGlbMuon, nStaMuon, nTrkMuon;
   Int_t nRPCMuon, nRPCMuTight;
   Int_t nTrkMuTight, nTrkMuTight2;
@@ -101,7 +101,6 @@ RPCMuonAnalyzer::RPCMuonAnalyzer(const edm::ParameterSet& pset)
   tree_->Branch("runNumber",    &runNumber,    "runNumber/I");
   tree_->Branch("eventNumber",  &eventNumber,  "eventNumber/I");
   tree_->Branch("nMuon",        &nMuon,        "nMuon/I");
-  tree_->Branch("nSelMuon",     &nSelMuon,     "nSelMuon/I");
   tree_->Branch("nRPCMuon",     &nRPCMuon,     "nRPCMuon/I");
   tree_->Branch("nRPCMuTight",  &nRPCMuTight,  "nRPCMuTight/I");
   tree_->Branch("nStaMuon",     &nStaMuon,     "nStaMuon/I");
@@ -206,7 +205,8 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
   nStationRPCTrkArb.clear();
   nLayerRPCTrkArb.clear();
 
-  nMuon = muonHandle->size(); nSelMuon = 0;
+  //nMuon = muonHandle->size();
+  nMuon = 0;
   nGlbMuon = 0, nStaMuon = 0, nTrkMuon = 0;
   nRPCMuon = 0, nRPCMuTight = 0;
   nTrkMuTight = 0, nTrkMuTight2 = 0;
@@ -247,7 +247,7 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
     //
     //--Note for Z MC: how efficient with muon.globalTrack()->hitPattern().numberOfValidMuonHits()>0? e.g, "GlobalMuLoose vs. GlobalMuonPromptTight" and "GlobalMuMedium vs. GlobalMuTight"
 
-    ++nSelMuon;
+    ++nMuon;
     if ( idFlags[1] ) ++nGlbMuon;
     if ( idFlags[2] ) ++nStaMuon;
     if ( idFlags[3] ) ++nTrkMuon;
