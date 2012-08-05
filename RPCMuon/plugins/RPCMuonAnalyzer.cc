@@ -252,14 +252,10 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
     if ( idFlags[2] ) ++nStaMuon;
     if ( idFlags[3] ) ++nTrkMuon;
 
-    if ( idFlags[4] )
-    {
-      ++nRPCMuon;
-
-      if ( idFlags[5] ) ++nRPCMuTight;
-      if ( idFlags[6] ) ++nTrkMuTight;
-      if ( idFlags[7] ) ++nTrkMuTight2;
-    }
+    if ( idFlags[4] )  ++nRPCMuon;
+    if ( idFlags[5] ) ++nRPCMuTight;
+    if ( idFlags[6] ) ++nTrkMuTight;
+    if ( idFlags[7] ) ++nTrkMuTight2;
 
     if ( idFlags[8] ) ++nGlbMuTight;
     if ( idFlags[9] ) ++nGlbMuTight2;
