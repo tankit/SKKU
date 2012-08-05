@@ -16,6 +16,9 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
 
+#include "DataFormats/MuonReco/interface/MuonChamberMatch.h"
+#include "DataFormats/MuonReco/interface/MuonRPCHitMatch.h"
+
 #include "TTree.h"
 #include "TH1F.h"
 #include "TH2F.h"
@@ -219,7 +222,7 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
     const double abseta = abs(muon->eta());
     if ( abseta > maxEtaTrk_ ) continue;
 
-    //std::cout << " * Muon Pt = " << muon->pt() << ", P = " << muon->p() << ", Eta = " << muon->eta() << ", Phi = " << muon->phi() << std::endl;
+    std::cout << " * Muon Pt = " << muon->pt() << ", P = " << muon->p() << ", Eta = " << muon->eta() << ", Phi = " << muon->phi() << std::endl;
 
     const bool idFlags[] = {
       true,
@@ -252,7 +255,7 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
     if ( idFlags[2] ) ++nStaMuon;
     if ( idFlags[3] ) ++nTrkMuon;
 
-    if ( idFlags[4] )  ++nRPCMuon;
+    if ( idFlags[4] ) ++nRPCMuon;
     if ( idFlags[5] ) ++nRPCMuTight;
     if ( idFlags[6] ) ++nTrkMuTight;
     if ( idFlags[7] ) ++nTrkMuTight2;
@@ -287,7 +290,29 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
     nStationRPCTrkArb.push_back(muon->numberOfMatchedStations(reco::Muon::RPCHitAndTrackArbitration));
     nLayerRPCTrkArb.push_back(muon->numberOfMatchedLayers(reco::Muon::RPCHitAndTrackArbitration));
 
-    //std::cout << " + idFlags [RPCMu, Loose, Medium, Tight] = " << idFlags[4] << " " << idFlags[5] << " " << idFlags[6] << " " << idFlags[7] << std::endl;
+    std::cout << " + idFlags [RPCMu, Tight] = " << idFlags[4] << " " << idFlags[5] << std::endl;
+
+    for ( std::vector<reco::MuonChamberMatch>::const_iterator chamberMatch = muon->matches().begin();
+          chamberMatch != muon->matches().end(); ++chamberMatch )
+    {
+      //if ( chamber->rpcMatches.empty() ) continue;
+      for ( std::vector<MuonRPCHitMatch>::const_iterator rpcMatch = chamberMatch->rpcMatches.begin(); 
+            rpcMatch != chamberMatch->rpcMatches.end(); ++rpcMatch)
+      {
+        int station = chamberMatch->station();
+
+        float trjX = chamberMatch->x; //float trjY = chamberMatch->y;
+        float locX = rpcMatch->x;
+        float dx = trjX - locX;
+
+        float xErr = chamberMatch->xErr;
+        //float yErr = chamberMatch->yErr;
+
+        std::cout << " -> station = " << station << ": trjX = " << trjX << " (" << xErr << ") locX = " << locX << ", dx = " << dx << std::endl;
+
+      }
+
+    }
 
     // Fill correlation matrix
     for ( int i=0, n=sizeof(idFlags)/sizeof(const bool); i<n; ++i )
