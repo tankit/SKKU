@@ -50,38 +50,39 @@ private:
   std::vector<float> muEta;
   std::vector<float> muPhi;
   std::vector<bool> trkMu;
-  std::vector<bool> trkMuArb;
+  std::vector<bool> trkMuTight;
+  std::vector<bool> trkMuTight2;
   std::vector<bool> rpcMu;
-  std::vector<bool> rpcMuLoose;
-  std::vector<bool> rpcMuMedium;
   std::vector<bool> rpcMuTight;
   std::vector<bool> staMu;
   std::vector<bool> glbMu;
-  std::vector<bool> glbMuLoose;
-  std::vector<bool> glbMuPromptT;
-  std::vector<bool> glbMuMedium;
   std::vector<bool> glbMuTight;
+  std::vector<bool> glbMuTight2;
+  std::vector<bool> glbMuTighter;
+  std::vector<bool> glbMuTighter2;
   std::vector<int> nMatchesSegNoArb;
   std::vector<int> nStationSegNoArb;
   std::vector<int> nMatchesSegTrkArb;
   std::vector<int> nStationSegTrkArb;
   std::vector<int> nMatchesRPCTrkArb;
   std::vector<int> nStationRPCTrkArb;
+  std::vector<int> nLayerRPCTrkArb;
 
   Int_t runNumber, eventNumber, nMuon, nSelMuon;
   Int_t nGlbMuon, nStaMuon, nTrkMuon;
-  Int_t nGlbPromptT, nTrkMuArb, nGlbMuLoose, nGlbMuMedium, nGlbMuTight;
-  Int_t nRPCMuon, nRPCMuMedium, nRPCMuLoose, nRPCMuTight;
+  Int_t nRPCMuon, nRPCMuTight;
+  Int_t nTrkMuTight, nTrkMuTight2;
+  Int_t nGlbMuTight, nGlbMuTight2, nGlbMuTighter, nGlbMuTighter2;
 
   TH1F* hNMuon_;
   TH1F* hNRPCMuon_;
-  TH1F* hNGlbPromptT_;
-  TH1F* hNRPCMuMedium_;
-  TH1F* hNTrkMuArb_;
-  TH1F* hNRPCMuLoose_;
   TH1F* hNRPCMuTight_;
+  TH1F* hNTrkMuTight_;
+  TH1F* hNTrkMuTight2_;
   TH1F* hNGlbMuTight_;
-  TH1F* hNTrkMuon_;
+  TH1F* hNGlbMuTight2_;
+  TH1F* hNGlbMuTighter_;
+  TH1F* hNGlbMuTighter2_;
 
   TH2F* hIdCorrelation_;
   TH2F* hIdCorrelationB_;
@@ -102,52 +103,51 @@ RPCMuonAnalyzer::RPCMuonAnalyzer(const edm::ParameterSet& pset)
   tree_->Branch("nMuon",        &nMuon,        "nMuon/I");
   tree_->Branch("nSelMuon",     &nSelMuon,     "nSelMuon/I");
   tree_->Branch("nRPCMuon",     &nRPCMuon,     "nRPCMuon/I");
-  tree_->Branch("nRPCMuLoose",  &nRPCMuLoose,  "nRPCMuLoose/I");
-  tree_->Branch("nRPCMuMedium", &nRPCMuMedium, "nRPCMuMedium/I");
   tree_->Branch("nRPCMuTight",  &nRPCMuTight,  "nRPCMuTight/I");
   tree_->Branch("nStaMuon",     &nStaMuon,     "nStaMuon/I");
   tree_->Branch("nTrkMuon",     &nTrkMuon,     "nTrkMuon/I");
-  tree_->Branch("nTrkMuArb",    &nTrkMuArb,    "nTrkMuArb/I");
   tree_->Branch("nGlbMuon",     &nGlbMuon,     "nGlbMuon/I");
-  tree_->Branch("nGlbMuLoose",  &nGlbMuLoose,  "nGlbMuLoose/I");
-  tree_->Branch("nGlbMuMedium", &nGlbMuMedium, "nGlbMuMedium/I");
-  tree_->Branch("nGlbMuTight",  &nGlbMuTight,  "nGlbMuTight/I");
-  tree_->Branch("nGlbPromptT",  &nGlbPromptT,  "nGlbPromptT/I");
+  tree_->Branch("nTrkMuTight",  &nTrkMuTight,  "nTrkMuTight/I");
+  tree_->Branch("nTrkMuTight2", &nTrkMuTight2, "nTrkMuTight2/I");  
+  tree_->Branch("nGlbMuTight",     &nGlbMuTight,     "nGlbMuTight/I");
+  tree_->Branch("nGlbMuTight2",    &nGlbMuTight2,    "nGlbMuTight2/I");
+  tree_->Branch("nGlbMuTighter",   &nGlbMuTighter,   "nGlbMuTighter/I");
+  tree_->Branch("nGlbMuTighter2",  &nGlbMuTighter2,  "nGlbMuTighter2/I");
   tree_->Branch("muPt",         &muPt);
   tree_->Branch("muP",          &muP);
   tree_->Branch("muEta",        &muEta);
   tree_->Branch("muPhi",        &muPhi);
   tree_->Branch("trkMu",        &trkMu);
-  tree_->Branch("trkMuArb",     &trkMuArb);
+  tree_->Branch("trkMuTight",   &trkMuTight);
+  tree_->Branch("trkMuTight2",  &trkMuTight2);
   tree_->Branch("rpcMu",        &rpcMu);
-  tree_->Branch("rpcMuLoose",   &rpcMuLoose);
-  tree_->Branch("rpcMuMedium",  &rpcMuMedium);
   tree_->Branch("rpcMuTight",   &rpcMuTight);
   tree_->Branch("staMu",        &staMu);
   tree_->Branch("glbMu",        &glbMu);
-  tree_->Branch("glbMuLoose",   &glbMuLoose);
-  tree_->Branch("glbMuPromptT", &glbMuPromptT);
-  tree_->Branch("glbMuMedium",  &glbMuMedium);
-  tree_->Branch("glbMuTight",   &glbMuTight);
+  tree_->Branch("glbMuTight",    &glbMuTight);
+  tree_->Branch("glbMuTight2",   &glbMuTight2);
+  tree_->Branch("glbMuTighter",  &glbMuTighter);
+  tree_->Branch("glbMuTighter2", &glbMuTighter2);
   tree_->Branch("nMatchesSegNoArb",  &nMatchesSegNoArb);
   tree_->Branch("nStationSegNoArb",  &nStationSegNoArb);
   tree_->Branch("nMatchesSegTrkArb", &nMatchesSegTrkArb);
   tree_->Branch("nStationSegTrkArb", &nStationSegTrkArb);
   tree_->Branch("nMatchesRPCTrkArb", &nMatchesRPCTrkArb);
   tree_->Branch("nStationRPCTrkArb", &nStationRPCTrkArb);
+  tree_->Branch("nLayerRPCTrkArb",   &nLayerRPCTrkArb);
 
-  hNMuon_       = fs->make<TH1F>("hNMuon"      , "Number of muons;Number of muons", 10, 0, 10);
-  hNRPCMuon_    = fs->make<TH1F>("hNRPCMuon"   , "Number of RPC muons;Number of muons", 10, 0, 10);
-  hNGlbPromptT_ = fs->make<TH1F>("hNGlbPromptT", "Number of GlobalMuPromptTight muons;Number of muons", 10, 0, 10);
-  hNRPCMuMedium_ = fs->make<TH1F>("hNRPCMuMedium", "Number of RPCMuMedium muons;Number of muons", 10, 0, 10);
-  hNTrkMuArb_    = fs->make<TH1F>("hNTrkMuArb"  , "Number of TrkMuArbitrated muons;Number of muons", 10, 0, 10);
-  hNRPCMuLoose_  = fs->make<TH1F>("hNRPCMuLoose", "Number of RPCMuLoose;Number of muons", 10, 0, 10);
-  hNRPCMuTight_  = fs->make<TH1F>("hNRPCMuTight", "Number of RPCMuTight;Number of muons", 10, 0, 10);
-  hNGlbMuTight_  = fs->make<TH1F>("hNGlbMuTight", "Number of GlbMuTight;Number of muons", 10, 0, 10);
-  hNTrkMuon_     = fs->make<TH1F>("hNTrkMuon"   , "Number of Tracker muons;Number of muons", 10, 0, 10);
+  hNMuon_          = fs->make<TH1F>("hNMuon", "Number of muons;Number of muons", 10, 0, 10);
+  hNRPCMuon_       = fs->make<TH1F>("hNRPCMuon", "Number of RPC muons;Number of muons", 10, 0, 10);
+  hNRPCMuTight_    = fs->make<TH1F>("hNRPCMuTight", "Number of RPCMuTight;Number of muons", 10, 0, 10);
+  hNTrkMuTight_    = fs->make<TH1F>("hNTrkMuTight", "Number of TrkMuTight muons;Number of muons", 10, 0, 10);
+  hNTrkMuTight2_   = fs->make<TH1F>("hNTrkMuTight2", "Number of TrkMuTight muons;Number of muons", 10, 0, 10);
+  hNGlbMuTight_    = fs->make<TH1F>("hNGlbMuTight", "Number of GlobalMuPromptTight muons;Number of muons", 10, 0, 10);
+  hNGlbMuTight2_   = fs->make<TH1F>("hNGlbMuTight2", "Number of GlobalMuPromptTight muons;Number of muons", 10, 0, 10);
+  hNGlbMuTighter_  = fs->make<TH1F>("hNGlbMuTighter", "Number of GlobalMuPromptTight muons;Number of muons", 10, 0, 10);
+  hNGlbMuTighter2_ = fs->make<TH1F>("hNGlbMuTighter2", "Number of GlobalMuPromptTight muons;Number of muons", 10, 0, 10);
 
   const char* idNames[] = {
-    "All", "AllGlbMu", "AllStaMu", "AllTrkMu", "AllRPCMu", "RPCMuLoose", "RPCMuMedium", "RPCMuTight", "TrkMuArbitrated", "GlbMuLoose", "GlbPromptTight", "GlbMuMedium", "GlbMuTight"
+    "All", "AllGlbMu", "AllStaMu", "AllTrkMu", "AllRPCMu", "RPCMuTight", "TMOneStationTight", "TMOneStationTight+", "GlbPromptTight", "GlbPromptTight+", "GlbPromptTighter", "GlbPromptTighter+"
   };
   const int nId = sizeof(idNames)/sizeof(const char*);
   hIdCorrelation_ = fs->make<TH2F>("hIdCorrelation", "ID correlation", nId, 0, nId, nId, 0, nId);
@@ -187,17 +187,16 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
   muPhi.clear();
 
   trkMu.clear();
-  trkMuArb.clear();
+  trkMuTight.clear();
+  trkMuTight2.clear();
   rpcMu.clear();
-  rpcMuLoose.clear();
-  rpcMuMedium.clear();
   rpcMuTight.clear();
   staMu.clear();
   glbMu.clear();
-  glbMuLoose.clear();
-  glbMuPromptT.clear();
-  glbMuMedium.clear();
   glbMuTight.clear();
+  glbMuTight2.clear();
+  glbMuTighter.clear();
+  glbMuTighter2.clear();
 
   nMatchesSegNoArb.clear();
   nStationSegNoArb.clear();
@@ -205,11 +204,13 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
   nStationSegTrkArb.clear();
   nMatchesRPCTrkArb.clear();
   nStationRPCTrkArb.clear();
+  nLayerRPCTrkArb.clear();
 
   nMuon = muonHandle->size(); nSelMuon = 0;
   nGlbMuon = 0, nStaMuon = 0, nTrkMuon = 0;
-  nGlbPromptT = 0, nTrkMuArb = 0, nGlbMuLoose = 0, nGlbMuMedium = 0, nGlbMuTight = 0;
-  nRPCMuon = 0, nRPCMuMedium = 0, nRPCMuLoose = 0, nRPCMuTight = 0;
+  nRPCMuon = 0, nRPCMuTight = 0;
+  nTrkMuTight = 0, nTrkMuTight2 = 0;
+  nGlbMuTight = 0, nGlbMuTight2 = 0, nGlbMuTighter = 0, nGlbMuTighter2 = 0;
   for ( edm::View<reco::Muon>::const_iterator muon = muonHandle->begin();
         muon != muonHandle->end(); ++muon )
   {
@@ -218,21 +219,19 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
     const double abseta = abs(muon->eta());
     if ( abseta > maxEtaTrk_ ) continue;
 
-    std::cout << " * Muon Pt = " << muon->pt() << ", P = " << muon->p() << ", Eta = " << muon->eta() << ", Phi = " << muon->phi() << std::endl;
+    //std::cout << " * Muon Pt = " << muon->pt() << ", P = " << muon->p() << ", Eta = " << muon->eta() << ", Phi = " << muon->phi() << std::endl;
 
     const bool idFlags[] = {
       true,
       muon->isGlobalMuon(), muon->isStandAloneMuon(), muon->isTrackerMuon(),
       muon->isRPCMuon(),
-      muon::isGoodMuon(*muon, muon::RPCMuLoose),
-      muon::isGoodMuon(*muon, muon::RPCMuLoose) && muon->numberOfMatchedStations(reco::Muon::RPCHitAndTrackArbitration)>1,
-      muon->isRPCMuon() && muon::isGoodMuon(*muon, muon::RPCMu, 3, 20, 4, 1e9, 1e9, 1e9, 1e9, reco::Muon::RPCHitAndTrackArbitration, false, false),
-      muon::isGoodMuon(*muon, muon::TrackerMuonArbitrated),
-      muon->isGlobalMuon() && muon->globalTrack()->normalizedChi2()<10., 
+      muon::isGoodMuon(*muon, muon::RPCMuLoose) && muon->numberOfMatchedStations(reco::Muon::RPCHitAndTrackArbitration)>1 && muon->numberOfMatchedLayers(reco::Muon::RPCHitAndTrackArbitration)>2,
+      muon::isGoodMuon(*muon, muon::TMOneStationTight),
+      muon::isGoodMuon(*muon, muon::TMOneStationTight) || (muon::isGoodMuon(*muon, muon::RPCMuLoose) && muon->numberOfMatchedStations(reco::Muon::RPCHitAndTrackArbitration)>1 && muon->numberOfMatchedLayers(reco::Muon::RPCHitAndTrackArbitration)>2),
       muon::isGoodMuon(*muon, muon::GlobalMuonPromptTight),
-      muon->isGlobalMuon() && muon->globalTrack()->normalizedChi2()<10. && muon->numberOfMatchedStations(reco::Muon::SegmentAndTrackArbitration)>1,
+      muon::isGoodMuon(*muon, muon::GlobalMuonPromptTight) || (muon::isGoodMuon(*muon, muon::RPCMuLoose) && muon->numberOfMatchedStations(reco::Muon::RPCHitAndTrackArbitration)>1 && muon->numberOfMatchedLayers(reco::Muon::RPCHitAndTrackArbitration)>2),
       muon::isGoodMuon(*muon, muon::GlobalMuonPromptTight) && muon->numberOfMatchedStations(reco::Muon::SegmentAndTrackArbitration)>1,
-
+      (muon::isGoodMuon(*muon, muon::GlobalMuonPromptTight) && muon->numberOfMatchedStations(reco::Muon::SegmentAndTrackArbitration)>1) || (muon::isGoodMuon(*muon, muon::RPCMuLoose) && muon->numberOfMatchedStations(reco::Muon::RPCHitAndTrackArbitration)>1 && muon->numberOfMatchedLayers(reco::Muon::RPCHitAndTrackArbitration)>2)
     };
 
     //--GlobalMuLoose
@@ -257,16 +256,15 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
     {
       ++nRPCMuon;
 
-      if ( idFlags[5] ) ++nRPCMuLoose;
-      if ( idFlags[6] ) ++nRPCMuMedium;
-      if ( idFlags[7] ) ++nRPCMuTight;
+      if ( idFlags[5] ) ++nRPCMuTight;
+      if ( idFlags[6] ) ++nTrkMuTight;
+      if ( idFlags[7] ) ++nTrkMuTight2;
     }
 
-    if ( idFlags[8] ) ++nTrkMuArb;
-    if ( idFlags[9] ) ++nGlbMuLoose;
-    if ( idFlags[10] ) ++nGlbPromptT;
-    if ( idFlags[11] ) ++nGlbMuMedium;
-    if ( idFlags[12] ) ++nGlbMuTight;
+    if ( idFlags[8] ) ++nGlbMuTight;
+    if ( idFlags[9] ) ++nGlbMuTight2;
+    if ( idFlags[10] ) ++nGlbMuTighter;
+    if ( idFlags[11] ) ++nGlbMuTighter2;
 
     muPt.push_back(muon->pt());
     muP.push_back(muon->p());
@@ -277,14 +275,13 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
     staMu.push_back(idFlags[2]);
     trkMu.push_back(idFlags[3]);
     rpcMu.push_back(idFlags[4]);
-    rpcMuLoose.push_back(idFlags[5]);
-    rpcMuMedium.push_back(idFlags[6]);
-    rpcMuTight.push_back(idFlags[7]);
-    trkMuArb.push_back(idFlags[8]);
-    glbMuLoose.push_back(idFlags[9]);
-    glbMuPromptT.push_back(idFlags[10]);
-    glbMuMedium.push_back(idFlags[11]);
-    glbMuTight.push_back(idFlags[12]);
+    rpcMuTight.push_back(idFlags[5]);
+    trkMuTight.push_back(idFlags[6]);
+    trkMuTight2.push_back(idFlags[7]);
+    glbMuTight.push_back(idFlags[8]);
+    glbMuTight2.push_back(idFlags[9]);
+    glbMuTighter.push_back(idFlags[10]);
+    glbMuTighter2.push_back(idFlags[11]);
 
     nMatchesSegNoArb.push_back(muon->numberOfMatches(reco::Muon::NoArbitration));
     nStationSegNoArb.push_back(muon->numberOfMatchedStations(reco::Muon::NoArbitration));
@@ -292,8 +289,9 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
     nStationSegTrkArb.push_back(muon->numberOfMatchedStations(reco::Muon::SegmentAndTrackArbitration));
     nMatchesRPCTrkArb.push_back(muon->numberOfMatches(reco::Muon::RPCHitAndTrackArbitration));
     nStationRPCTrkArb.push_back(muon->numberOfMatchedStations(reco::Muon::RPCHitAndTrackArbitration));
+    nLayerRPCTrkArb.push_back(muon->numberOfMatchedLayers(reco::Muon::RPCHitAndTrackArbitration));
 
-    std::cout << " + idFlags [RPCMu, Loose, Medium, Tight] = " << idFlags[4] << " " << idFlags[5] << " " << idFlags[6] << " " << idFlags[7] << std::endl;
+    //std::cout << " + idFlags [RPCMu, Loose, Medium, Tight] = " << idFlags[4] << " " << idFlags[5] << " " << idFlags[6] << " " << idFlags[7] << std::endl;
 
     // Fill correlation matrix
     for ( int i=0, n=sizeof(idFlags)/sizeof(const bool); i<n; ++i )
@@ -313,13 +311,13 @@ void RPCMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& ev
 
   hNMuon_->Fill(nMuon);
   hNRPCMuon_->Fill(nRPCMuon);
-  hNRPCMuMedium_->Fill(nRPCMuMedium);
-  hNGlbPromptT_->Fill(nGlbPromptT);
-  hNTrkMuArb_->Fill(nTrkMuArb);
-  hNRPCMuLoose_->Fill(nRPCMuLoose);
   hNRPCMuTight_->Fill(nRPCMuTight);
+  hNTrkMuTight_->Fill(nTrkMuTight);
+  hNTrkMuTight2_->Fill(nTrkMuTight2);
   hNGlbMuTight_->Fill(nGlbMuTight);
-  hNTrkMuon_->Fill(nTrkMuon);
+  hNGlbMuTight2_->Fill(nGlbMuTight2);
+  hNGlbMuTighter_->Fill(nGlbMuTighter);
+  hNGlbMuTighter2_->Fill(nGlbMuTighter2);
 
   tree_->Fill();
 
