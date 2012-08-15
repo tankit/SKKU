@@ -125,6 +125,17 @@ void Effplot(TString var="eta", TString var2="", Float_t hmin = 0.0, Float_t hma
 
   gr_Iso->Draw("APZ"); 
   gr_Isomc->Draw("PZsame"); 
+
+//  TF1 *f1 = new TF1("f1","x",1,19);
+//  TGaxis *A1 = new TGaxis(0,1.1,3.14,1.1,"f1",515,"-");
+//  A1->SetLabelSize(0.03);
+//  A1->Draw();
+
+//  TF1 *f2 = new TF1("f2","x",19,37);
+//  TGaxis *A2 = new TGaxis(-3.14,1.1,0,1.1,"f2",515,"-");
+//  A2->SetLabelSize(0.03);
+//  A2->Draw();
+
   //TLegend *lIso= new TLegend(0.83,0.82,0.95,0.92);
   TLegend *lIso= new TLegend(0.5,0.2,0.75,0.3);
   lIso->SetBorderSize(0);
