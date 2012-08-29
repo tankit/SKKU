@@ -587,9 +587,6 @@ switchOnTrigger( process )
 process.patTrigger.addL1Algos = cms.bool(True)
 switchOnTrigger( process )
 
-#if runPF2PAT:
-#  pPF += process.patTrigger
-#else:
 process.p += process.patTrigger
 
 ##______________________________________________________________________________________________//
