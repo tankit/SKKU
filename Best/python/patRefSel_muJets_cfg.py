@@ -45,7 +45,7 @@ use1Jet         = True
 # Step 4b
 use2Jets        = True
 # Step 4c (choice depends on trigger)
-use3JetsLoose   = False
+use3JetsLoose   = True 
 use3JetsTight   = False
 # Step 5
 use4Jets        = False
@@ -69,7 +69,7 @@ from TopQuarkAnalysis.Configuration.patRefSel_refMuJets import *
 #electronCut = ''
 # Jets
 #jetCut          = ''
-jetCutPF        = 'pt > 20 && abs(eta) < 2.5 && numberOfDaughters > 1 && neutralHadronEnergyFraction < 0.99 && neutralEmEnergyFraction < 0.99 && (chargedEmEnergyFraction < 0.99 || abs(eta) > 2.4) && (chargedHadronEnergyFraction > 0. || abs(eta) >= 2.4) && (chargedMultiplicity > 0 || abs(eta) >= 2.4)'
+#jetCutPF        = 'pt > 20 && abs(eta) < 2.5 && numberOfDaughters > 1 && neutralHadronEnergyFraction < 0.99 && neutralEmEnergyFraction < 0.99 && (chargedEmEnergyFraction < 0.99 || abs(eta) > 2.4) && (chargedHadronEnergyFraction > 0. || abs(eta) >= 2.4) && (chargedMultiplicity > 0 || abs(eta) >= 2.4)'
 
 #veryLooseJetCut = 'pt > 20.' # transverse momentum (all jets)
 #looseJetCut     = 'pt > 35.' # transverse momentum (3rd jet, optional for 'use3JetsLoose = True')
@@ -77,7 +77,8 @@ jetCutPF        = 'pt > 20 && abs(eta) < 2.5 && numberOfDaughters > 1 && neutral
 
 # Trigger and trigger object
 #triggerSelectionData       = 'HLT_IsoMu20_eta2p1_TriCentralPFJet30_v* OR HLT_IsoMu20_eta2p1_TriCentralPFNoPUJet30_v*'
-triggerSelectionData       = 'HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v* OR HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v* OR HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet45_35_25_v* OR HLT_IsoMu17_eta2p1_TriCentralPFJet30_v* OR HLT_IsoMu20_eta2p1_TriCentralPFJet30_v* OR HLT_IsoMu20_eta2p1_TriCentralPFNoPUJet30_v* OR HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet50_40_30_v*'
+triggerSelectionData       = 'HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v* OR HLT_IsoMu17_eta2p1_TriCentralPFJet30_v* '
+#triggerSelectionData       = 'HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v* OR HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v* OR HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet45_35_25_v* OR HLT_IsoMu17_eta2p1_TriCentralPFJet30_v* OR HLT_IsoMu20_eta2p1_TriCentralPFJet30_v* OR HLT_IsoMu20_eta2p1_TriCentralPFNoPUJet30_v* OR HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet50_40_30_v*'
 #triggerSelectionData       = 'HLT_IsoMu24_eta2p1_v*'
 #triggerObjectSelectionData = 'HLT_IsoMu24_eta2p1_v*'
 #triggerSelectionMC       = ''
@@ -198,6 +199,7 @@ wantSummary = True
 
 process.load( "TopQuarkAnalysis.Configuration.patRefSel_basics_cff" )
 process.MessageLogger.cerr.FwkReport.reportEvery = fwkReportEvery
+process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.options.wantSummary = wantSummary
 if runOnMC:
   process.GlobalTag.globaltag = globalTagMC
@@ -587,6 +589,16 @@ switchOnTrigger( process )
 process.patTrigger.addL1Algos = cms.bool(True)
 switchOnTrigger( process )
 
+process.hltTrigReport = cms.EDAnalyzer( "HLTrigReport",
+    HLTriggerResults = cms.InputTag( 'TriggerResults','','HLT' ),
+    reportBy = cms.untracked.string( 'run' ),
+    resetBy  = cms.untracked.string( 'run' ),
+)
+
+process.MessageLogger.categories.append("HLTrigReport")
+process.outPath = cms.EndPath(
+    process.hltTrigReport
+)
 process.p += process.patTrigger
 
 ##______________________________________________________________________________________________//
@@ -595,11 +607,13 @@ process.out.outputCommands = cms.untracked.vstring(
   'keep *Vertex*_goodOfflinePrimaryVertices_*_PAT',
   'keep *_goodPatMuons*_*_*',
   'keep *_selectedPatMuons*_*_*',
-  'keep *_loosePatJets*_*_*',
-  'keep *_tightPatJets*_*_*', 
+  'keep *Jet*_veryLoosePatJets*_*_*',
+  'keep *Jet*_loosePatJets*_*_*',
+  'keep *Jet*_tightPatJets*_*_*', 
   'keep *_patMETs*_*_*',
   'keep *TriggerPath*_patTrigger_*_*',
   'keep *_hltTriggerSummaryAOD_*_*',
+  'keep *_TriggerResults_*_*',
   'keep *_offlineBeamSpot_*_*',
   'keep *_offlinePrimaryVertices*_*_*',
   )
