@@ -46,7 +46,7 @@ use1Jet         = True
 use2Jets        = True
 # Step 4c (choice depends on trigger)
 use3JetsLoose   = True 
-use3JetsTight   = False
+use3JetsTight   = False 
 # Step 5
 use4Jets        = False
 ## Step 6
@@ -77,8 +77,10 @@ from TopQuarkAnalysis.Configuration.patRefSel_refMuJets import *
 
 # Trigger and trigger object
 #triggerSelectionData       = 'HLT_IsoMu20_eta2p1_TriCentralPFJet30_v* OR HLT_IsoMu20_eta2p1_TriCentralPFNoPUJet30_v*'
-triggerSelectionData       = 'HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v* OR HLT_IsoMu17_eta2p1_TriCentralPFJet30_v* '
+#triggerSelectionData       = 'HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v* OR HLT_IsoMu17_eta2p1_TriCentralPFJet30_v* '
 #triggerSelectionData       = 'HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v* OR HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v* OR HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet45_35_25_v* OR HLT_IsoMu17_eta2p1_TriCentralPFJet30_v* OR HLT_IsoMu20_eta2p1_TriCentralPFJet30_v* OR HLT_IsoMu20_eta2p1_TriCentralPFNoPUJet30_v* OR HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet50_40_30_v*'
+triggerSelectionData       = 'HLT_IsoMu17_eta2p1_TriCentral* OR HLT_Mu17_eta2p1_TriCentral*'
+triggerObjectSelectionData        = 'type("TriggerMuon") && ( path("HLT_IsoMu17_eta2p1_TriCentral*") || path("HLT_Mu17_eta2p1_TriCentral*") )'
 #triggerSelectionData       = 'HLT_IsoMu24_eta2p1_v*'
 #triggerObjectSelectionData = 'HLT_IsoMu24_eta2p1_v*'
 #triggerSelectionMC       = ''
@@ -92,7 +94,7 @@ postfix = 'PF'
 # subtract charged hadronic pile-up particles (from wrong PVs)
 # effects also JECs
 usePFnoPU       = True # before any top projection
-usePfIsoLessCHS = False # switch to new PF isolation with L1Fastjet CHS
+usePfIsoLessCHS = True # switch to new PF isolation with L1Fastjet CHS
 
 # other switches for PF top projections (default: all 'True')
 useNoMuon     = True # before electron top projection
@@ -179,7 +181,8 @@ globalTagMC   = 'START52_V9C::All' # incl. Summer12 JEC and new b-tag SF
 ### Output
 
 # output file
-outputFile = 'patRefSel_muJets.root'
+#outputFile = 'patRefSel_muJets.root'
+outputFile = 'patTuple.root'
 
 # event frequency of Fwk report
 fwkReportEvery = 1000
@@ -584,10 +587,11 @@ if use4Jets:
 process.out.SelectEvents.SelectEvents.append( 'p' )
 
 ##______________________________________________________________________________________________//
+### PAT trigger
 from PhysicsTools.PatAlgos.tools.trigTools import *
-switchOnTrigger( process )
-process.patTrigger.addL1Algos = cms.bool(True)
-switchOnTrigger( process )
+switchOnTrigger( process ) # overwrite sequence default "patDefaultSequence", since it is not used in any path
+process.patTrigger.addL1Algos = cms.bool(True) # add L1 algorithms' collection
+switchOnTrigger( process ) # called once more to update the event content according to the changed parameters!!!
 
 process.hltTrigReport = cms.EDAnalyzer( "HLTrigReport",
     HLTriggerResults = cms.InputTag( 'TriggerResults','','HLT' ),
@@ -606,7 +610,7 @@ process.out.outputCommands = cms.untracked.vstring(
   'drop *',
   'keep *Vertex*_goodOfflinePrimaryVertices_*_PAT',
   'keep *_goodPatMuons*_*_*',
-  'keep *_selectedPatMuons*_*_*',
+  'keep *_selectedPatMuonsPF_*_*',
   'keep *Jet*_veryLoosePatJets*_*_*',
   'keep *Jet*_loosePatJets*_*_*',
   'keep *Jet*_tightPatJets*_*_*', 
