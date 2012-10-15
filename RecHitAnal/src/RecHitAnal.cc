@@ -13,8 +13,8 @@
 //                                                                                                                               
 // Original Author:  Hyunkwan Seo,588 R-009,+41227678393,                                                                        
 //         Created:  Fri Jun 17 17:45:39 CEST 2011<<<<<<< RecHitAnal.cc
-// $Id: RecHitAnal.cc,v 1.8 2012/01/26 16:28:41 hkseo Exp $=======
-// $Id: RecHitAnal.cc,v 1.8 2012/01/26 16:28:41 hkseo Exp $>>>>>>> 1.4
+// $Id: RecHitAnal.cc,v 1.9 2012/02/29 14:24:23 hkseo Exp $=======
+// $Id: RecHitAnal.cc,v 1.9 2012/02/29 14:24:23 hkseo Exp $>>>>>>> 1.4
 //                                                                                                                               
 //    
 
@@ -173,6 +173,12 @@ private:
   Int_t nValidMuonRPCHits, rpcStationsWithValidHits;
   Int_t nValidHits, nValidMuonHits, nValidTrackerHits;
   int segmFromDt, segmFromCsc;
+  Int_t nMatch; //new
+
+  Int_t nValidMuonHitsNoRPC, nValidTrackerHitsNoRPC; //new
+  Int_t segmFromDtNoRPC, segmFromCscNoRPC;//new
+  Int_t nMatchNoRPC, nMatchedSegmNoRPC;//new
+
   Float_t eta, phi, pt;
   Float_t eta_STA, phi_STA, pt_STA;
   Float_t normChi2;
@@ -195,6 +201,9 @@ private:
   Float_t ndofFromSegmDt[kMaxSegm];
   Float_t ndofFromSegmCsc[kMaxSegm];
 
+  Int_t nMatchedSegm;
+
+
   //for STA
   Int_t regionSTA[kMax];
   Int_t ringSTA[kMax];
@@ -203,6 +212,27 @@ private:
   Int_t stationSTA[kMax];  // 1-4 for barrel, disk 1-3 for endcaps 
   Int_t sublayerSTA[kMax]; // 1 (in) or 2 (out) just for barrel RB1 and RB2  
   Float_t recXSTA[kMax];
+
+
+  //for TRK Muons
+  TTree *t3; 
+  Int_t hitsFromRpc_track, hitsFromDt_track, hitsFromCsc_track;
+  Int_t segmFromDt_track, segmFromCsc_track;
+  Float_t pt_track, eta_track, phi_track;
+  
+  Int_t region_track[kMax];
+  Int_t ring_track[kMax];
+  Int_t sector_track[kMax];
+  Int_t subsector_track[kMax];
+  Int_t station_track[kMax];  // 1-4 for barrel, disk 1-3 for endcaps 
+  Int_t sublayer_track[kMax]; // 1 (in) or 2 (out) just for barrel RB1 and RB2  
+  Float_t recX_track[kMax];
+  Int_t hitsFromSegmDt_track[kMaxSegm];
+  Int_t hitsFromSegmCsc_track[kMaxSegm];
+  Float_t chi2FromSegmDt_track[kMaxSegm];
+  Float_t chi2FromSegmCsc_track[kMaxSegm];
+  Float_t ndofFromSegmDt_track[kMaxSegm];
+  Float_t ndofFromSegmCsc_track[kMaxSegm];
 
   bool Debug_;
 
@@ -216,6 +246,11 @@ private:
 
   SegmentsTrackAssociator* theSegmentsAssociator;
 
+
+  // Tree for each CSC segment
+  TTree *t2; 
+  Int_t endcap, stationCSC, ringCSC, chamberCSC;
+  Float_t globalX, globalY;
 
   //Service<TFileService> fs;
 };
@@ -290,10 +325,24 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t1->Branch("nTracks",     &nTracks,          "nTracks/I");
   t1->Branch("nMuons",      &nMuons,           "nMuons/I");
   t1->Branch("nRpcHit",     &hitsFromRpc,      "nRpcHit/I");
+
+
   t1->Branch("nValidHits",              &nValidHits,               "nValidHits/I");
   t1->Branch("nValidMuonHits",          &nValidMuonHits,           "nValidMuonHits/I");
   t1->Branch("nValidTrackerHits",       &nValidTrackerHits,        "nValidTrackerHits/I");
   t1->Branch("nValidMuonRpcHit",        &nValidMuonRPCHits,        "nValidMuonRpcHit/I");
+  t1->Branch("nMatch",            &nMatch,           "nMatch/I");
+  t1->Branch("nMatchedSegm",      &nMatchedSegm,     "nMatchedSegm/I");
+
+  t1->Branch("nValidMuonHitsNoRPC",     &nValidMuonHitsNoRPC,      "nValidMuonHitsNoRPC/I"); //new
+  t1->Branch("nValidTrackerHitsNoRPC",  &nValidTrackerHitsNoRPC,   "nValidTrackerHitsNoRPC/I"); //new
+
+  t1->Branch("nMatchNoRPC",       &nMatchNoRPC,           "nMatchNoRPC/I"); //new
+  t1->Branch("nMatchedSegmNoRPC", &nMatchedSegmNoRPC,     "nMatchedSegmNoRPC/I"); //new
+  t1->Branch("nDtSegmNoRPC",      &segmFromDtNoRPC,       "nDtSegmNoRPC/I"); //new
+  t1->Branch("nCscSegmNoRPC",     &segmFromCscNoRPC,      "nCscSegmNoRPC/I"); //new
+
+
   t1->Branch("rpcStationsWithHits",     &rpcStationsWithValidHits, "rpcStationsWithHits/I");
   t1->Branch("nDtHit",      &hitsFromDt,       "nDtHit/I");
   t1->Branch("nCscHit",     &hitsFromCsc,      "nCscHit/I");
@@ -333,7 +382,45 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t1->Branch("stationSTA",  stationSTA,        "stationSTA[nRpcHitSTA]/I");
   t1->Branch("sublayerSTA", sublayerSTA,       "sublayerSTA[nRpcHitSTA]/I");
   t1->Branch("localXSTA",   recXSTA,           "localXSTA[nRpcHitSTA]/F");
+
+  t2 = fs->make<TTree>("CSCSegm","");
+  t2->Branch("Run",         &Run,              "Run/I");
+  t2->Branch("eventNumber", &eventNumber,      "eventNumber/I");
+  t2->Branch("totalEvents", &totalEvents,      "totalEvents/I");
+  t2->Branch("endcap",      &endcap,           "endcap/I");
+  t2->Branch("station",     &stationCSC,       "station/I");
+  t2->Branch("ring",        &ringCSC,          "ring/I");
+  t2->Branch("chamber",     &chamberCSC,       "chamber/I");
+  t2->Branch("globalX",     &globalX,          "globalX/F");
+  t2->Branch("globalY",     &globalY,          "globalY/F");
+
+  t3 = fs->make<TTree>("TrackerMuon","");
+  t3->Branch("nRpcHit_track",  &hitsFromRpc_track,   "nRpcHit_track/I");
+  t3->Branch("nDtHit_track",   &hitsFromDt_track,    "nDtHit_track/I");
+  t3->Branch("nCscHit_track",  &hitsFromCsc_track,   "nCscHit_track/I");
+  t3->Branch("eta_track",      &eta_track,        "eta_track/F");
+  t3->Branch("phi_track",      &phi_track,        "phi_track/F");
+  t3->Branch("pt_track",       &pt_track,         "pt_track/F");
+  t3->Branch("region_track",   region_track,         "region_track[nRpcHit_track]/I");
+  t3->Branch("ring_track",     ring_track,           "ring_track[nRpcHit_track]/I");
+  t3->Branch("sector_track",   sector_track,         "sector_track[nRpcHit_track]/I");
+  t3->Branch("subsector_track",subsector_track,      "subsector_track[nRpcHit_track]/I");
+  t3->Branch("station_track",  station_track,        "station_track[nRpcHit_track]/I");
+  t3->Branch("sublayer_track", sublayer_track,       "sublayer_track[nRpcHit_track]/I");
+  t3->Branch("localX_track",   recX_track,           "localX_track[nRpcHit_track]/F");
+
+  t3->Branch("nDtSegm_track",     &segmFromDt_track,       "nDtSegm_track/I");
+  t3->Branch("nCscSegm_track",    &segmFromCsc_track,      "nCscSegm_track/I");
+
+  t3->Branch("hitsFromSegmDt_track",  hitsFromSegmDt_track,    "hitsFromSegmDt_track[nDtSegm_track]/I");
+  t3->Branch("hitsFromSegmCsc_track", hitsFromSegmCsc_track,   "hitsFromSegmCsc_track[nCscSegm_track]/I");
+  t3->Branch("chi2FromSegmDt_track",  chi2FromSegmDt_track,    "chi2FromSegmDt_track[nDtSegm_track]/F");
+  t3->Branch("chi2FromSegmCsc_track", chi2FromSegmCsc_track,   "chi2FromSegmCsc_track[nCscSegm_track]/F");
+  t3->Branch("ndofFromSegmDt_track",  ndofFromSegmDt_track,    "ndofFromSegmDt_track[nDtSegm_track]/F");
+  t3->Branch("ndofFromSegmCsc_track", ndofFromSegmCsc_track,   "ndofFromSegmCsc_track[nCscSegm_track]/F");
+
 }
+
 
 RecHitAnal::~RecHitAnal()
 {
@@ -522,6 +609,31 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
     pt = ((*muons)[muidx]).pt();
     //float p = ((*muons)[muidx]).p();
     //float charge = ((*muons)[muidx]).charge();
+    nMatch = ((*muons)[muidx]).numberOfMatches();
+
+
+    //---------- Get Matched Segments --------------
+    //     static const int DT= 1;
+    //     static const int CSC=2;
+    //     static const int RPC=3;
+    //nMatchedSegm = 0;
+
+    int csc=0, dt=0;
+    for (int station=1; station<5; station++){
+      dt += ((*muons)[muidx]).numberOfSegments(station, 1);
+      csc += ((*muons)[muidx]).numberOfSegments(station, 2);
+    }
+    nMatchedSegm = dt + csc;
+
+    //((*muons)[muidx]).matchedSectors(ringMatched, stationMatched, sectorMatched, detIdMatched);
+
+    nMatchNoRPC = -1;
+    nMatchedSegmNoRPC = -1;
+    nValidMuonHitsNoRPC = -1;
+    nValidTrackerHitsNoRPC = -1;
+    segmFromDtNoRPC = -1;
+    segmFromCscNoRPC = -1;
+
 
     TrackRef glbOfGlobalRef = (*muons)[muidx].globalTrack();
     if ( (*muons)[muidx].isTrackerMuon() ) isTrackerMu[muidx] = true;
@@ -532,17 +644,77 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
       dxy[muidx] = -1.* glbOfGlobalRef->dxy(point);
     }
 
+    //cout << "   with RPC "<<(*muons)[muidx].isGlobalMuon() << " "<<(*muons)[muidx].isPFMuon() << endl;
+    //cout << "without RPC "<<(*globalMuonsNoRPC)[muidx].isGlobalMuon() << " "<<(*globalMuonsNoRPC)[muidx].isPFMuon() << endl;
+
+
     //check if muon is matched to mNoRPC
     for(int i=0; i<nMuonsNoRPC; i++) {
+      TrackRef glbOfGlobalRefNoRPC = (*globalMuonsNoRPC)[i].globalTrack();
       TLorentzVector t1(mupx[muidx], mupy[muidx], mupz[muidx], mup[muidx]);
       TLorentzVector t2( ((*globalMuonsNoRPC)[i]).px(), ((*globalMuonsNoRPC)[i]).py(), ((*globalMuonsNoRPC)[i]).pz(), ((*globalMuonsNoRPC)[i]).p() );
-      if (t2.DeltaR(t1)<0.01) isMatchToNoRPC[muidx] = true;
+      if (t2.DeltaR(t1)<0.01) {
+        isMatchToNoRPC[muidx] = true;
+        nMatchNoRPC = ((*globalMuonsNoRPC)[i]).numberOfMatches();
+        nValidMuonHitsNoRPC = glbOfGlobalRefNoRPC->hitPattern().numberOfValidMuonHits();
+        nValidTrackerHitsNoRPC = glbOfGlobalRefNoRPC->hitPattern().numberOfValidTrackerHits();
+	
+        //     static const int DT= 1;
+        //     static const int CSC=2;
+        //     static const int RPC=3;
+
+        int csc=0, dt=0;
+        for (int station=1; station<5; station++){
+          dt += ((*globalMuonsNoRPC)[i]).numberOfSegments(station, 1);
+          csc += ((*globalMuonsNoRPC)[i]).numberOfSegments(station, 2);
+        }
+        nMatchedSegmNoRPC = dt + csc;
+
+        // get segments from track
+	MuonTransientTrackingRecHit::MuonRecHitContainer segments = theSegmentsAssociator->associate(event, eventSetup, (reco::Track)*glbOfGlobalRefNoRPC);
+
+        // segment counters
+        segmFromDtNoRPC=0;
+        segmFromCscNoRPC=0;
+
+        for (MuonTransientTrackingRecHit::MuonRecHitContainer::const_iterator segment=segments.begin(); segment!=segments.end(); segment++) {
+          DetId id = (*segment)->geographicalId();
+          //int hitsFromSegmDt_=0;
+          //int hitsFromSegmCsc_=0;
+
+          // hits from DT segments
+          if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::DT ) {
+            const DTRecSegment4D *seg4D = dynamic_cast<const DTRecSegment4D*>((*segment)->hit());
+            /*
+	      if((*seg4D).hasPhi())
+              hitsFromSegmDt_+=(*seg4D).phiSegment()->specificRecHits().size();
+	      if((*seg4D).hasZed())
+              hitsFromSegmDt_+=(*seg4D).zSegment()->specificRecHits().size();
+	      hitsFromSegmDt[segmFromDt] = hitsFromSegmDt_;
+	      chi2FromSegmDt[segmFromDt] = (*seg4D).chi2();
+	      ndofFromSegmDt[segmFromDt] = (*seg4D).degreesOfFreedom();
+            */
+            ++segmFromDtNoRPC;
+          }
+          // hits from CSC segments
+          if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::CSC ) {
+            /*
+	      hitsFromSegmCsc_+=(*segment)->recHits().size();
+	      hitsFromSegmCsc[segmFromCsc] = hitsFromSegmCsc_;
+	      chi2FromSegmCsc[segmFromCsc] = (*segment)->chi2();
+	      ndofFromSegmCsc[segmFromCsc] = (*segment)->degreesOfFreedom();
+            */
+            segmFromCscNoRPC++;
+          }
+        }    // end for muonTransientTrackingRecHit
+      }  //end if (t2.DeltaR(t1)<0.01)
+      
     }
     matchToNoRPC = isMatchToNoRPC[muidx];
     isSTA = isStaMu[muidx];
     
     //if (isGlobalMu[muidx] && isStaMu[muidx] && abs(eta)<1.6) {
-    if (isGlobalMu[muidx] && abs(eta)<1.6) {
+    if (isGlobalMu[muidx] && abs(eta)<1.8) {
       if(Debug_) cout<< " mark 2 "<<endl;
 
       nValidMuonRPCHits = glbOfGlobalRef->hitPattern().numberOfValidMuonRPCHits();
@@ -737,9 +909,121 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
     } // end if subset of muons
 
 
+
+    ////////////////////////////////////////
+    /////////// For tracker muons /////////
+    ///////////////////////////////////////
+
+    if (isTrackerMu[muidx] && abs(eta)<1.8) {
+      TrackRef trkOfGlobalRef = (*muons)[muidx].track();
+      //TrackRef trkOfGlobalRef = (*muons)[muidx].globalTrack();
+      pt_track = trkOfGlobalRef->pt();
+      eta_track = trkOfGlobalRef->eta();
+      phi_track = trkOfGlobalRef->phi();
+
+      // get segments from track
+      MuonTransientTrackingRecHit::MuonRecHitContainer segments = theSegmentsAssociator->associate(event, eventSetup, (reco::Track)*trkOfGlobalRef);
+      segmFromDt_track=0;
+      segmFromCsc_track=0;
+
+      for (MuonTransientTrackingRecHit::MuonRecHitContainer::const_iterator segment=segments.begin(); segment!=segments.end(); segment++) {
+        DetId id = (*segment)->geographicalId();
+	int hitsFromSegmDt_track_=0;
+	int hitsFromSegmCsc_track_=0;	
+
+        // hits from DT segments
+        if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::DT ) {
+          const DTRecSegment4D *seg4D = dynamic_cast<const DTRecSegment4D*>((*segment)->hit());
+          if((*seg4D).hasPhi())
+            hitsFromSegmDt_track_+=(*seg4D).phiSegment()->specificRecHits().size();
+          if((*seg4D).hasZed())
+            hitsFromSegmDt_track_+=(*seg4D).zSegment()->specificRecHits().size();
+	  hitsFromSegmDt_track[segmFromDt_track] = hitsFromSegmDt_track_;
+	  chi2FromSegmDt_track[segmFromDt_track] = (*seg4D).chi2(); 
+	  ndofFromSegmDt_track[segmFromDt_track] = (*seg4D).degreesOfFreedom();
+          ++segmFromDt_track;
+        }
+        // hits from CSC segments
+        if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::CSC ) {
+          hitsFromSegmCsc_track_+=(*segment)->recHits().size();
+	  hitsFromSegmCsc_track[segmFromCsc_track] = hitsFromSegmCsc_track_;
+	  chi2FromSegmCsc_track[segmFromCsc_track] = (*segment)->chi2();
+	  ndofFromSegmCsc_track[segmFromCsc_track] = (*segment)->degreesOfFreedom();
+          segmFromCsc_track++;
+        }
+
+      }    // end for muonTransientTrackingRecHit                
+
+      // hit counters
+      hitsFromRpc_track=0;
+      hitsFromDt_track=0;
+      hitsFromCsc_track=0;
+
+      // hits from _track muon track
+      for(trackingRecHit_iterator recHit = ((reco::Track)*trkOfGlobalRef).recHitsBegin(); recHit != ((reco::Track)*trkOfGlobalRef).recHitsEnd(); ++recHit){
+	DetId id = (*recHit)->geographicalId();
+	if (!(*recHit)->isValid()) continue;
+
+	// hits from DT
+	if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::DT ) {
+	  hitsFromDt_track++;   
+	}
+	// hits from CSC
+	if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::CSC ) 
+	  hitsFromCsc_track++;
+
+	// hits from RPC
+	if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::RPC ) {
+	  const RPCRoll * r1; LocalPoint l;
+          l = (*recHit)->localPosition();
+	  r1 = rpcGeometry->roll(id);
+	  GlobalPoint G = r1->surface().toGlobal(l);
+	  RPCDetId rpcId = r1->id();
+
+	  region_track[hitsFromRpc_track] = rpcId.region();
+	  ring_track[hitsFromRpc_track] = rpcId.ring();
+	  sector_track[hitsFromRpc_track] = rpcId.sector();
+	  subsector_track[hitsFromRpc_track] = rpcId.subsector();
+	  station_track[hitsFromRpc_track] = rpcId.station(); // 1-4 for barrel, disk 1-3 for endcaps 
+	  sublayer_track[hitsFromRpc_track] = rpcId.layer();    // 1 (in) or 2 (out) just for barrel RB1 and RB2
+	  recX_track[hitsFromRpc_track] = l.x();
+
+	  hitsFromRpc_track++;
+
+	} // End loop of RPC hit for Tracker Muons
+      } // End loop of Tracker Muon rechits
+      t3->Fill();
+    } // end if subset of muon==isTrackerMuon
+
+
   }  // end loop on muons
 
   t0->Fill();
+
+
+  // loop over all CSC segments                                                                                                                         
+  int icscsg=0;
+  for (CSCSegmentCollection::const_iterator segmentCSC = allCSCSegments->begin();
+       segmentCSC!=allCSCSegments->end(); ++segmentCSC){
+    icscsg++;
+    CSCDetId id  = (CSCDetId)(*segmentCSC).cscDetId();
+    endcap  = id.endcap();
+    ringCSC    = id.ring();
+    stationCSC = id.station();
+    chamberCSC = id.chamber();
+    // Get pointer to the chamber:                                                                                                                    
+    const CSCChamber* cscchamber = cscGeometry->chamber(id);
+    
+    LocalPoint CSCLocalPosition = segmentCSC->localPosition();
+    GlobalPoint CSCGlobalPosition = cscchamber->toGlobal(CSCLocalPosition);
+
+    globalX = CSCGlobalPosition.x();
+    globalY = CSCGlobalPosition.y();
+    //cout << "CSC XY: "<<CSCGlobalPosition.x()<<", "<< CSCGlobalPosition.y() << endl;
+    t2->Fill();
+  }
+  
+  
  }
 
 
