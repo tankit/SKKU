@@ -106,7 +106,7 @@ EventTupleProducerCMG<Lepton>::EventTupleProducerCMG(const edm::ParameterSet& ps
   jets_ = new std::vector<math::XYZTLorentzVector>();
   bTags_ = new std::vector<double>();
   jetMCBits_ = new std::vector<int>();
-  tree_->Branch("jets", "std::vector<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &jets_);
+  tree_->Branch("jets", "std::vector<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > >", &jets_);
   tree_->Branch("bTags", "std::vector<double>", &bTags_);
   tree_->Branch("jetMCBits", "std::vector<int>", &jetMCBits_);
 }
