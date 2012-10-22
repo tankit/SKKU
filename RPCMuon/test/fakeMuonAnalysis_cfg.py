@@ -20,7 +20,7 @@ process.TFileService = cms.Service("TFileService",
     fileName = cms.string("result.root"),
 )
 
-process.allMuon = cms.EDAnalyzer("RPCFakeAnalyzer",
+process.allMuon = cms.EDAnalyzer("FakeMuonAnalyzer",
     muon = cms.InputTag("muons"),
     kshort = cms.InputTag("generalV0Candidates", "Kshort"),
     idCuts = cms.vstring(
