@@ -38,7 +38,6 @@
 <use   name="DataFormats/RPCDigi"/>
 <use   name="DataFormats/RPCRecHit"/>
 <use   name="DataFormats/MuonReco"/>
-<!--flags   EDM_PLUGIN="1"/--> <!--caused Fatal Error-->
 <export>
   <lib   name="1"/>
 </export>
