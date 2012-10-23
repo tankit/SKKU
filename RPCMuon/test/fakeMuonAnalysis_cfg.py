@@ -22,12 +22,12 @@ process.TFileService = cms.Service("TFileService",
 
 process.allMuon = cms.EDAnalyzer("FakeMuonAnalyzer",
     muon = cms.InputTag("muons"),
-    kshort = cms.InputTag("generalV0Candidates", "Kshort"),
-    idCuts = cms.vstring(
-        "isGlobalMuon",
-        "isTrackerMuon",
-    #    "dB < 0.2",
-    )
+    vertexCand = cms.InputTag("generalV0Candidates", "Kshort"),
+    muonCut = cms.string("isGlobalMuon && isTrackerMuon"),
+    vertexCut = cms.string(""),
+    match = cms.string("matchByTrackRef"),
+    #maxDR = cms.double(0.02),
+    #maxDPt = cms.double(0.1),
 )
 
 process.p = cms.Path(
