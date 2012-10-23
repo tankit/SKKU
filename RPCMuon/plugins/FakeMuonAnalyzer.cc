@@ -44,7 +44,7 @@ private:
 
   edm::InputTag muonLabel_;
   edm::InputTag vertexCandLabel_;
-  StringCutObjectSelector<reco::Muon, true>* muonCut_;
+  std::vector<StringCutObjectSelector<reco::Muon, true>* > muonTypes_;
   StringCutObjectSelector<reco::VertexCompositeCandidate, true>* vertexCut_;
   double maxDR_, maxDPt_;
 
@@ -57,6 +57,7 @@ private:
   double vertexMass_, vertexPt_, vertexL3D_, vertexL2D_, vertexLxy_;
   double deltaR_, deltaPt_;
   math::XYZTLorentzVector muon_, track_;
+  std::vector<int> muonTypeResults_;
 };
 
 FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
@@ -65,9 +66,7 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
   vertexCandLabel_ = pset.getParameter<edm::InputTag>("vertexCand");
 
   std::string vertexCut = pset.getParameter<std::string>("vertexCut");
-  std::string muonCut   = pset.getParameter<std::string>("muonCut"  );
   vertexCut_ = new StringCutObjectSelector<reco::VertexCompositeCandidate, true>(vertexCut);
-  muonCut_   = new StringCutObjectSelector<reco::Muon, true>(muonCut);
 
   std::string matchBy = pset.getParameter<std::string>("match");
   if ( matchBy == "dR")
@@ -110,6 +109,17 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
   tree_->Branch("trackCharge", &trackCharge_, "trackCharge/I");
   tree_->Branch("muon" , "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &muon_ );
   tree_->Branch("track", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &track_);
+
+  edm::ParameterSet muonTypes = pset.getParameter<edm::ParameterSet>("muonTypes");
+  std::vector<std::string> muonTypeNames = muonTypes.getParameterNames();
+  muonTypeResults_.resize(muonTypeNames.size());
+  for ( int i=0, n=muonTypeNames.size(); i<n; ++i )
+  {
+    const std::string& cutName = muonTypeNames[i];
+    std::string muonType = muonTypes.getParameter<std::string>(cutName);
+    muonTypes_.push_back(new StringCutObjectSelector<reco::Muon, true>(muonType));
+    tree_->Branch(Form("muonType_%s", cutName.c_str()), &(muonTypeResults_[0])+i, Form("muonType_%s/I", cutName.c_str()));
+  }
 }
 
 void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& eventSetup)
@@ -117,6 +127,8 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
   run_ = event.id().run();
   event_ = event.id().event();
   lumi_ = event.id().luminosityBlock();
+
+  for ( int i=0, n=muonTypeResults_.size(); i<n; ++i ) muonTypeResults_[i] = -1;
 
   edm::Handle<edm::View<reco::Muon> > muonHandle;
   event.getByLabel(muonLabel_, muonHandle);
@@ -193,41 +205,30 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     const reco::Muon* muon1 = findMatchedMuonByTrackRef(*p1, muonHandle);
     const reco::Muon* muon2 = findMatchedMuonByTrackRef(*p2, muonHandle);
 
-    if ( muon1 and muon2 )
+    const reco::Muon* matchedMuon = muon1 ? muon1 : muon2;
+    const reco::Candidate* matchedTrack = muon1 ? p1 : p2;
+    // Set matched muon. 
+    // legId = 0 for un-matched case.
+    // There can be very rare case of double fake muons. 
+    // Only muon1 will be stored in this case but we can separate this case with requiring legId != 3
+    legId_ = 0;
+    if ( matchedMuon )
     {
-      // In case of double fake, tag it as leg=2 but keep 1st leg info only
-      legId_ = 2;
-      muonCharge_ = muon1->charge();
-      trackCharge_ = p1->charge();
-      muon_ = muon1->p4();
-      track_ = p1->p4();
-      deltaR_ = deltaR(*p1, *muon1);
-      deltaPt_ = p1->pt()-muon1->pt();
-      nFakeMuon += 2;
+      if ( muon1 ) { legId_ |= 1; ++nFakeMuon; }
+      if ( muon2 ) { legId_ |= 2; ++nFakeMuon; }
+      
+      muonCharge_ = matchedMuon->charge();
+      trackCharge_ = matchedTrack->charge();
+      muon_ = matchedMuon->p4();
+      track_ = matchedTrack->p4();
+      deltaR_ = deltaR(*matchedTrack, *matchedMuon);
+      deltaPt_ = matchedTrack->pt() - matchedMuon->pt();
+
+      for ( int i=0, n=muonTypes_.size(); i<n; ++i )
+      {
+        muonTypeResults_[i] = (*muonTypes_[i])(*matchedMuon);
+      }
     }
-    else if ( muon1 )
-    {
-      legId_ = 0;
-      muonCharge_ = muon1->charge();
-      trackCharge_ = p1->charge();
-      muon_ = muon1->p4();
-      track_ = p1->p4();
-      deltaR_ = deltaR(*p1, *muon1);
-      deltaPt_ = p1->pt()-muon1->pt();
-      ++nFakeMuon;
-    } 
-    else if ( muon2 )
-    {
-      legId_ = 1;
-      muonCharge_ = muon2->charge();
-      trackCharge_ = p2->charge();
-      muon_ = muon2->p4();
-      track_ = p2->p4();
-      deltaR_ = deltaR(*p2, *muon2);
-      deltaPt_ = p2->pt()-muon2->pt();
-      ++nFakeMuon;
-    }
-    else legId_ = -1;
 
     tree_->Fill();
   }
@@ -240,7 +241,6 @@ const reco::Muon* FakeMuonAnalyzer::findMatchedMuonByTrackRef(const reco::Candid
   for ( int i=0, n=muonHandle->size(); i<n; ++i )
   {
     const reco::Muon& muonCand = muonHandle->at(i);
-    if ( !(*muonCut_)(muonCand) ) continue;
 
     if ( p.get<reco::TrackRef>() == muonCand.track() ) return &muonCand;
   }
@@ -255,7 +255,6 @@ const reco::Muon* FakeMuonAnalyzer::findMatchedMuonByDR(const reco::Candidate& p
   for ( int i=0, n=muonHandle->size(); i<n; ++i )
   {
     const reco::Muon& muonCand = muonHandle->at(i);
-    if ( !(*muonCut_)(muonCand) ) continue;
 
     const double dR = deltaR(p, muonCand);
     if ( dR > matchedDR ) continue;
@@ -275,7 +274,6 @@ const reco::Muon* FakeMuonAnalyzer::findMatchedMuonByDRDPt(const reco::Candidate
   for ( int i=0, n=muonHandle->size(); i<n; ++i )
   {
     const reco::Muon& muonCand = muonHandle->at(i);
-    if ( !(*muonCut_)(muonCand) ) continue;
 
     const double dR = deltaR(p, muonCand);
     if ( dR > matchedDR ) continue;

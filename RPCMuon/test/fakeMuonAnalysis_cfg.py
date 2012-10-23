@@ -12,7 +12,8 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        "/store/relval/CMSSW_5_3_2-START53_V6/RelValProdQCD_Pt_3000_3500/AODSIM/v2/0000/F01CD266-BDB9-E111-83EC-003048FFCBFC.root",
+        "/store/relval/CMSSW_5_3_4_cand1-START53_V10/RelValProdQCD_Pt_3000_3500/GEN-SIM-RECO/v1/0000/96CBE8F4-78F5-E111-99CB-003048FFD71A.root",
+        "/store/relval/CMSSW_5_3_4_cand1-START53_V10/RelValProdQCD_Pt_3000_3500/GEN-SIM-RECO/v1/0000/E2C3D691-A4F5-E111-9624-0018F3D0968A.root",
     ),
 )
 
@@ -23,7 +24,12 @@ process.TFileService = cms.Service("TFileService",
 process.allMuon = cms.EDAnalyzer("FakeMuonAnalyzer",
     muon = cms.InputTag("muons"),
     vertexCand = cms.InputTag("generalV0Candidates", "Kshort"),
-    muonCut = cms.string("isGlobalMuon && isTrackerMuon"),
+    muonTypes = cms.PSet(
+        all = cms.string(""),
+        TM = cms.string("isTrackerMuon"),
+        GLB = cms.string("isGlobalMuon"),
+        STA = cms.string("isStandAloneMuon"),
+    ),
     vertexCut = cms.string(""),
     match = cms.string("matchByTrackRef"),
     #maxDR = cms.double(0.02),
