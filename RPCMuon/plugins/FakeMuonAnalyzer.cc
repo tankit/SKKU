@@ -151,7 +151,7 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     vertexMass_ = vertexPt_ = -1e9;
     vertexL3D_ = vertexL2D_ = vertexLxy_ = -1e9;
     deltaR_ = deltaPt_ = 1e-9;
-    legId_ = -1;
+    legId_ = 0;
     muonCharge_ = trackCharge_ = 0;
     muon_ = track_ = math::XYZTLorentzVector();
 
