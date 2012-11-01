@@ -15,13 +15,17 @@ using namespace ROOT::Math::VectorUtil;
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
 
-const int cut_minNJet = 3;
-const double cut_minJetPt = 40;
+//const char* sample = "Summer12_TTJets";
+const char* sample = "Run2012B_MuHad";
+//const char* sample = "Fall11_TTJets";
+//const char* sample = "Run2011A_SingleMu";
+
+const int cut_minNJet = 4;
+const double cut_minJetPt = 35;
 const double cut_minLeadJetPt = 45;
 
-const int cut_minNBjet = 1;
+const int cut_minNBjet = 2;
 const double cut_bTag = 0.679;
-//const double cut_bTag = 0.2; // Arbitrary tight b-veto cut
 
 struct EventTopology
 {
@@ -61,8 +65,8 @@ void setBranch(TTree* tree, EventTopology& e)
 
 void mix()
 {
-  TFile* file1 = TFile::Open("/users/jwseo/work/CMS/CMSSW_5_2_6/src/SKKU/TTbarLeptonJet/test/result_1004.root");
-  TFile* file2 = TFile::Open("/users/jwseo/work/CMS/CMSSW_5_2_6/src/SKKU/TTbarLeptonJet/test/result_1004.root");
+  TFile* file1 = TFile::Open(Form("ntuple/result_%s.root", sample));
+  TFile* file2 = TFile::Open(Form("ntuple/result_%s.root", sample));
   TTree* tree1 = (TTree*)file1->Get("event/tree");
   TTree* tree2 = (TTree*)file2->Get("event/tree");
 
@@ -71,39 +75,54 @@ void mix()
   setBranch(tree1, event1);
   setBranch(tree2, event2);
 
-  TFile* outFile = TFile::Open("hist.root", "RECREATE");
-  TDirectory* dirSevt = outFile->mkdir("SEvt");
-  TDirectory* dirBevt = outFile->mkdir("BEvt");
+  TFile* outFile = TFile::Open(Form("hist_%s_pt%.0f_nj%d_nb%d.root", sample, cut_minJetPt, cut_minNJet, cut_minNBjet), "RECREATE");
+  TDirectory* dirSEvt = outFile->mkdir("SEvt");
+  TDirectory* dirBEvt = outFile->mkdir("BEvt");
 
-  dirSevt->cd();
-  const double mJJMax = 500+2.5;
+  dirSEvt->cd();
+  const double binShift = 0; // 2.5;
+  const double mJJMax = 500+binShift;
+  const double mJJBMax = 1000+binShift;
   const int nbin = 100;
-  TH1F* hSevt_M_JJ = new TH1F("hM_JJ", "Dijet mass;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
-  TH1F* hSevt_MMC_JJ = new TH1F("hMMC_JJ", "J+J;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
-  TH1F* hSevt_MMC_JK = new TH1F("hMMC_JK", "J+K;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
-  TH1F* hSevt_MMC_KK = new TH1F("hMMC_KK", "K+K;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
-  TH1F* hSevt_MMC_HBJ = new TH1F("hMMC_HBJ", "HadB+J;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
-  TH1F* hSevt_MMC_LBJ = new TH1F("hMMC_LBJ", "LepB+J;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
-  TH1F* hSevt_MMC_BX = new TH1F("hMMC_BX", "B+X;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
-  //TH1F* hSevt_MMC_JB = new TH1F("hMMC_JB", "J+b;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
-  //TH1F* hSevt_
-  TH1F* hSevt_M_JJB = new TH1F("hM_JJB", "Three jet mass;M(jjB)", nbin, 2.5, 1000);
+  const TString axisTitleMw = ";Dijet mass (GeV/c^{2});Events per 5GeV/c^{2}";
+  const TString axisTitleMt = ";Three jet mass (GeV/c^{2});Events per 10GeV/c^{2}";
 
-  dirBevt->cd();
-  TH1F* hBevt_M_JJ = new TH1F("hM_JJ", "Dijet mass;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
-  TH1F* hBevt_MMC_JJ = new TH1F("hMMC_JJ", "J+J;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
-  TH1F* hBevt_MMC_JK = new TH1F("hMMC_JK", "J+K;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
-  TH1F* hBevt_MMC_KK = new TH1F("hMMC_KK", "K+K;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
-  TH1F* hBevt_MMC_HBJ = new TH1F("hMMC_HBJ", "HadB+J;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
-  TH1F* hBevt_MMC_LBJ = new TH1F("hMMC_LBJ", "LepB+J;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
-  TH1F* hBevt_MMC_BX = new TH1F("hMMC_BX", "B+X;Dijet mass (GeV/c^{2});Events per 10GeV/c^{2}", nbin, 2.5, mJJMax);
+  TH1F* hSEvt_Mw = new TH1F("hMw", "Dijet mass"+axisTitleMw, nbin, binShift, mJJMax);
+  TH1F* hSEvt_Mw_JJ = new TH1F("hMw_JJ", "J+J"+axisTitleMw, nbin, binShift, mJJMax);
+  TH1F* hSEvt_Mw_JK = new TH1F("hMw_JK", "J+K"+axisTitleMw, nbin, binShift, mJJMax);
+  TH1F* hSEvt_Mw_KK = new TH1F("hMw_KK", "K+K"+axisTitleMw, nbin, binShift, mJJMax);
+  TH1F* hSEvt_Mw_HBJ = new TH1F("hMw_HBJ", "HadB+J"+axisTitleMw, nbin, binShift, mJJMax);
+  TH1F* hSEvt_Mw_LBJ = new TH1F("hMw_LBJ", "LepB+J"+axisTitleMw, nbin, binShift, mJJMax);
+  TH1F* hSEvt_Mw_BX = new TH1F("hMw_BX", "B+X"+axisTitleMw, nbin, binShift, mJJMax);
 
-  TH1F* hBevt_M_JJB = new TH1F("hM_JJB", "Three jet mass;M(jjB)", nbin, 2.5, 1000);
+  TH1F* hSEvt_Mt = new TH1F("hMt", "Three jet mass"+axisTitleMt, nbin, binShift, mJJBMax);
+  TH1F* hSEvt_Mt_JJHB = new TH1F("hMt_JJHB", "J+J+HadB"+axisTitleMt, nbin, binShift, mJJBMax);
+  //TH1F* hSEvt_Mt_JJLB = new TH1F("hMt_JJLB", "J+J+LepB"+axisTitleMt, nbin, binShift, mJJBMax);
+  //TH1F* hSEvt_Mt_KXY = new TH1F("hMt_KXY", "K+XY"+axisTitleMt, nbin, binShift, mJJBMax);
+  //TH1F* hSEvt_Mt_KKX = new TH1F("hMt_KKX", "KK+X"+axisTitleMt, nbin, binShift, mJJBMax);
+  TH1F* hSEvt_Mt_XYZ = new TH1F("hMt_XYZ", "Others"+axisTitleMt, nbin, binShift, mJJBMax);
+
+  dirBEvt->cd();
+  TH1F* hBEvt_Mw = new TH1F("hMw", "Dijet mass"+axisTitleMw, nbin, binShift, mJJMax);
+  TH1F* hBEvt_Mw_JJ = new TH1F("hMw_JJ", "J+J"+axisTitleMw, nbin, binShift, mJJMax);
+  TH1F* hBEvt_Mw_JK = new TH1F("hMw_JK", "J+K"+axisTitleMw, nbin, binShift, mJJMax);
+  TH1F* hBEvt_Mw_KK = new TH1F("hMw_KK", "K+K"+axisTitleMw, nbin, binShift, mJJMax);
+  TH1F* hBEvt_Mw_HBJ = new TH1F("hMw_HBJ", "HadB+J"+axisTitleMw, nbin, binShift, mJJMax);
+  TH1F* hBEvt_Mw_LBJ = new TH1F("hMw_LBJ", "LepB+J"+axisTitleMw, nbin, binShift, mJJMax);
+  TH1F* hBEvt_Mw_BX = new TH1F("hMw_BX", "B+X"+axisTitleMw, nbin, binShift, mJJMax);
+
+  TH1F* hBEvt_Mt = new TH1F("hMt", "Three jet mass"+axisTitleMt, nbin, binShift, mJJBMax);
+  TH1F* hBEvt_Mt_JJHB = new TH1F("hMt_JJHB", "J+J+HadB"+axisTitleMt, nbin, binShift, mJJBMax);
+  //TH1F* hBEvt_Mt_JJLB = new TH1F("hMt_JJLB", "J+J+LepB"+axisTitleMt, nbin, binShift, mJJBMax);
+  //TH1F* hBEvt_Mt_KXY = new TH1F("hMt_KXY", "K+XY"+axisTitleMt, nbin, binShift, mJJBMax);
+  //TH1F* hBEvt_Mt_KKX = new TH1F("hMt_KKX", "KK+X"+axisTitleMt, nbin, binShift, mJJBMax);
+  TH1F* hBEvt_Mt_XYZ = new TH1F("hMt_XYZ", "Others"+axisTitleMt, nbin, binShift, mJJBMax);
   
   int nBiEvent = 0, nPassedBiEvent = 0; // Variables to restore overlap removal scale
-  for ( int iEvent=0, nEvent=tree1->GetEntries(); iEvent<nEvent; ++iEvent )
+  for ( int iEvent1=0, nEvent=tree1->GetEntries(); iEvent1<nEvent; ++iEvent1 )
   {
-    tree1->GetEntry(iEvent);
+    tree1->GetEntry(iEvent1);
+    const LorentzVector& lepton1 = *event1.lepton;
 
     if ( event1.jets->size() < cut_minNJet ) continue;
     if ( event1.jets->at(0).pt() < cut_minLeadJetPt or event1.jets->at(1).pt() < cut_minLeadJetPt ) continue;
@@ -114,12 +133,13 @@ void mix()
     }
     if ( nBjet1 < cut_minNBjet ) continue;
 
-    // Make Sevt event jet combinations
+    // Make SEvt event jet combinations
     for ( int j1=0, nj=event1.jets->size(); j1<nj; ++j1 )
     {
       const LorentzVector jet1 = event1.jets->at(j1);
       const double bTag1 = event1.bTags->at(j1);
       const int mcBit1 = event1.jetMCBits->at(j1);
+      //if ( DeltaR(jet1, lepton1) < 0.3 ) continue;
 
       if ( jet1.pt() < cut_minJetPt or abs(jet1.eta()) > 2.5 ) continue;
       //if ( mcBit1 == 1 or mcBit1 == 2 ) continue;
@@ -131,6 +151,7 @@ void mix()
         const double bTag2 = event1.bTags->at(j2);
         const int mcBit2 = event1.jetMCBits->at(j2);
 
+        //if ( DeltaR(jet2, lepton1) < 0.3 ) continue;
         if ( jet2.pt() < cut_minJetPt or abs(jet2.eta()) > 2.5 ) continue;
         //if ( mcBit2 == 1 or mcBit2 == 2 ) continue;
         if ( bTag2 > cut_bTag ) continue;
@@ -141,48 +162,66 @@ void mix()
         LorentzVector jj = event1.jets->at(j1)+event1.jets->at(j2);
         const double mJJ = jj.mass(); //min(mJJMax-1e-3, jj.mass());
 
-        hSevt_M_JJ->Fill(mJJ);
+        hSEvt_Mw->Fill(mJJ);
 
-        if ( (mcBit1&1 and mcBit2 != 0) or (mcBit2&1 and mcBit1 != 0) ) cout << "Leptonic b " << mcBit1 << " " << jet1.eta() << "," << jet1.phi() << " " << mcBit2 << " " << jet2.eta() << "," << jet2.phi() << "\n";
+        if ( mcBit1&4 and mcBit2&4 ) hSEvt_Mw_JJ->Fill(mJJ);
+        else if ( (mcBit1&2 and mcBit2&4) or (mcBit1&4 and mcBit2&2) ) hSEvt_Mw_HBJ->Fill(mJJ);
+        else if ( (mcBit1&1 and mcBit2&4) or (mcBit1&4 and mcBit2&1) ) hSEvt_Mw_LBJ->Fill(mJJ);
+        else if ( mcBit1&3 or mcBit2&3 ) hSEvt_Mw_BX->Fill(mJJ);
+        else if ( mcBit1 == 0 and mcBit2 == 0 ) hSEvt_Mw_KK->Fill(mJJ);
+        else hSEvt_Mw_JK->Fill(mJJ);
 
-        if ( (mcBit1&1 and mcBit2&4) or (mcBit1&4 and mcBit2&1) ) hSevt_MMC_LBJ->Fill(mJJ);
-        else if ( (mcBit1&2 and mcBit2&4) or (mcBit1&4 and mcBit2&2) ) hSevt_MMC_HBJ->Fill(mJJ);
-        else if ( mcBit1&3 or mcBit2&3 ) hSevt_MMC_BX->Fill(mJJ);
-        else if ( mcBit1 == 0 and mcBit2 == 0 ) hSevt_MMC_KK->Fill(mJJ);
-        else if ( mcBit1&4 and mcBit2&4 ) hSevt_MMC_JJ->Fill(mJJ);
-        else hSevt_MMC_JK->Fill(mJJ);
-
-/*
-        for ( int j3=j1+2; j3<nj; ++j3 )
+        for ( int j3=0; j3<nj; ++j3 )
         {
           const LorentzVector jet3 = event1.jets->at(j3);
           const double bTag3 = event1.bTags->at(j3);
-          if ( bTag3 <= cut_bTag ) continue;
-          //if ( (event1.jetMCBits->at(j3) & (1+2)) == 0 ) continue;
-          //if ( (event1.jetMCBits->at(j3) & 4) != 0 ) continue;
-          //if ( DeltaR(jet1, jet3) < 0.4 ) continue;
-          //if ( DeltaR(jet2, jet3) < 0.4 ) continue;
-          LorentzVector jjb = jj + event1.jets->at(j3);
+          const int mcBit3 = event1.jetMCBits->at(j3);
 
-          hSevt_M_JJB->Fill(jjb.mass());
+          //if ( DeltaR(jet3, lepton1) < 0.3 ) continue;
+          if ( jet3.pt() < cut_minJetPt or abs(jet3.eta()) > 2.5 ) continue;
+          if ( bTag3 <= cut_bTag ) continue;
+          if ( DeltaR(jet1, jet3) < 0.4 ) continue;
+          if ( DeltaR(jet2, jet3) < 0.4 ) continue;
+
+          LorentzVector jjb = jj + event1.jets->at(j3);
+          const double mJJB = jjb.mass();
+
+          hSEvt_Mt->Fill(mJJB);
+
+          if ( (mcBit1&2 and mcBit2&4 and mcBit3&4) or 
+               (mcBit1&4 and mcBit2&2 and mcBit3&4) or 
+               (mcBit1&4 and mcBit2&4 and mcBit3&2) ) hSEvt_Mt_JJHB->Fill(mJJB);
+          //else if ( (mcBit1&1 and mcBit2&4 and mcBit3&4) or
+          //          (mcBit1&4 and mcBit2&1 and mcBit3&4) or 
+          //          (mcBit1&4 and mcBit2&4 and mcBit3&1) ) hSEvt_Mt_JJLB->Fill(mJJB);
+          //else if ( mcBit1+mcBit2 == 0 or mcBit2+mcBit3 == 0 or mcBit3+mcBit1 == 0 ) hSEvt_Mt_KKX->Fill(mJJB);
+          //else if ( mcBit1 ==0 or mcBit2 == 0 or mcBit3 == 0 ) hSEvt_Mt_KXY->Fill(mJJB);
+          else hSEvt_Mt_XYZ->Fill(mJJB);
         }
-*/
       }
       //break;
 
     }
 
     // Make Bi event jet combinations
-    tree2->GetEntry((iEvent+1)%nEvent);
-
-    if ( event2.jets->size() < cut_minNJet ) continue;
-    if ( event2.jets->at(0).pt() < cut_minLeadJetPt or event2.jets->at(1).pt() < cut_minLeadJetPt ) continue;
-    int nBjet2 = 0;
-    for ( int j2=0, nj=event2.bTags->size(); j2<nj; ++j2 )
+    for ( int iEvent2 = iEvent1+1; ;++iEvent2 )
     {
-      if ( event2.bTags->at(j2) > cut_bTag ) ++nBjet2;
+      if ( iEvent2 == nEvent ) iEvent2 = 0;
+      tree2->GetEntry(iEvent2);
+
+      const LorentzVector& lepton2 = *event2.lepton;
+
+      if ( event2.jets->size() < cut_minNJet ) continue;
+      if ( event2.jets->at(0).pt() < cut_minLeadJetPt or event2.jets->at(1).pt() < cut_minLeadJetPt ) continue;
+      int nBjet2 = 0;
+      for ( int j2=0, nj=event2.bTags->size(); j2<nj; ++j2 )
+      {
+        if ( event2.bTags->at(j2) > cut_bTag ) ++nBjet2;
+      }
+      if ( nBjet2 < cut_minNBjet ) continue;
+
+      break;
     }
-    if ( nBjet2 < cut_minNBjet ) continue;
 
     for ( int j1=0, nj1=event1.jets->size(); j1<nj1; ++j1 )
     {
@@ -190,6 +229,7 @@ void mix()
       const double bTag1 = event1.bTags->at(j1);
       const int mcBit1 = event1.jetMCBits->at(j1);
 
+      //if ( DeltaR(jet1, lepton1) < 0.3 ) continue;
       if ( jet1.pt() < cut_minJetPt or abs(jet1.eta()) > 2.5 ) continue;
       if ( bTag1 > cut_bTag ) continue;
       //if ( mcBit1&3 ) continue;
@@ -201,6 +241,7 @@ void mix()
         const double bTag2 = event2.bTags->at(j2);
         const int mcBit2 = event2.jetMCBits->at(j2);
 
+        //if ( DeltaR(jet2, lepton1) < 0.3 ) continue;
         if ( jet2.pt() < cut_minJetPt or abs(jet2.eta()) > 2.5 ) continue;
         if ( bTag2 > cut_bTag ) continue;
         //if ( mcBit2&3 ) continue;
@@ -213,30 +254,43 @@ void mix()
         LorentzVector jj = event1.jets->at(j1)+event2.jets->at(j2);
         const double mJJ = jj.mass(); //min(mJJMax-1e-3, jj.mass());
 
-        hBevt_M_JJ->Fill(mJJ);
+        hBEvt_Mw->Fill(mJJ);
 
-        if ( (mcBit1&2 and mcBit2&4) or (mcBit1&4 and mcBit2&2) ) hBevt_MMC_HBJ->Fill(mJJ);
-        else if ( (mcBit1==1 and mcBit2==4) or (mcBit1==4 and mcBit2==1) ) hBevt_MMC_LBJ->Fill(mJJ);
-        else if ( mcBit1&3 or mcBit2&3 ) hBevt_MMC_BX->Fill(mJJ);
-        else if ( mcBit1 == 0 and mcBit2 == 0 ) hBevt_MMC_KK->Fill(mJJ);
-        else if ( mcBit1==4 and mcBit2==4 ) hBevt_MMC_JJ->Fill(mJJ);
-        else hBevt_MMC_JK->Fill(mJJ);
+        if ( mcBit1&4 and mcBit2&4 ) hBEvt_Mw_JJ->Fill(mJJ);
+        else if ( (mcBit1&2 and mcBit2&4) or (mcBit1&4 and mcBit2&2) ) hBEvt_Mw_HBJ->Fill(mJJ);
+        else if ( (mcBit1&1 and mcBit2&4) or (mcBit1&4 and mcBit2&1) ) hBEvt_Mw_LBJ->Fill(mJJ);
+        else if ( mcBit1&3 or mcBit2&3 ) hBEvt_Mw_BX->Fill(mJJ);
+        else if ( mcBit1 == 0 and mcBit2 == 0 ) hBEvt_Mw_KK->Fill(mJJ);
+        else hBEvt_Mw_JK->Fill(mJJ);
 
-        /*
-        for ( int j3=j2+1; j3<nj2; ++j3 )
+        for ( int j3=0; j3<nj2; ++j3 )
         {
           const LorentzVector jet3 = event2.jets->at(j3);
           const double bTag3 = event2.bTags->at(j3);
-          //if ( bTag3 <= cut_bTag ) continue;
-          //if ( (event2.jetMCBits->at(j3) & (1+2)) == 0 ) continue;
-          //if ( (event2.jetMCBits->at(j3) & 4) != 0 ) continue;
-          //if ( DeltaR(jet1, jet3) < 0.4 ) continue;
-          //if ( DeltaR(jet2, jet3) < 0.4 ) continue;
+          const int mcBit3 = event2.jetMCBits->at(j3);
+
+          //if ( DeltaR(jet3, lepton1) < 0.3 ) continue;
+          if ( jet3.pt() < cut_minJetPt or abs(jet3.eta()) > 2.5 ) continue;
+          if ( bTag3 <= cut_bTag ) continue;
+          if ( DeltaR(jet1, jet3) < 0.4 ) continue;
+          if ( DeltaR(jet2, jet3) < 0.4 ) continue;
 
           LorentzVector jjb = jj + event2.jets->at(j3);
-          hBevt_M_JJB->Fill(jjb.mass());//, 1./4);
+          const double mJJB = jjb.mass();
+
+          hBEvt_Mt->Fill(mJJB);
+
+          if ( (mcBit1&2 and mcBit2&4 and mcBit3&4) or 
+               (mcBit1&4 and mcBit2&2 and mcBit3&4) or 
+               (mcBit1&4 and mcBit2&4 and mcBit3&2) ) hBEvt_Mt_JJHB->Fill(mJJB);
+          //else if ( (mcBit1&1 and mcBit2&4 and mcBit3&4) or
+          //          (mcBit1&4 and mcBit2&1 and mcBit3&4) or 
+          //          (mcBit1&4 and mcBit2&4 and mcBit3&1) ) hBEvt_Mt_JJLB->Fill(mJJB);
+          //else if ( mcBit1+mcBit2 == 0 or mcBit2+mcBit3 == 0 or mcBit3+mcBit1 == 0 ) hBEvt_Mt_KKX->Fill(mJJB);
+          //`else if ( mcBit1 ==0 or mcBit2 == 0 or mcBit3 == 0 ) hBEvt_Mt_KXY->Fill(mJJB);
+          else hBEvt_Mt_XYZ->Fill(mJJB);
+         
         }
-        */
       }
       //break;
 
@@ -249,9 +303,9 @@ void mix()
   }
 
   // Restore scale factor by skipping overlapping jets
-  //hBevt_M_JJ->Scale(0.5*nBiEvent/nPassedBiEvent);
-  //hBevt_M_JJ->Scale(0.5);
-  //hBevt_M_JJB->Scale(1./3);
+  //hBEvt_Mw->Scale(0.5*nBiEvent/nPassedBiEvent);
+  //hBEvt_Mw->Scale(0.5);
+  //hBEvt_Mt->Scale(1./3);
 
   outFile->Write();
 
