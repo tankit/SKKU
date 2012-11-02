@@ -174,8 +174,8 @@ void EventTupleProducer<Lepton>::analyze(const edm::Event& event, const edm::Eve
           case -24: w2 = &p; break;
           case   5: b1 = &p; break;
           case  -5: b2 = &p; break;
-          case  15: return;
-          case -15: return;
+          case  15: break;
+          case -15: break;
           case -11: case -13: l1 = &p; break;
           case  11: case  13: l2 = &p; break;
           case  12: case  14: case  16:
