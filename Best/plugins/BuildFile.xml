@@ -11,8 +11,6 @@
 <use name="PhysicsTools/RecoUtils" />
 <use name="RecoVertex/VertexTools" />
 
-<use name="AnalysisDataFormats/CMGTools" />
-
 <use name="root" />
 
 <library file="*.cc" name="SKKUBestPlugins">
