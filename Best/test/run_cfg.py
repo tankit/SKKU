@@ -101,13 +101,13 @@ process.event = cms.EDAnalyzer("EventTupleProducerMuon",
     lepton = cms.InputTag("goodPatMuonsPF"),
     #lepton = cms.InputTag("goodElectronsPF"),
     leptonCut = cms.string(
-        "abs(eta) < 2.1 && pt > 30 && dB < 0.2"
+        "abs(eta) < 2.1 && pt > 30 && abs(dB) < 0.2"
         " && isPFMuon && isGlobalMuon && normChi2 < 10"
         " && track.hitPattern.trackerLayersWithMeasurement > 5"
         " && globalTrack.hitPattern.numberOfValidMuonHits > 0"
         " && innerTrack.hitPattern.numberOfValidPixelHits > 0"
         " && numberOfMatchedStations > 1"
-        " && (chargedHadronIso+neutralHadronIso+photonIso) < 0.2*pt"
+        " && (chargedHadronIso+max(0.,neutralHadronIso+photonIso-0.5*puChargedHadronIso)) < 0.12*pt" # relative isolation w/ Delta beta corrections (factor 0.5)
     ),
     jetCut = cms.string(
       " abs(eta) < 2.5 && pt > 35 && numberOfDaughters() > 1"
