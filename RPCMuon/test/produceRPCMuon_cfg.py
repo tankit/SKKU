@@ -14,9 +14,20 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        #"/store/relval/CMSSW_5_3_4_cand1-START53_V10/RelValProdQCD_Pt_3000_3500/GEN-SIM-RECO/v1/0000/96CBE8F4-78F5-E111-99CB-003048FFD71A.root",
-        #"/store/relval/CMSSW_5_3_4_cand1-START53_V10/RelValProdQCD_Pt_3000_3500/GEN-SIM-RECO/v1/0000/E2C3D691-A4F5-E111-9624-0018F3D0968A.root",
-        "file:///tmp/jhgoh/96CBE8F4-78F5-E111-99CB-003048FFD71A.root",
+        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/0201F024-2E1C-E211-A01D-001D09F24D4E.root',
+        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/30CDBB47-2C1C-E211-B393-003048D37456.root',
+        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/367B6D59-2D1C-E211-BDB8-5404A63886CC.root',
+        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/5EDE6642-2E1C-E211-9078-001D09F25267.root',
+        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/8A22545B-301C-E211-B060-003048D3733E.root',
+        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/9AD9B459-2D1C-E211-BF0D-BCAEC518FF6E.root',
+        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/B63124BD-2C1C-E211-AF8A-003048D2BC42.root',
+        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/D2F1D925-2D1C-E211-A35F-003048678110.root',
+        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/D4EDB704-2C1C-E211-8279-003048D2BBF0.root',
+        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/E09F86AD-2D1C-E211-811D-0025901D5D78.root',
+        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/EC865E73-2E1C-E211-AE10-001D09F25267.root',
+        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/F668A9AF-2E1C-E211-9693-003048D373AE.root',
+        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/F6B42A37-481C-E211-8C2C-003048D2BC4C.root',
+        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/FC467103-2F1C-E211-A5B6-001D09F25267.root',
     ),
     inputCommands = cms.untracked.vstring(
         "drop *_*_*_RECO",
@@ -62,6 +73,10 @@ process.muonSelectionTypeSequence += process.muidRPCMuLoose
 process.muons.FillPFIsolation = False
 process.muons.FillPFMomentumAndAssociation = False
 
+## Change Lambda and Kshort mass range
+process.generalV0Candidates.lambdaMassCut = 0.05
+process.generalV0Candidates.kShortMassCut = 0.07
+
 process.p = cms.Path(
 #    process.RawToDigi
     process.primaryVertexFilter
@@ -69,6 +84,7 @@ process.p = cms.Path(
   * process.muoncosmicreco * process.regionalCosmicTracksSeq
   * process.muoncosmichighlevelreco #* process.muonshighlevelreco
   * process.muons
+  * process.generalV0Candidates
 #    process.localreco * process.globalreco
 #  + process.egammaHighLevelRecoPrePF + process.particleFlowReco
 #  + process.regionalCosmicTracksSeq * process.muoncosmichighlevelreco * process.muonshighlevelreco
