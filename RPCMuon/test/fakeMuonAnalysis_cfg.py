@@ -2,9 +2,11 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("Ana")
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
+process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.load("Configuration.StandardSequences.GeometryDB_cff")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.GlobalTag.globaltag = 'START53_V9::All'
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1),)
@@ -21,21 +23,8 @@ process.TFileService = cms.Service("TFileService",
     fileName = cms.string("result.root"),
 )
 
-process.allMuon = cms.EDAnalyzer("FakeMuonAnalyzer",
-    muon = cms.InputTag("muons"),
-    vertexCand = cms.InputTag("generalV0Candidates", "Kshort"),
-    muonTypes = cms.PSet(
-        all = cms.string(""),
-        TM = cms.string("isTrackerMuon"),
-        GLB = cms.string("isGlobalMuon"),
-        STA = cms.string("isStandAloneMuon"),
-    ),
-    vertexCut = cms.string(""),
-    match = cms.string("matchByTrackRef"),
-    #maxDR = cms.double(0.02),
-    #maxDPt = cms.double(0.1),
-)
+process.load("SKKU.RPCMuon.fakeMuonAnalyzer_cfi")
 
 process.p = cms.Path(
-    process.allMuon
+    process.fakeKshort + process.fakeLambda
 )
