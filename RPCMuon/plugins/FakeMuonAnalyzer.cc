@@ -13,6 +13,7 @@
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include "DataFormats/MuonReco/interface/MuonSelectors.h"
 #include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
 
 #include "DataFormats/Math/interface/deltaR.h"
@@ -27,6 +28,19 @@
 #include <vector>
 
 using namespace std;
+
+namespace muon
+{
+  reco::Muon::ArbitrationType arbitrationTypeFromString(const std::string& name)
+  {
+    if ( name == "NoArbitration" ) return reco::Muon::NoArbitration;
+    else if ( name == "SegmentArbitration" ) return reco::Muon::SegmentArbitration;
+    else if ( name == "SegmentAndTrackArbitration" ) return reco::Muon::SegmentAndTrackArbitration;
+    else if ( name == "SegmentAndTrackArbitrationCleaned" ) return reco::Muon::SegmentAndTrackArbitrationCleaned;
+    else if ( name == "RPCHitAndTrackArbitration" ) return reco::Muon::RPCHitAndTrackArbitration;
+    else return reco::Muon::NoArbitration;
+  }
+}
 
 class FakeMuonAnalyzer : public edm::EDAnalyzer
 {
@@ -44,7 +58,9 @@ private:
 
   edm::InputTag muonLabel_;
   edm::InputTag vertexCandLabel_;
-  std::vector<StringCutObjectSelector<reco::Muon, true>* > muonTypes_;
+  std::vector<StringCutObjectSelector<reco::Muon, true>* > muonCuts_;
+  std::vector<muon::SelectionType> muonSelectionTypes_;
+  std::vector<reco::Muon::ArbitrationType> muonArbitrationTypes_;
   StringCutObjectSelector<reco::VertexCompositeCandidate, true>* vertexCut_;
   double maxDR_, maxDPt_;
 
@@ -57,7 +73,7 @@ private:
   double vertexMass_, vertexPt_, vertexL3D_, vertexL2D_, vertexLxy_;
   double deltaR_, deltaPt_;
   math::XYZTLorentzVector muon_, track_;
-  std::vector<int> muonTypeResults_;
+  std::vector<int> muonIdResults_;
 };
 
 FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
@@ -110,15 +126,22 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
   tree_->Branch("muon" , "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &muon_ );
   tree_->Branch("track", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &track_);
 
-  edm::ParameterSet muonTypes = pset.getParameter<edm::ParameterSet>("muonTypes");
-  std::vector<std::string> muonTypeNames = muonTypes.getParameterNames();
-  muonTypeResults_.resize(muonTypeNames.size());
-  for ( int i=0, n=muonTypeNames.size(); i<n; ++i )
+  edm::ParameterSet muonIds = pset.getParameter<edm::ParameterSet>("muonIds");
+  std::vector<std::string> muonIdNames = muonIds.getParameterNames();
+  muonIdResults_.resize(muonIdNames.size());
+  for ( int i=0, n=muonIdNames.size(); i<n; ++i )
   {
-    const std::string& cutName = muonTypeNames[i];
-    std::string muonType = muonTypes.getParameter<std::string>(cutName);
-    muonTypes_.push_back(new StringCutObjectSelector<reco::Muon, true>(muonType));
-    tree_->Branch(Form("muonType_%s", cutName.c_str()), &(muonTypeResults_[0])+i, Form("muonType_%s/I", cutName.c_str()));
+    const std::string& name = muonIdNames[i];
+    edm::ParameterSet idCutSet = muonIds.getParameter<edm::ParameterSet>(name);
+    const std::string cut = idCutSet.getParameter<std::string>("cut");
+    const std::string idSelection = idCutSet.getParameter<std::string>("idSelection");
+    const std::string arbitration = idCutSet.getParameter<std::string>("arbitration");
+
+    muonCuts_.push_back(new StringCutObjectSelector<reco::Muon, true>(cut));
+    muonSelectionTypes_.push_back(muon::selectionTypeFromString(idSelection));
+    muonArbitrationTypes_.push_back(muon::arbitrationTypeFromString(arbitration));
+
+    tree_->Branch(Form("muonId_%s", name.c_str()), &(muonIdResults_[0])+i, Form("muonId_%s/I", name.c_str()));
   }
 }
 
@@ -128,7 +151,7 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
   event_ = event.id().event();
   lumi_ = event.id().luminosityBlock();
 
-  for ( int i=0, n=muonTypeResults_.size(); i<n; ++i ) muonTypeResults_[i] = -1;
+  for ( int i=0, n=muonIdResults_.size(); i<n; ++i ) muonIdResults_[i] = -1;
 
   edm::Handle<edm::View<reco::Muon> > muonHandle;
   event.getByLabel(muonLabel_, muonHandle);
@@ -224,9 +247,11 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
       deltaR_ = deltaR(*matchedTrack, *matchedMuon);
       deltaPt_ = matchedTrack->pt() - matchedMuon->pt();
 
-      for ( int i=0, n=muonTypes_.size(); i<n; ++i )
+      for ( int i=0, n=muonCuts_.size(); i<n; ++i )
       {
-        muonTypeResults_[i] = (*muonTypes_[i])(*matchedMuon);
+        muonIdResults_[i] = true;
+        muonIdResults_[i] &= (*muonCuts_[i])(*matchedMuon);
+        muonIdResults_[i] &= muon::isGoodMuon(*matchedMuon, muonSelectionTypes_[i], muonArbitrationTypes_[i]);
       }
     }
 
