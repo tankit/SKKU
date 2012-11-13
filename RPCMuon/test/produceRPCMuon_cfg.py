@@ -7,7 +7,7 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.StandardSequences.GeometryDB_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
-process.GlobalTag.globaltag = 'START53_V9::All'
+process.GlobalTag.globaltag = 'START61_V1::All'
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
@@ -74,8 +74,15 @@ process.muons.FillPFIsolation = False
 process.muons.FillPFMomentumAndAssociation = False
 
 ## Change Lambda and Kshort mass range
-process.generalV0Candidates.lambdaMassCut = 0.05
-process.generalV0Candidates.kShortMassCut = 0.07
+process.generalV0Candidates.lambdaMassCut = 0.10
+process.generalV0Candidates.kShortMassCut = 0.14
+
+## User analysis
+process.TFileService = cms.Service("TFileService",
+    fileName = cms.string("result.root"),
+)
+
+process.load("SKKU.RPCMuon.fakeMuonAnalyzer_cfi")
 
 process.p = cms.Path(
 #    process.RawToDigi
@@ -85,27 +92,8 @@ process.p = cms.Path(
   * process.muoncosmichighlevelreco #* process.muonshighlevelreco
   * process.muons
   * process.generalV0Candidates
-#    process.localreco * process.globalreco
-#  + process.egammaHighLevelRecoPrePF + process.particleFlowReco
-#  + process.regionalCosmicTracksSeq * process.muoncosmichighlevelreco * process.muonshighlevelreco
-#  * process.particleFlowLinks
-#  * process.jetHighLevelReco * process.tautagging
-#  + process.metrecoPlusHCALNoise + process.btagging * process.recoPFMET + process.PFTau
-#  * process.reducedRecHits
-#  * process.reconstruction
+  * process.fakeKshort + process.fakeLambda
 )
 
-process.outPath = cms.EndPath(process.out)
-
-### User analysis
-
-#process.TFileService = cms.Service("TFileService",
-#    fileName = cms.string('hist.root'),
-#)
-
-process.rpcMuAna = cms.EDAnalyzer("RPCMuonAnalyzer",
-    muon = cms.untracked.InputTag("muons"),
-    minPtTrk = cms.untracked.double(3),
-    maxEtaTrk = cms.untracked.double(1.6),
-)
+#process.outPath = cms.EndPath(process.out)
 
