@@ -235,6 +235,8 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     // There can be very rare case of double fake muons. 
     // Only muon1 will be stored in this case but we can separate this case with requiring legId != 3
     legId_ = 0;
+    track_ = matchedTrack->p4();
+
     if ( matchedMuon )
     {
       if ( muon1 ) { legId_ |= 1; ++nFakeMuon; }
@@ -243,7 +245,7 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
       muonCharge_ = matchedMuon->charge();
       trackCharge_ = matchedTrack->charge();
       muon_ = matchedMuon->p4();
-      track_ = matchedTrack->p4();
+      //track_ = matchedTrack->p4();
       deltaR_ = deltaR(*matchedTrack, *matchedMuon);
       deltaPt_ = matchedTrack->pt() - matchedMuon->pt();
 
