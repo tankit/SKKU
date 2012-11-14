@@ -236,6 +236,7 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     // Only muon1 will be stored in this case but we can separate this case with requiring legId != 3
     legId_ = 0;
     track_ = matchedTrack->p4();
+    trackCharge_ = matchedTrack->charge();
 
     if ( matchedMuon )
     {
@@ -243,7 +244,7 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
       if ( muon2 ) { legId_ |= 2; ++nFakeMuon; }
       
       muonCharge_ = matchedMuon->charge();
-      trackCharge_ = matchedTrack->charge();
+      //trackCharge_ = matchedTrack->charge();
       muon_ = matchedMuon->p4();
       //track_ = matchedTrack->p4();
       deltaR_ = deltaR(*matchedTrack, *matchedMuon);
