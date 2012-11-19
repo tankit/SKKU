@@ -22,6 +22,7 @@ const char* sample = "Run2012B_MuHad";
 
 const int cut_minNJet = 4;
 const double cut_minJetPt = 35;
+const double cut_maxJetEta = 2.5;
 const double cut_minLeadJetPt = 45;
 
 const int cut_minNBjet = 2;
@@ -80,7 +81,7 @@ void mix()
   TDirectory* dirBEvt = outFile->mkdir("BEvt");
 
   dirSEvt->cd();
-  const double binShift = 0; // 2.5;
+  const double binShift = 2.5; //0;
   const double mJJMax = 500+binShift;
   const double mJJBMax = 1000+binShift;
   const int nbin = 100;
@@ -141,7 +142,7 @@ void mix()
       const int mcBit1 = event1.jetMCBits->at(j1);
       //if ( DeltaR(jet1, lepton1) < 0.3 ) continue;
 
-      if ( jet1.pt() < cut_minJetPt or abs(jet1.eta()) > 2.5 ) continue;
+      if ( jet1.pt() < cut_minJetPt or abs(jet1.eta()) > cut_maxJetEta ) continue;
       //if ( mcBit1 == 1 or mcBit1 == 2 ) continue;
       //if ( mcBit1&3 ) continue;
       if ( bTag1 > cut_bTag ) continue;
@@ -152,7 +153,7 @@ void mix()
         const int mcBit2 = event1.jetMCBits->at(j2);
 
         //if ( DeltaR(jet2, lepton1) < 0.3 ) continue;
-        if ( jet2.pt() < cut_minJetPt or abs(jet2.eta()) > 2.5 ) continue;
+        if ( jet2.pt() < cut_minJetPt or abs(jet2.eta()) > cut_maxJetEta ) continue;
         //if ( mcBit2 == 1 or mcBit2 == 2 ) continue;
         if ( bTag2 > cut_bTag ) continue;
         //if ( mcBit2&3 ) continue;
@@ -178,7 +179,7 @@ void mix()
           const int mcBit3 = event1.jetMCBits->at(j3);
 
           //if ( DeltaR(jet3, lepton1) < 0.3 ) continue;
-          if ( jet3.pt() < cut_minJetPt or abs(jet3.eta()) > 2.5 ) continue;
+          if ( jet3.pt() < cut_minJetPt or abs(jet3.eta()) > cut_maxJetEta ) continue;
           if ( bTag3 <= cut_bTag ) continue;
           if ( DeltaR(jet1, jet3) < 0.4 ) continue;
           if ( DeltaR(jet2, jet3) < 0.4 ) continue;
@@ -230,7 +231,7 @@ void mix()
       const int mcBit1 = event1.jetMCBits->at(j1);
 
       //if ( DeltaR(jet1, lepton1) < 0.3 ) continue;
-      if ( jet1.pt() < cut_minJetPt or abs(jet1.eta()) > 2.5 ) continue;
+      if ( jet1.pt() < cut_minJetPt or abs(jet1.eta()) > cut_maxJetEta ) continue;
       if ( bTag1 > cut_bTag ) continue;
       //if ( mcBit1&3 ) continue;
       //if ( mcBit1 == 1 or mcBit1 == 2 ) continue;
@@ -242,7 +243,7 @@ void mix()
         const int mcBit2 = event2.jetMCBits->at(j2);
 
         //if ( DeltaR(jet2, lepton1) < 0.3 ) continue;
-        if ( jet2.pt() < cut_minJetPt or abs(jet2.eta()) > 2.5 ) continue;
+        if ( jet2.pt() < cut_minJetPt or abs(jet2.eta()) > cut_maxJetEta ) continue;
         if ( bTag2 > cut_bTag ) continue;
         //if ( mcBit2&3 ) continue;
         //if ( mcBit2 == 1 or mcBit2 == 2 ) continue;
@@ -270,7 +271,7 @@ void mix()
           const int mcBit3 = event2.jetMCBits->at(j3);
 
           //if ( DeltaR(jet3, lepton1) < 0.3 ) continue;
-          if ( jet3.pt() < cut_minJetPt or abs(jet3.eta()) > 2.5 ) continue;
+          if ( jet3.pt() < cut_minJetPt or abs(jet3.eta()) > cut_maxJetEta ) continue;
           if ( bTag3 <= cut_bTag ) continue;
           if ( DeltaR(jet1, jet3) < 0.4 ) continue;
           if ( DeltaR(jet2, jet3) < 0.4 ) continue;
