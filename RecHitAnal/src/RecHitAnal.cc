@@ -13,8 +13,8 @@
 //                                                                                                                               
 // Original Author:  Hyunkwan Seo,588 R-009,+41227678393,                                                                        
 //         Created:  Fri Jun 17 17:45:39 CEST 2011<<<<<<< RecHitAnal.cc
-// $Id: RecHitAnal.cc,v 1.9 2012/02/29 14:24:23 hkseo Exp $=======
-// $Id: RecHitAnal.cc,v 1.9 2012/02/29 14:24:23 hkseo Exp $>>>>>>> 1.4
+// $Id: RecHitAnal.cc,v 1.10 2012/10/15 13:27:28 hkseo Exp $=======
+// $Id: RecHitAnal.cc,v 1.10 2012/10/15 13:27:28 hkseo Exp $>>>>>>> 1.4
 //                                                                                                                               
 //    
 
@@ -149,7 +149,8 @@ private:
   Int_t nMuons;
   Int_t nCSCseg;
   Int_t nDTseg;
-  Float_t dxy[kMaxMu];
+  Float_t dxy[kMaxMu]; 
+  Float_t dz_[kMaxMu];
   Float_t mupt[kMaxMu];
   Float_t mup[kMaxMu];
   Float_t mupx[kMaxMu];
@@ -164,6 +165,7 @@ private:
   bool isTrackerMu[kMaxMu];
   bool isStaMu[kMaxMu];
   bool isGlobalMu[kMaxMu];
+  bool isPFMu[kMaxMu];
   bool isMatchToNoRPC[kMaxMu];
 
   // Tree for each muon
@@ -171,7 +173,7 @@ private:
   Int_t hitsFromRpc, hitsFromDt, hitsFromCsc;
   Int_t hitsFromRpcSTA, hitsFromDtSTA, hitsFromCscSTA;
   Int_t nValidMuonRPCHits, rpcStationsWithValidHits;
-  Int_t nValidHits, nValidMuonHits, nValidTrackerHits;
+  Int_t nValidHits, nValidMuonHits, nValidTrackerHits, nValidPixelHits, nTrackerLayers;
   int segmFromDt, segmFromCsc;
   Int_t nMatch; //new
 
@@ -182,9 +184,9 @@ private:
   Float_t eta, phi, pt;
   Float_t eta_STA, phi_STA, pt_STA;
   Float_t normChi2;
-  Double_t d0;
+  Double_t d0,dz;
   Bool_t matchToNoRPC;
-  Bool_t isSTA;
+  Bool_t isSTA, isPF;
 
   //for GLB
   Int_t region[kMax];
@@ -300,6 +302,7 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t0->Branch("nDTseg",      &nDTseg,           "nDTseg/I");
   t0->Branch("NrecoMuon",   &nMuons,           "NrecoMuon/I");
   t0->Branch("dxy",         dxy,               "dxy[NrecoMuon]/F");
+  t0->Branch("dz",          dz_,               "dz[NrecoMuon]/F");
   t0->Branch("recoMuonPt",  mupt,              "recoMuonPt[NrecoMuon]/F");
   t0->Branch("recoMuonP",   mup,               "recoMuonP[NrecoMuon]/F");
   t0->Branch("recoMuonPx",  mupx,              "recoMuonPx[NrecoMuon]/F");
@@ -312,6 +315,7 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t0->Branch("isTrackerMu", isTrackerMu,       "isTrackerMu[NrecoMuon]/O");
   t0->Branch("isStaMu",     isStaMu,           "isStaMu[NrecoMuon]/O");
   t0->Branch("isGlobalMu",  isGlobalMu,        "isGlobalMu[NrecoMuon]/O");
+  t0->Branch("isPFMu",      isPFMu,            "isPFMu[NrecoMuon]/O");
   t0->Branch("isMatchToNoRPC",  isMatchToNoRPC,  "isMatchToNoRPC[NrecoMuon]/O");
 
 
@@ -319,9 +323,11 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t1->Branch("Run",         &Run,              "Run/I");
   t1->Branch("eventNumber", &eventNumber,      "eventNumber/I");
   t1->Branch("angle",       &angle,            "angle/F");
-  t1->Branch("d0",          &d0,               "d0/D");
+  t1->Branch("dxy",         &d0,               "dxy/D");
+  t1->Branch("dz",          &dz,               "dz/D");
   t1->Branch("matchToNoRPC",&matchToNoRPC,     "matchToNoRPC/O");
   t1->Branch("isStaMu",     &isSTA,            "isStaMu/O");
+  t1->Branch("isPFMu",      &isPF,             "isPFMu/O");
   t1->Branch("nTracks",     &nTracks,          "nTracks/I");
   t1->Branch("nMuons",      &nMuons,           "nMuons/I");
   t1->Branch("nRpcHit",     &hitsFromRpc,      "nRpcHit/I");
@@ -330,6 +336,8 @@ RecHitAnal::RecHitAnal(const edm::ParameterSet& cfg)
   t1->Branch("nValidHits",              &nValidHits,               "nValidHits/I");
   t1->Branch("nValidMuonHits",          &nValidMuonHits,           "nValidMuonHits/I");
   t1->Branch("nValidTrackerHits",       &nValidTrackerHits,        "nValidTrackerHits/I");
+  t1->Branch("nValidPixelHits",         &nValidPixelHits,          "nValidPixelHits/I");
+  t1->Branch("nTrackerLayers",          &nTrackerLayers,           "nTrackerLayers/I");
   t1->Branch("nValidMuonRpcHit",        &nValidMuonRPCHits,        "nValidMuonRpcHit/I");
   t1->Branch("nMatch",            &nMatch,           "nMatch/I");
   t1->Branch("nMatchedSegm",      &nMatchedSegm,     "nMatchedSegm/I");
@@ -551,7 +559,6 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
       math::XYZPoint point(beamSpot.x0(),beamSpot.y0(), beamSpot.z0());
       dxy[muidx] = -1.* glbOfGlobalRef->dxy(point);
       zmumu.push_back( TLorentzVector(px_,py_,pz_,energy_) );
-      
     }
 
   }
@@ -642,6 +649,7 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
     if ( (*muons)[muidx].isGlobalMuon() && abs(eta)<2.4) {
       math::XYZPoint point(beamSpot.x0(),beamSpot.y0(), beamSpot.z0());
       dxy[muidx] = -1.* glbOfGlobalRef->dxy(point);
+      dz_[muidx] = glbOfGlobalRef->dz(point);
     }
 
     //cout << "   with RPC "<<(*muons)[muidx].isGlobalMuon() << " "<<(*muons)[muidx].isPFMuon() << endl;
@@ -721,6 +729,8 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
       nValidHits = glbOfGlobalRef->hitPattern().numberOfValidHits();
       nValidMuonHits = glbOfGlobalRef->hitPattern().numberOfValidMuonHits();
       nValidTrackerHits = glbOfGlobalRef->hitPattern().numberOfValidTrackerHits();
+      nValidPixelHits = glbOfGlobalRef->hitPattern().numberOfValidPixelHits();
+      nTrackerLayers = glbOfGlobalRef->hitPattern().trackerLayersWithMeasurement();
       rpcStationsWithValidHits = glbOfGlobalRef->hitPattern().rpcStationsWithValidHits();
       normChi2 = glbOfGlobalRef->normalizedChi2();
 
@@ -734,6 +744,8 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
       */
 
       d0 = dxy[muidx];
+      dz = dz_[muidx];
+
       //cout << "dxy: "<<glbOfGlobalRef->dxy()<<" "<<d0<< endl;
 
       // temporary part
