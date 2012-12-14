@@ -69,12 +69,12 @@ private:
   int run_, lumi_, event_;
   int nMuon_, nVertexCand_;
   int legId_;
-  int nStations_, nLayers_;
   int muonCharge_, trackCharge1_, trackCharge2_;
   double vertexMass_, vertexPt_, vertexL3D_, vertexL2D_, vertexLxy_;
   double deltaR_, deltaPt_;
   math::XYZTLorentzVector muon_, track1_, track2_;
   std::vector<int> muonIdResults_;
+  std::vector<int> muonStations_;
 };
 
 FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
@@ -122,8 +122,6 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
   tree_->Branch("deltaR" , &deltaR_ , "deltaR/D" );
   tree_->Branch("deltaPt", &deltaPt_, "deltaPt/D");
   tree_->Branch("legId", &legId_, "legId/I");
-  tree_->Branch("nStations", &nStations_, "nStations/I");
-  tree_->Branch("nLayers", &nLayers_, "nLayers/I");
   tree_->Branch("muonCharge", &muonCharge_, "muonCharge/I");
   tree_->Branch("trackCharge1", &trackCharge1_, "trackCharge1/I");
   tree_->Branch("trackCharge2", &trackCharge2_, "trackCharge2/I");
@@ -134,6 +132,7 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
   edm::ParameterSet muonIds = pset.getParameter<edm::ParameterSet>("muonIds");
   std::vector<std::string> muonIdNames = muonIds.getParameterNames();
   muonIdResults_.resize(muonIdNames.size());
+  muonStations_.resize(muonIdNames.size());
   for ( int i=0, n=muonIdNames.size(); i<n; ++i )
   {
     const std::string& name = muonIdNames[i];
@@ -147,6 +146,7 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
     muonArbitrationTypes_.push_back(muon::arbitrationTypeFromString(arbitration));
 
     tree_->Branch(Form("muonId_%s", name.c_str()), &(muonIdResults_[0])+i, Form("muonId_%s/I", name.c_str()));
+    tree_->Branch(Form("muStations_%s", name.c_str()), &(muonStations_[0])+i, Form("muStations_%s/I", name.c_str()));
   }
 }
 
@@ -156,7 +156,7 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
   event_ = event.id().event();
   lumi_ = event.id().luminosityBlock();
 
-  for ( int i=0, n=muonIdResults_.size(); i<n; ++i ) muonIdResults_[i] = -1;
+  for ( int i=0, n=muonIdResults_.size(); i<n; ++i ) muonIdResults_[i] = muonStations_[i] = -1;
 
   edm::Handle<edm::View<reco::Muon> > muonHandle;
   event.getByLabel(muonLabel_, muonHandle);
@@ -180,8 +180,7 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     vertexL3D_ = vertexL2D_ = vertexLxy_ = -1e9;
     deltaR_ = deltaPt_ = 1e-9;
     legId_ = 0;
-    nStations_ = nLayers_ = -99;
-    muonCharge_ = trackCharge_ = 0;
+    muonCharge_ = trackCharge1_ = trackCharge2_ = 0;
     muon_ = track1_ = track2_ = math::XYZTLorentzVector();
 
     const reco::VertexCompositeCandidate& vertexCand = vertexCandHandle->at(iVertexCand);
@@ -251,9 +250,6 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
       if ( muon1 ) { legId_ |= 1; ++nFakeMuon; }
       if ( muon2 ) { legId_ |= 2; ++nFakeMuon; }
       
-      nStations_ = matchedMuon->numberOfMatchedStations(muonArbitrationTypes_[i]);
-      nLayers_   = matchedMuon->numberOfMatchedRPCLayers(muonArbitrationTypes_[i]);
-      
       muonCharge_ = matchedMuon->charge();
       muon_ = matchedMuon->p4();
       deltaR_ = deltaR(*matchedTrack, *matchedMuon);
@@ -264,6 +260,8 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
         muonIdResults_[i] = true;
         muonIdResults_[i] &= (*muonCuts_[i])(*matchedMuon);
         muonIdResults_[i] &= muon::isGoodMuon(*matchedMuon, muonSelectionTypes_[i], muonArbitrationTypes_[i]);
+
+        muonStations_[i] = matchedMuon->numberOfMatchedStations(muonArbitrationTypes_[i]);
       }
     }
 
