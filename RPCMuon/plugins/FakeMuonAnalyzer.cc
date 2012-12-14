@@ -69,10 +69,11 @@ private:
   int run_, lumi_, event_;
   int nMuon_, nVertexCand_;
   int legId_;
-  int muonCharge_, trackCharge_;
+  int nStations_, nLayers_;
+  int muonCharge_, trackCharge1_, trackCharge2_;
   double vertexMass_, vertexPt_, vertexL3D_, vertexL2D_, vertexLxy_;
   double deltaR_, deltaPt_;
-  math::XYZTLorentzVector muon_, track_;
+  math::XYZTLorentzVector muon_, track1_, track2_;
   std::vector<int> muonIdResults_;
 };
 
@@ -121,10 +122,14 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
   tree_->Branch("deltaR" , &deltaR_ , "deltaR/D" );
   tree_->Branch("deltaPt", &deltaPt_, "deltaPt/D");
   tree_->Branch("legId", &legId_, "legId/I");
+  tree_->Branch("nStations", &nStations_, "nStations/I");
+  tree_->Branch("nLayers", &nLayers_, "nLayers/I");
   tree_->Branch("muonCharge", &muonCharge_, "muonCharge/I");
-  tree_->Branch("trackCharge", &trackCharge_, "trackCharge/I");
+  tree_->Branch("trackCharge1", &trackCharge1_, "trackCharge1/I");
+  tree_->Branch("trackCharge2", &trackCharge2_, "trackCharge2/I");
   tree_->Branch("muon" , "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &muon_ );
-  tree_->Branch("track", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &track_);
+  tree_->Branch("track1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &track1_);
+  tree_->Branch("track2", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &track2_);
 
   edm::ParameterSet muonIds = pset.getParameter<edm::ParameterSet>("muonIds");
   std::vector<std::string> muonIdNames = muonIds.getParameterNames();
@@ -175,8 +180,9 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     vertexL3D_ = vertexL2D_ = vertexLxy_ = -1e9;
     deltaR_ = deltaPt_ = 1e-9;
     legId_ = 0;
+    nStations_ = nLayers_ = -99;
     muonCharge_ = trackCharge_ = 0;
-    muon_ = track_ = math::XYZTLorentzVector();
+    muon_ = track1_ = track2_ = math::XYZTLorentzVector();
 
     const reco::VertexCompositeCandidate& vertexCand = vertexCandHandle->at(iVertexCand);
     if ( !(*vertexCut_)(vertexCand) ) continue;
@@ -235,18 +241,21 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     // There can be very rare case of double fake muons. 
     // Only muon1 will be stored in this case but we can separate this case with requiring legId != 3
     legId_ = 0;
-    track_ = matchedTrack->p4();
-    trackCharge_ = matchedTrack->charge();
+    track1_ = p1->p4();
+    trackCharge1_ = p1->charge();
+    track2_ = p2->p4();
+    trackCharge2_ = p2->charge();
 
     if ( matchedMuon )
     {
       if ( muon1 ) { legId_ |= 1; ++nFakeMuon; }
       if ( muon2 ) { legId_ |= 2; ++nFakeMuon; }
       
+      nStations_ = matchedMuon->numberOfMatchedStations(muonArbitrationTypes_[i]);
+      nLayers_   = matchedMuon->numberOfMatchedRPCLayers(muonArbitrationTypes_[i]);
+      
       muonCharge_ = matchedMuon->charge();
-      //trackCharge_ = matchedTrack->charge();
       muon_ = matchedMuon->p4();
-      //track_ = matchedTrack->p4();
       deltaR_ = deltaR(*matchedTrack, *matchedMuon);
       deltaPt_ = matchedTrack->pt() - matchedMuon->pt();
 
