@@ -42,6 +42,59 @@ namespace muon
   }
 }
 
+class Histograms
+{
+public:
+  Histograms(TFileDirectory* dir, const double massMin, const double massMax);
+  void fill(const math::XYZTLorentzVector& lv, const double mass, const bool pass);
+  
+private:
+  TH2F* hFrame_;
+  std::map<std::string, TH1F*> hBinToMassMapPass_;
+  std::map<std::string, TH1F*> hBinToMassMapFail_;
+
+};
+
+Histograms::Histograms(TFileDirectory* dir, const double massMin, const double massMax)
+{
+  const int nBinMass = int((massMax-massMin)*1000);
+
+  const double ptBins[] = {0, 3, 5, 7, 10, 20, 30, 50, 150};
+  const double etaBins[] = {-2.5, -2.1, -1.6, -1.2, -0.8, 0, 0.8, 1.2, 1.6, 2.1, 2.5};
+
+  const int nPtBin = sizeof(ptBins)/sizeof(const double)-1;
+  const int nEtaBin = sizeof(etaBins)/sizeof(const double)-1;
+
+  hFrame_ = dir->make<TH2F>("hFrame", ";Transverse momentum p_{T} (GeV/c);Pseudorapidity #eta", nPtBin, ptBins, nEtaBin, etaBins);
+  for ( int ptBin = 0; ptBin<nPtBin; ++ptBin )
+  {
+    for ( int etaBin = 0; etaBin<nEtaBin; ++etaBin )
+    {
+      TString binStr = Form("pt_bin%d__eta_bin%d", ptBin, etaBin);
+      TFileDirectory binDir = dir->mkdir(binStr.Data());
+      TString hTitle = Form(";Mass (GeV/c^{2});Entries per 1MeV/c^{2}");
+      hBinToMassMapPass_[binStr.Data()] = binDir.make<TH1F>("hMass_Pass", "Pass"+hTitle, nBinMass, massMin, massMax);
+      hBinToMassMapFail_[binStr.Data()] = binDir.make<TH1F>("hMass_Fail", "Fail"+hTitle, nBinMass, massMin, massMax);
+    }
+  }
+}
+
+void Histograms::fill(const math::XYZTLorentzVector& lv, const double mass, const bool pass)
+{
+  const double pt = lv.pt();
+  const double eta = lv.eta();
+
+  const int ptBin  = hFrame_->GetXaxis()->FindBin(pt) - 1;
+  const int etaBin = hFrame_->GetYaxis()->FindBin(eta) - 1;
+
+  TString binStr = Form("pt_bin%d__eta_bin%d", ptBin, etaBin);
+  TH1F* h = 0;
+  if ( pass ) h = hBinToMassMapPass_[binStr.Data()];
+  else h = hBinToMassMapFail_[binStr.Data()];
+
+  if ( h ) h->Fill(mass);
+}
+
 class FakeMuonAnalyzer : public edm::EDAnalyzer
 {
 public:
@@ -75,6 +128,7 @@ private:
   math::XYZTLorentzVector muon_, track1_, track2_;
   std::vector<int> muonIdResults_;
   std::vector<int> muonStations_;
+  std::vector<Histograms*> h1_, h2_;
 };
 
 FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
@@ -96,6 +150,9 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
     maxDPt_ = pset.getParameter<double>("maxDPt");
   }
 
+  const double massMin = pset.getParameter<double>("massMin");
+  const double massMax = pset.getParameter<double>("massMax");
+
   edm::Service<TFileService> fs;
   hEvent_ = fs->make<TH1F>("hEvent", "Event count", 5, 0, 5);
   hEvent_->GetXaxis()->SetBinLabel(1, "Total");
@@ -105,29 +162,34 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
 
   hNCandOverlap_ = fs->make<TH1F>("hNCandOverlap", "Number of vertex candidate with track sharing", 10, 0, 10);
 
-  tree_ = fs->make<TTree>("tree", "tree");
-  tree_->Branch("run", &run_, "run/I");
-  tree_->Branch("event", &event_, "event/I");
-  tree_->Branch("lumi", &lumi_, "lumi/I");
+  const bool doTree = pset.getParameter<bool>("doTree");
+  tree_ = 0;
+  if ( doTree )
+  {
+    tree_ = fs->make<TTree>("tree", "tree");
+    tree_->Branch("run", &run_, "run/I");
+    tree_->Branch("event", &event_, "event/I");
+    tree_->Branch("lumi", &lumi_, "lumi/I");
 
-  tree_->Branch("nMuon", &nMuon_, "nMuon/I");
-  tree_->Branch("nKshort", &nVertexCand_, "nKshort/I");
+    tree_->Branch("nMuon", &nMuon_, "nMuon/I");
+    tree_->Branch("nKshort", &nVertexCand_, "nKshort/I");
 
-  tree_->Branch("vertexMass", &vertexMass_, "vertexMass/D");
-  tree_->Branch("vertexPt", &vertexPt_, "vertexPt/D");
-  tree_->Branch("vertexL3D", &vertexL3D_, "vertexL3D/D");
-  tree_->Branch("vertexL2D", &vertexL2D_, "vertexL2D/D");
-  tree_->Branch("vertexLxy", &vertexLxy_, "vertexLxy/D");
+    tree_->Branch("vertexMass", &vertexMass_, "vertexMass/D");
+    tree_->Branch("vertexPt", &vertexPt_, "vertexPt/D");
+    tree_->Branch("vertexL3D", &vertexL3D_, "vertexL3D/D");
+    tree_->Branch("vertexL2D", &vertexL2D_, "vertexL2D/D");
+    tree_->Branch("vertexLxy", &vertexLxy_, "vertexLxy/D");
 
-  tree_->Branch("deltaR" , &deltaR_ , "deltaR/D" );
-  tree_->Branch("deltaPt", &deltaPt_, "deltaPt/D");
-  tree_->Branch("legId", &legId_, "legId/I");
-  tree_->Branch("muonCharge", &muonCharge_, "muonCharge/I");
-  tree_->Branch("trackCharge1", &trackCharge1_, "trackCharge1/I");
-  tree_->Branch("trackCharge2", &trackCharge2_, "trackCharge2/I");
-  tree_->Branch("muon" , "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &muon_ );
-  tree_->Branch("track1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &track1_);
-  tree_->Branch("track2", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &track2_);
+    tree_->Branch("deltaR" , &deltaR_ , "deltaR/D" );
+    tree_->Branch("deltaPt", &deltaPt_, "deltaPt/D");
+    tree_->Branch("legId", &legId_, "legId/I");
+    tree_->Branch("muonCharge", &muonCharge_, "muonCharge/I");
+    tree_->Branch("trackCharge1", &trackCharge1_, "trackCharge1/I");
+    tree_->Branch("trackCharge2", &trackCharge2_, "trackCharge2/I");
+    tree_->Branch("muon" , "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &muon_ );
+    tree_->Branch("track1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &track1_);
+    tree_->Branch("track2", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &track2_);
+  }
 
   edm::ParameterSet muonIds = pset.getParameter<edm::ParameterSet>("muonIds");
   std::vector<std::string> muonIdNames = muonIds.getParameterNames();
@@ -145,8 +207,16 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
     muonSelectionTypes_.push_back(muon::selectionTypeFromString(idSelection));
     muonArbitrationTypes_.push_back(muon::arbitrationTypeFromString(arbitration));
 
-    tree_->Branch(Form("muonId_%s", name.c_str()), &(muonIdResults_[0])+i, Form("muonId_%s/I", name.c_str()));
-    tree_->Branch(Form("muStations_%s", name.c_str()), &(muonStations_[0])+i, Form("muStations_%s/I", name.c_str()));
+    if ( doTree )
+    {
+      tree_->Branch(Form("muonId_%s", name.c_str()), &(muonIdResults_[0])+i, Form("muonId_%s/I", name.c_str()));
+      tree_->Branch(Form("muStations_%s", name.c_str()), &(muonStations_[0])+i, Form("muStations_%s/I", name.c_str()));
+    }
+
+    TFileDirectory dir1 = fs->mkdir("hist/"+name+"/track1");
+    h1_.push_back(new Histograms(&dir1, massMin, massMax));
+    TFileDirectory dir2 = fs->mkdir("hist/"+name+"/track2");
+    h2_.push_back(new Histograms(&dir2, massMin, massMax));
   }
 }
 
@@ -265,7 +335,12 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
       }
     }
 
-    tree_->Fill();
+    for ( int i=0, n=muonCuts_.size(); i<n; ++i )
+    {
+      h1_[i]->fill(track1_, vertexMass_, muonIdResults_[i] == 1);
+      h2_[i]->fill(track2_, vertexMass_, muonIdResults_[i] == 1);
+    }
+    if ( tree_ ) tree_->Fill();
   }
 
   if ( nFakeMuon != 0 ) hEvent_->Fill(3);

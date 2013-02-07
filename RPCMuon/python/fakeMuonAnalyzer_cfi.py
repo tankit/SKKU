@@ -8,6 +8,9 @@ fakeKshort = cms.EDAnalyzer("FakeMuonAnalyzer",
     match = cms.string("matchByTrackRef"),
     #maxDR = cms.double(0.02),
     #maxDPt = cms.double(0.1),
+    doTree = cms.bool(False),
+    massMin = cms.double(0.43),
+    massMax = cms.double(0.56),
 )
 
 fakeKshort.muonIds.all = cms.PSet(
@@ -110,4 +113,6 @@ fakeKshort.muonIds.RPCMuTight = cms.PSet(
 
 fakeLambda = fakeKshort.clone()
 fakeLambda.vertexCand = cms.InputTag("generalV0Candidates", "Lambda")
+fakeLambda.massMin = cms.double(1.08)
+fakeLambda.massMax = cms.double(1.20)
 
