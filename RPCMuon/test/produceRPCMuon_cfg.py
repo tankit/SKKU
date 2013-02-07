@@ -7,27 +7,15 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.StandardSequences.GeometryDB_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
-process.GlobalTag.globaltag = 'START61_V1::All'
+process.GlobalTag.globaltag = 'START61_V8::All'
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/0201F024-2E1C-E211-A01D-001D09F24D4E.root',
-        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/30CDBB47-2C1C-E211-B393-003048D37456.root',
-        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/367B6D59-2D1C-E211-BDB8-5404A63886CC.root',
-        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/5EDE6642-2E1C-E211-9078-001D09F25267.root',
-        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/8A22545B-301C-E211-B060-003048D3733E.root',
-        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/9AD9B459-2D1C-E211-BF0D-BCAEC518FF6E.root',
-        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/B63124BD-2C1C-E211-AF8A-003048D2BC42.root',
-        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/D2F1D925-2D1C-E211-A35F-003048678110.root',
-        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/D4EDB704-2C1C-E211-8279-003048D2BBF0.root',
-        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/E09F86AD-2D1C-E211-811D-0025901D5D78.root',
-        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/EC865E73-2E1C-E211-AE10-001D09F25267.root',
-        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/F668A9AF-2E1C-E211-9693-003048D373AE.root',
-        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/F6B42A37-481C-E211-8C2C-003048D2BC4C.root',
-        '/store/relval/CMSSW_6_1_0_pre4/RelValTTbar/GEN-SIM-RECO/PU_START61_V1-v3/0003/FC467103-2F1C-E211-A5B6-001D09F25267.root',
+        '/store/relval/CMSSW_6_2_0_pre1-START61_V8/RelValProdTTbar/GEN-SIM-RECO/v1/00000/1422CAEC-7A6D-E211-B2A7-003048D2BD28.root',
+        '/store/relval/CMSSW_6_2_0_pre1-START61_V8/RelValProdTTbar/GEN-SIM-RECO/v1/00000/26C0F847-786D-E211-9D72-003048D2BCA2.root',
     ),
     inputCommands = cms.untracked.vstring(
         "drop *_*_*_RECO",
