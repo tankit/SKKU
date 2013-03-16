@@ -28,6 +28,9 @@ const double cut_minLeadJetPt = 45;
 const int cut_minNBjet = 2;
 const double cut_bTag = 0.679;
 
+const double cut_drSEvt = 0.4; //for SameEvent
+const double cut_drBEvt = 0.5; //for BiEvent (used to be 0.4)
+
 struct EventTopology
 {
   int run, lumi, event;
@@ -83,7 +86,7 @@ void mix()
   dirSEvt->cd();
   const double binShift = 2.5; //0;
   const double mJJMax = 500+binShift;
-  const double mJJBMax = 1000+binShift;
+  const double mJJBMax = 1000+ 2*binShift;
   const int nbin = 100;
   const TString axisTitleMw = ";Dijet mass (GeV/c^{2});Events per 5GeV/c^{2}";
   const TString axisTitleMt = ";Three jet mass (GeV/c^{2});Events per 10GeV/c^{2}";
@@ -96,12 +99,12 @@ void mix()
   TH1F* hSEvt_Mw_LBJ = new TH1F("hMw_LBJ", "LepB+J"+axisTitleMw, nbin, binShift, mJJMax);
   TH1F* hSEvt_Mw_BX = new TH1F("hMw_BX", "B+X"+axisTitleMw, nbin, binShift, mJJMax);
 
-  TH1F* hSEvt_Mt = new TH1F("hMt", "Three jet mass"+axisTitleMt, nbin, binShift, mJJBMax);
-  TH1F* hSEvt_Mt_JJHB = new TH1F("hMt_JJHB", "J+J+HadB"+axisTitleMt, nbin, binShift, mJJBMax);
-  //TH1F* hSEvt_Mt_JJLB = new TH1F("hMt_JJLB", "J+J+LepB"+axisTitleMt, nbin, binShift, mJJBMax);
-  //TH1F* hSEvt_Mt_KXY = new TH1F("hMt_KXY", "K+XY"+axisTitleMt, nbin, binShift, mJJBMax);
-  //TH1F* hSEvt_Mt_KKX = new TH1F("hMt_KKX", "KK+X"+axisTitleMt, nbin, binShift, mJJBMax);
-  TH1F* hSEvt_Mt_XYZ = new TH1F("hMt_XYZ", "Others"+axisTitleMt, nbin, binShift, mJJBMax);
+  TH1F* hSEvt_Mt = new TH1F("hMt", "Three jet mass"+axisTitleMt, nbin, 2*binShift, mJJBMax);
+  TH1F* hSEvt_Mt_JJHB = new TH1F("hMt_JJHB", "J+J+HadB"+axisTitleMt, nbin, 2*binShift, mJJBMax);
+  //TH1F* hSEvt_Mt_JJLB = new TH1F("hMt_JJLB", "J+J+LepB"+axisTitleMt, nbin, 2*binShift, mJJBMax);
+  //TH1F* hSEvt_Mt_KXY = new TH1F("hMt_KXY", "K+XY"+axisTitleMt, nbin, 2*binShift, mJJBMax);
+  //TH1F* hSEvt_Mt_KKX = new TH1F("hMt_KKX", "KK+X"+axisTitleMt, nbin, 2*binShift, mJJBMax);
+  TH1F* hSEvt_Mt_XYZ = new TH1F("hMt_XYZ", "Others"+axisTitleMt, nbin, 2*binShift, mJJBMax);
 
   dirBEvt->cd();
   TH1F* hBEvt_Mw = new TH1F("hMw", "Dijet mass"+axisTitleMw, nbin, binShift, mJJMax);
@@ -112,12 +115,12 @@ void mix()
   TH1F* hBEvt_Mw_LBJ = new TH1F("hMw_LBJ", "LepB+J"+axisTitleMw, nbin, binShift, mJJMax);
   TH1F* hBEvt_Mw_BX = new TH1F("hMw_BX", "B+X"+axisTitleMw, nbin, binShift, mJJMax);
 
-  TH1F* hBEvt_Mt = new TH1F("hMt", "Three jet mass"+axisTitleMt, nbin, binShift, mJJBMax);
-  TH1F* hBEvt_Mt_JJHB = new TH1F("hMt_JJHB", "J+J+HadB"+axisTitleMt, nbin, binShift, mJJBMax);
-  //TH1F* hBEvt_Mt_JJLB = new TH1F("hMt_JJLB", "J+J+LepB"+axisTitleMt, nbin, binShift, mJJBMax);
-  //TH1F* hBEvt_Mt_KXY = new TH1F("hMt_KXY", "K+XY"+axisTitleMt, nbin, binShift, mJJBMax);
-  //TH1F* hBEvt_Mt_KKX = new TH1F("hMt_KKX", "KK+X"+axisTitleMt, nbin, binShift, mJJBMax);
-  TH1F* hBEvt_Mt_XYZ = new TH1F("hMt_XYZ", "Others"+axisTitleMt, nbin, binShift, mJJBMax);
+  TH1F* hBEvt_Mt = new TH1F("hMt", "Three jet mass"+axisTitleMt, nbin, 2*binShift, mJJBMax);
+  TH1F* hBEvt_Mt_JJHB = new TH1F("hMt_JJHB", "J+J+HadB"+axisTitleMt, nbin, 2*binShift, mJJBMax);
+  //TH1F* hBEvt_Mt_JJLB = new TH1F("hMt_JJLB", "J+J+LepB"+axisTitleMt, nbin, 2*binShift, mJJBMax);
+  //TH1F* hBEvt_Mt_KXY = new TH1F("hMt_KXY", "K+XY"+axisTitleMt, nbin, 2*binShift, mJJBMax);
+  //TH1F* hBEvt_Mt_KKX = new TH1F("hMt_KKX", "KK+X"+axisTitleMt, nbin, 2*binShift, mJJBMax);
+  TH1F* hBEvt_Mt_XYZ = new TH1F("hMt_XYZ", "Others"+axisTitleMt, nbin, 2*binShift, mJJBMax);
   
   int nBiEvent = 0, nPassedBiEvent = 0; // Variables to restore overlap removal scale
   for ( int iEvent1=0, nEvent=tree1->GetEntries(); iEvent1<nEvent; ++iEvent1 )
@@ -158,7 +161,7 @@ void mix()
         if ( bTag2 > cut_bTag ) continue;
         //if ( mcBit2&3 ) continue;
 
-        if ( DeltaR(jet1, jet2) < 0.4 ) continue;
+        if ( DeltaR(jet1, jet2) < cut_drSEvt ) continue;
 
         LorentzVector jj = event1.jets->at(j1)+event1.jets->at(j2);
         const double mJJ = jj.mass(); //min(mJJMax-1e-3, jj.mass());
@@ -181,8 +184,8 @@ void mix()
           //if ( DeltaR(jet3, lepton1) < 0.3 ) continue;
           if ( jet3.pt() < cut_minJetPt or abs(jet3.eta()) > cut_maxJetEta ) continue;
           if ( bTag3 <= cut_bTag ) continue;
-          if ( DeltaR(jet1, jet3) < 0.4 ) continue;
-          if ( DeltaR(jet2, jet3) < 0.4 ) continue;
+          if ( DeltaR(jet1, jet3) < cut_drSEvt ) continue;
+          if ( DeltaR(jet2, jet3) < cut_drSEvt ) continue;
 
           LorentzVector jjb = jj + event1.jets->at(j3);
           const double mJJB = jjb.mass();
@@ -249,7 +252,7 @@ void mix()
         //if ( mcBit2 == 1 or mcBit2 == 2 ) continue;
 
         ++nBiEvent;
-        if ( DeltaR(jet1, jet2) < 0.4 ) continue;
+        if ( DeltaR(jet1, jet2) < cut_drBEvt ) continue;
         ++nPassedBiEvent;
 
         LorentzVector jj = event1.jets->at(j1)+event2.jets->at(j2);
@@ -273,8 +276,8 @@ void mix()
           //if ( DeltaR(jet3, lepton1) < 0.3 ) continue;
           if ( jet3.pt() < cut_minJetPt or abs(jet3.eta()) > cut_maxJetEta ) continue;
           if ( bTag3 <= cut_bTag ) continue;
-          if ( DeltaR(jet1, jet3) < 0.4 ) continue;
-          if ( DeltaR(jet2, jet3) < 0.4 ) continue;
+          if ( DeltaR(jet1, jet3) < cut_drBEvt ) continue;
+          if ( DeltaR(jet2, jet3) < cut_drBEvt ) continue;
 
           LorentzVector jjb = jj + event2.jets->at(j3);
           const double mJJB = jjb.mass();
