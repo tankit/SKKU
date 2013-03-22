@@ -1,8 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 import os
 
-#MC_flag = False
-MC_flag = True
+MC_flag = False
+#MC_flag = True
 
 process = cms.Process("Ana")
 
@@ -17,8 +17,10 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 #process.GlobalTag.globaltag = "START52_V12::All"
 
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
-#for line in open('samples/MuHad_2012B_20120907.txt').readlines():
-for line in open('samples/TTJets_mass172_5_MuHad_use2Jets.txt').readlines():   
+for line in open('samples/MuHad_2012B_20120907.txt').readlines():
+#for line in open('samples/TTJets_mass172_5_MuHad_use2Jets.txt').readlines():   
+#for line in open('samples/TTJets_mass166_5_TuneZ2star_8TeV.txt').readlines():
+#for line in open('samples/TTJets_mass178_5_TuneZ2star_8TeV.txt').readlines():
     line = line.strip("'\", \n")
     if '.root' not in line: continue
     process.source.fileNames.append(line)
@@ -71,8 +73,10 @@ process.load('CommonTools/RecoAlgos/HBHENoiseFilter_cfi')
 
 process.load("HLTrigger.HLTfilters.hltHighLevel_cfi")
 HLTPaths = {
-    "MuHad_5E33":["HLT_IsoMu20_eta2p1_TriCentralPFJet30_v*", "HLT_IsoMu20_eta2p1_TriCentralPFNoPUJet30_v*"],
-    "MuHad_7E33":["HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v*", "HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v*", "HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet45_35_25_v*"],
+    #"MuHad_5E33":["HLT_IsoMu20_eta2p1_TriCentralPFJet30_v*", "HLT_IsoMu20_eta2p1_TriCentralPFNoPUJet30_v*"],
+    #"MuHad_7E33":["HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v*", "HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v*", "HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet45_35_25_v*"],
+    #"MuHad_5E33":["HLT_IsoMu17_eta2p1_TriCentral*", "HLT_Mu17_eta2p1_TriCentral*", "HLT_IsoMu20_eta2p1_TriCentral*"], #not working with patuples in MuHad_2012B_20120907
+    "MuHad_5E33":["HLT_IsoMu17_eta2p1_TriCentral*", "HLT_Mu17_eta2p1_TriCentral*"],
 
     "EleHad_5E33":["HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFJet30_v*", "HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFNoPUJet30_v*"],
     "EleHad_7E33":["HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFNoPUJet30_v*", "HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFNoPUJet30_30_20_v*", "HLT_Ele25_CaloIdVT_CaloIsoVL_TrkIdVL_TrkIsoT_TriCentralPFNoPUJet45_35_25_v*"],
@@ -86,10 +90,10 @@ HLTPaths = {
     "Ele_52X_GTV9":["HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFNoPUJet30_v3",],
 }
 
-if MC_flag:
-    process.hltHighLevel.HLTPaths = HLTPaths["Mu_52X_GTV9"]
-else:
-    process.hltHighLevel.HLTPaths = HLTPaths["MuHad_5E33"] + HLTPaths["MuHad_7E33"]
+#if MC_flag:
+#    process.hltHighLevel.HLTPaths = HLTPaths["Mu_52X_GTV9"]
+#else:
+#    process.hltHighLevel.HLTPaths = HLTPaths["MuHad_5E33"] + HLTPaths["MuHad_7E33"]
 
 process.event = cms.EDAnalyzer("EventTupleProducerMuon",
     doMCMatch = cms.bool(True),
@@ -128,7 +132,8 @@ if MC_flag:
         * process.event
         )
 else:
-    process.hltHighLevel.HLTPaths = HLTPaths["MuHad_5E33"] + HLTPaths["MuHad_7E33"]
+    #process.hltHighLevel.HLTPaths = HLTPaths["MuHad_5E33"] + HLTPaths["MuHad_7E33"]
+    process.hltHighLevel.HLTPaths = HLTPaths["MuHad_5E33"]
     process.p = cms.Path(
         process.goodOfflinePrimaryVertices
         + process.hltHighLevel
