@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-kshortVertex = cms.EDProducer("VertexCandProducer",
+kshortVertex = cms.EDFilter("VertexCandProducer",
     track = cms.PSet(
         src = cms.InputTag("generalTracks"),
         minPt = cms.double(3.0),
@@ -22,6 +22,8 @@ kshortVertex = cms.EDProducer("VertexCandProducer",
     rawMassMax = cms.double(0.6),
     massMin = cms.double(0.43),
     massMax = cms.double(0.56),
+    minNumber = cms.uint32(1),
+    maxNumber = cms.uint32(100),
 )
 
 lambdaVertex = kshortVertex.clone(
@@ -35,7 +37,7 @@ lambdaVertex = kshortVertex.clone(
 )
 
 phiVertex = kshortVertex.clone(
-    pdgId = cms.uint32(3),
+    pdgId = cms.uint32(333),
     leg1Id = cms.uint32(321),
     leg2Id = cms.uint32(321),
     rawMassMin = cms.double(1.020-0.1),

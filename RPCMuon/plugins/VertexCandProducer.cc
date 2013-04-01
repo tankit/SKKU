@@ -1,5 +1,5 @@
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/EDFilter.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -38,13 +38,13 @@
 #include <string>
 #include <fstream>
 
-class VertexCandProducer : public edm::EDProducer
+class VertexCandProducer : public edm::EDFilter
 {
 public:
   VertexCandProducer(const edm::ParameterSet& pset);
   ~VertexCandProducer() {};
 
-  void produce(edm::Event& event, const edm::EventSetup& eventSetup);
+  bool filter(edm::Event& event, const edm::EventSetup& eventSetup);
 
 private:
   bool isGoodTrack(const reco::TrackRef& track, const reco::BeamSpot* beamSpot);
@@ -53,7 +53,7 @@ private:
 private:
   edm::InputTag trackLabel_;
 
-  int pdgId_, leg1Id_, leg2Id_;
+  unsigned int pdgId_, leg1Id_, leg2Id_;
   double mass1_, mass2_;
   double rawMassMin_, rawMassMax_, massMin_, massMax_;
 
@@ -61,6 +61,8 @@ private:
   double cut_trackChi2_, cut_trackIPSignif_, cut_DCA_;
   int cut_trackNHit_;
   double cut_vertexChi2_, cut_minVtxDxy_, cut_minVtxSignif_;
+
+  unsigned int minNumber_, maxNumber_;
 
   //const TrackerGeometry* trackerGeom_;
   const MagneticField* bField_;
@@ -90,6 +92,9 @@ VertexCandProducer::VertexCandProducer(const edm::ParameterSet& pset)
   massMin_ = pset.getParameter<double>("massMin");
   massMax_ = pset.getParameter<double>("massMax");
 
+  minNumber_ = pset.getParameter<unsigned int>("minNumber");
+  maxNumber_ = pset.getParameter<unsigned int>("maxNumber");
+
   massMap_[211] = 0.13957018;
   massMap_[2211] = 0.938272013;
   massMap_[321] = 0.497614;
@@ -101,7 +106,7 @@ VertexCandProducer::VertexCandProducer(const edm::ParameterSet& pset)
   produces<reco::VertexCompositeCandidateCollection>();
 }
 
-void VertexCandProducer::produce(edm::Event& event, const edm::EventSetup& eventSetup)
+bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventSetup)
 {
   using namespace reco;
   using namespace edm;
@@ -241,7 +246,10 @@ void VertexCandProducer::produce(edm::Event& event, const edm::EventSetup& event
     }
   }
 
+  const unsigned int nCands = decayCands->size();
   event.put(decayCands);
+
+  return (nCands >= minNumber_ and nCands <= maxNumber_);
 }
 
 bool VertexCandProducer::isGoodTrack(const reco::TrackRef& track, const reco::BeamSpot* beamSpot)
