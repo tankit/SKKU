@@ -2,13 +2,15 @@ import FWCore.ParameterSet.Config as cms
 
 fakeKshort = cms.EDAnalyzer("FakeMuonAnalyzer",
     muon = cms.InputTag("muons"),
-    vertexCand = cms.InputTag("generalV0Candidates", "Kshort"),
+    #vertexCand = cms.InputTag("generalV0Candidates", "Kshort"),
+    vertexCand = cms.InputTag("kshortVertex"),
     muonIds = cms.PSet(),
     vertexCut = cms.string(""),
     match = cms.string("matchByTrackRef"),
     #maxDR = cms.double(0.02),
     #maxDPt = cms.double(0.1),
-    doTree = cms.bool(False),
+    doTree = cms.bool(True),
+    doHist = cms.bool(False),
     massMin = cms.double(0.43),
     massMax = cms.double(0.56),
 )
@@ -112,7 +114,12 @@ fakeKshort.muonIds.RPCMuTight = cms.PSet(
 
 
 fakeLambda = fakeKshort.clone()
-fakeLambda.vertexCand = cms.InputTag("generalV0Candidates", "Lambda")
-fakeLambda.massMin = cms.double(1.08)
-fakeLambda.massMax = cms.double(1.20)
+#fakeLambda.vertexCand = cms.InputTag("generalV0Candidates", "Lambda")
+fakeLambda.vertexCand = cms.InputTag("lambdaVertex")
+fakeLambda.massMin = cms.double(1.116-0.06)
+fakeLambda.massMax = cms.double(1.116+0.06)
 
+fakePhi = fakeKshort.clone()
+fakePhi.vertexCand = cms.InputTag("phiVertex")
+fakePhi.massMin = cms.double(1.020-0.06)
+fakePhi.massMax = cms.double(1.020+0.06)

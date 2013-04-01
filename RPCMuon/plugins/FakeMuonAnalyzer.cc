@@ -116,13 +116,16 @@ private:
   std::vector<reco::Muon::ArbitrationType> muonArbitrationTypes_;
   StringCutObjectSelector<reco::VertexCompositeCandidate, true>* vertexCut_;
   double maxDR_, maxDPt_;
+  double massMin_, massMax_;
 
+  bool doHist_;
   TH1F* hEvent_, * hNCandOverlap_;
   TTree* tree_;
   int run_, lumi_, event_;
   int nMuon_, nVertexCand_;
   int legId_;
   int muonCharge_, trackCharge1_, trackCharge2_;
+  int pdgId_;
   double vertexMass_, vertexPt_, vertexL3D_, vertexL2D_, vertexLxy_;
   double deltaR_, deltaPt_;
   math::XYZTLorentzVector muon_, track1_, track2_;
@@ -150,18 +153,19 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
     maxDPt_ = pset.getParameter<double>("maxDPt");
   }
 
-  const double massMin = pset.getParameter<double>("massMin");
-  const double massMax = pset.getParameter<double>("massMax");
+  massMin_ = pset.getParameter<double>("massMin");
+  massMax_ = pset.getParameter<double>("massMax");
 
   edm::Service<TFileService> fs;
   hEvent_ = fs->make<TH1F>("hEvent", "Event count", 5, 0, 5);
   hEvent_->GetXaxis()->SetBinLabel(1, "Total");
   hEvent_->GetXaxis()->SetBinLabel(2, "Muon");
-  hEvent_->GetXaxis()->SetBinLabel(3, "Kshort");
+  hEvent_->GetXaxis()->SetBinLabel(3, "Vertex");
   hEvent_->GetXaxis()->SetBinLabel(4, "Overlap");
 
   hNCandOverlap_ = fs->make<TH1F>("hNCandOverlap", "Number of vertex candidate with track sharing", 10, 0, 10);
 
+  doHist_ = pset.getParameter<bool>("doHist");
   const bool doTree = pset.getParameter<bool>("doTree");
   tree_ = 0;
   if ( doTree )
@@ -172,9 +176,10 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
     tree_->Branch("lumi", &lumi_, "lumi/I");
 
     tree_->Branch("nMuon", &nMuon_, "nMuon/I");
-    tree_->Branch("nKshort", &nVertexCand_, "nKshort/I");
+    tree_->Branch("nVertex", &nVertexCand_, "nVertex/I");
 
     tree_->Branch("vertexMass", &vertexMass_, "vertexMass/D");
+    tree_->Branch("pdgId", &pdgId_, "pdgId/I");
     tree_->Branch("vertexPt", &vertexPt_, "vertexPt/D");
     tree_->Branch("vertexL3D", &vertexL3D_, "vertexL3D/D");
     tree_->Branch("vertexL2D", &vertexL2D_, "vertexL2D/D");
@@ -213,10 +218,13 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
       tree_->Branch(Form("muStations_%s", name.c_str()), &(muonStations_[0])+i, Form("muStations_%s/I", name.c_str()));
     }
 
-    TFileDirectory dir1 = fs->mkdir("hist/"+name+"/track1");
-    h1_.push_back(new Histograms(&dir1, massMin, massMax));
-    TFileDirectory dir2 = fs->mkdir("hist/"+name+"/track2");
-    h2_.push_back(new Histograms(&dir2, massMin, massMax));
+    if ( doHist_ )
+    {
+      TFileDirectory dir1 = fs->mkdir("hist/"+name+"/track1");
+      h1_.push_back(new Histograms(&dir1, massMin_, massMax_));
+      TFileDirectory dir2 = fs->mkdir("hist/"+name+"/track2");
+      h2_.push_back(new Histograms(&dir2, massMin_, massMax_));
+    }
   }
 }
 
@@ -256,8 +264,11 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     const reco::VertexCompositeCandidate& vertexCand = vertexCandHandle->at(iVertexCand);
     if ( !(*vertexCut_)(vertexCand) ) continue;
 
+    pdgId_ = vertexCand.pdgId();
     vertexMass_ = vertexCand.mass();
     vertexPt_ = vertexCand.pt();
+
+    if ( vertexMass_ < massMin_ or vertexMass_ > massMax_ ) continue;
 
     math::XYZPoint vertex = vertexCand.vertex();
     vertexL3D_ = vertex.R();
@@ -335,10 +346,13 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
       }
     }
 
-    for ( int i=0, n=muonCuts_.size(); i<n; ++i )
+    if ( doHist_ )
     {
-      h1_[i]->fill(track1_, vertexMass_, muonIdResults_[i] == 1);
-      h2_[i]->fill(track2_, vertexMass_, muonIdResults_[i] == 1);
+      for ( int i=0, n=muonCuts_.size(); i<n; ++i )
+      {
+        h1_[i]->fill(track1_, vertexMass_, muonIdResults_[i] == 1);
+        h2_[i]->fill(track2_, vertexMass_, muonIdResults_[i] == 1);
+      }
     }
     if ( tree_ ) tree_->Fill();
   }
