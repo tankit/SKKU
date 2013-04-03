@@ -15,6 +15,7 @@
 //#include "RecoVertex/AdaptiveVertexFit/interface/AdaptiveVertexFitter.h"
 #include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
 #include "DataFormats/RecoCandidate/interface/RecoChargedCandidate.h"
+#include "CommonTools/CandUtils/interface/AddFourMomenta.h"
 
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "MagneticField/VolumeBasedEngine/interface/VolumeBasedMagneticField.h"
@@ -95,10 +96,10 @@ VertexCandProducer::VertexCandProducer(const edm::ParameterSet& pset)
   minNumber_ = pset.getParameter<unsigned int>("minNumber");
   maxNumber_ = pset.getParameter<unsigned int>("maxNumber");
 
+  massMap_[13] = 0.1056583715;
   massMap_[211] = 0.13957018;
   massMap_[2211] = 0.938272013;
-  massMap_[321] = 0.497614;
-  massMap_[3222] = 1.115683;
+  massMap_[321] = 0.493677;
 
   mass1_ = massMap_[leg1Id_];
   mass2_ = massMap_[leg2Id_];
@@ -169,8 +170,23 @@ bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventS
       TrajectoryStateClosestToPoint caState2 = transTrack2.trajectoryStateClosestToPoint(cxPt);
       if ( !caState1.isValid() or !caState2.isValid() ) continue;
 
-      const double rawEnergy = std::hypot(caState1.momentum().mag(), mass1_) 
-                             + std::hypot(caState2.momentum().mag(), mass2_);
+      double mass1 = mass1_, mass2 = mass2_;
+      if ( mass1_ != mass2_ )
+      {
+        if ( caState1.momentum().mag() > caState2.momentum().mag() )
+        {
+          mass1 = max(mass1_, mass2_);
+          mass2 = min(mass1_, mass2_);
+        }
+        else
+        {
+          mass1 = min(mass1_, mass2_);
+          mass2 = max(mass1_, mass2_);
+        }
+      }
+ 
+      const double rawEnergy = std::hypot(caState1.momentum().mag(), mass1) 
+                             + std::hypot(caState2.momentum().mag(), mass2);
       const double rawMass = sqrt(rawEnergy*rawEnergy - (caState1.momentum()+caState2.momentum()).mag2());
       if ( rawMassMin_ > rawMass or rawMassMax_ < rawMass ) continue;
 
@@ -178,7 +194,7 @@ bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventS
       std::vector<TransientTrack> transTracks;
       transTracks.push_back(transTrack1);
       transTracks.push_back(transTrack2);
-      KalmanVertexFitter fitter(false);
+      KalmanVertexFitter fitter(true);
       TransientVertex transVertex = fitter.vertex(transTracks);
 
       if ( !transVertex.isValid() or transVertex.totalChiSquared() < 0. ) continue;
@@ -209,8 +225,24 @@ bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventS
       std::auto_ptr<TrajectoryStateClosestToPoint> traj1;
       std::auto_ptr<TrajectoryStateClosestToPoint> traj2;
 
-      traj1.reset(new TrajectoryStateClosestToPoint(transTrack1.trajectoryStateClosestToPoint(vtxPos)));
-      traj2.reset(new TrajectoryStateClosestToPoint(transTrack2.trajectoryStateClosestToPoint(vtxPos)));
+      if ( refittedTracks.empty() )
+      {
+        traj1.reset(new TrajectoryStateClosestToPoint(transTrack1.trajectoryStateClosestToPoint(vtxPos)));
+        traj2.reset(new TrajectoryStateClosestToPoint(transTrack2.trajectoryStateClosestToPoint(vtxPos)));
+      }
+      else
+      {
+        TransientTrack* refTrack1 = 0, * refTrack2 = 0;
+        for ( std::vector<TransientTrack>::iterator refTrack = refittedTracks.begin();
+              refTrack != refittedTracks.end(); ++refTrack )
+        {
+          if ( refTrack->track().charge() > 0 ) refTrack1 = &*refTrack;
+          else refTrack2 = &*refTrack;
+        }
+        if ( refTrack1 == 0 or refTrack2 == 0 ) continue;
+        traj1.reset(new TrajectoryStateClosestToPoint(refTrack1->trajectoryStateClosestToPoint(vtxPos)));
+        traj2.reset(new TrajectoryStateClosestToPoint(refTrack2->trajectoryStateClosestToPoint(vtxPos)));
+      }
       if( !traj1->isValid() or !traj2->isValid() ) continue;
 
       GlobalVector mom1(traj1->momentum());
@@ -226,10 +258,12 @@ bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventS
       double vtxChi2(vertex.chi2());
       double vtxNdof(vertex.ndof());
 
-      const double candE1 = sqrt(mom1.mag2() + mass1_*mass1_);
-      const double candE2 = sqrt(mom2.mag2() + mass2_*mass2_);
+      const double candE1 = hypot(mom1.mag(), mass1);
+      const double candE2 = hypot(mom2.mag(), mass2);
 
       Particle::LorentzVector candLVec(mom.x(), mom.y(), mom.z(), candE1+candE2);
+      if ( massMin_ > candLVec.mass() or massMax_ < candLVec.mass() ) continue;
+
       RecoChargedCandidate cand1(trackRef1->charge(), Particle::LorentzVector(mom1.x(), mom1.y(), mom1.z(), candE1), vtx);
       RecoChargedCandidate cand2(trackRef2->charge(), Particle::LorentzVector(mom2.x(), mom2.y(), mom2.z(), candE2), vtx);
       cand1.setTrack(trackRef1);
@@ -238,8 +272,9 @@ bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventS
       cand->addDaughter(cand1);
       cand->addDaughter(cand2);
 
-      if ( leg1Id_ != leg2Id_ and trackRef1->charge() < 0 ) cand->setPdgId(-pdgId_);
-      else cand->setPdgId(pdgId_);
+      cand->setPdgId(pdgId_);
+      AddFourMomenta addP4;
+      addP4.set(*cand);
 
       decayCands->push_back(*cand);
       

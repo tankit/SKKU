@@ -11,6 +11,8 @@
   <use   name="PhysicsTools/UtilAlgos"/>
   <use   name="RecoMuon/MuonIdentification"/>
   <use   name="CommonTools/Utils"/>
+  <use   name="CommonTools/CandUtils"/>
+
   <flags   EDM_PLUGIN="1"/>
 </library>
 
