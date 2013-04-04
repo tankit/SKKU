@@ -8,7 +8,7 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.StandardSequences.GeometryDB_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
-process.GlobalTag.globaltag = 'START61_V8::All'
+process.GlobalTag.globaltag = 'START53_V18PR::All'
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
@@ -41,6 +41,7 @@ process.source = cms.Source("PoolSource",
         "drop *_*_*_RECO",
 
         "keep *_generalTracks_*_*",
+        #"keep *_generalV0Candidates_*_*",
         "keep *_tevMuons_*_*",
         "keep *_siPixel*_*_*", "keep *_siStrip*_*_*",
         "keep *_dt*_*_*", "keep *_csc*_*_*", "keep *_rpc*_*_*",
@@ -60,7 +61,6 @@ def lumiList( json ):
     return myLumis
 
 def applyJSON( process, json ):
-
     # import PhysicsTools.PythonAnalysis.LumiList as LumiList
     # import FWCore.ParameterSet.Types as CfgTypes
     # myLumis = LumiList.LumiList(filename = json ).getCMSSWString().split(',')
@@ -72,15 +72,11 @@ def applyJSON( process, json ):
     process.source.lumisToProcess.extend(myLumis)
 
     # print process.source.lumisToProcess
-jsonDir = "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt"
-jsonFile = "Cert_190456-208686_8TeV_PromptReco_Collisions12_JSON.txt"
-applyJSON(process, os.path.join(jsonDir, jsonFile))
 
 process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('out.root'),
     outputCommands = cms.untracked.vstring('drop *',),
 )
-
 from Configuration.EventContent.EventContent_cff import RECOSIMEventContent
 process.out.outputCommands += RECOSIMEventContent.outputCommands
 
@@ -121,29 +117,63 @@ process.muonRereco = cms.Sequence(
   * process.muoncosmicreco * process.regionalCosmicTracksSeq
   * process.muoncosmichighlevelreco #* process.muonshighlevelreco
   * process.muons
-  #* process.generalV0Candidates
+)
+
+process.fakeKshort2 = process.fakeKshort.clone(
+    vertexCand = cms.InputTag("generalV0Candidates", "Kshort"),
 )
 
 process.pKs = cms.Path(
     process.primaryVertexFilter
-  * process.kshortVertex
-  * process.muonRereco
+  + process.kshortVertex
+  + process.muonRereco
+  #* process.fakeKshort2
   * process.fakeKshort
+)
+
+process.fakeLambda2 = process.fakeLambda.clone(
+    vertexCand = cms.InputTag("generalV0Candidates", "Lambda"),
 )
 
 process.pLambda = cms.Path(
     process.primaryVertexFilter
-  * process.lambdaVertex
-  * process.muonRereco
+  + process.lambdaVertex
+  + process.muonRereco
+  #* process.fakeLambda2
   * process.fakeLambda
 )
 
 process.pPhi = cms.Path(
     process.primaryVertexFilter
-  * process.phiVertex
-  * process.muonRereco
+  + process.phiVertex
+  + process.muonRereco
   * process.fakePhi
 )
 
+process.pJpsi = cms.Path(
+    process.primaryVertexFilter
+  + process.jpsiVertex
+  + process.muonRereco
+  * process.fakeJpsi
+)
+
 #process.outPath = cms.EndPath(process.out)
+
+if 'SECTION' in os.environ:
+    section = int(os.environ['SECTION'])
+    nFiles = 20
+
+    jsonDir = "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt"
+    jsonFile = "Cert_190456-208686_8TeV_PromptReco_Collisions12_JSON.txt"
+    applyJSON(process, os.path.join(jsonDir, jsonFile))
+
+    files = [l.strip() for l in open("MinimumBias-Run2012D.txt").readlines()]
+    begin = nFiles*section
+    end = min(nFiles*(section+1), len(files)+1)
+    process.source.fileNames = files[begin:end]
+
+    process.TFileService.fileName = "unmerged/result_%03d.root" % section
+
+    print process.source.fileNames[0]
+    print process.source.fileNames[-1]
 
