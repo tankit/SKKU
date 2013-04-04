@@ -48,9 +48,9 @@ public:
   bool filter(edm::Event& event, const edm::EventSetup& eventSetup);
 
 private:
-  bool isGoodTrack(const reco::TrackRef& track, const reco::BeamSpot* beamSpot);
-  std::map<int, double> massMap_;
-  
+  bool isGoodTrack(const reco::TrackRef& track, const reco::BeamSpot* beamSpot) const;
+  inline double particleMass(const unsigned int pdgId) const;
+
 private:
   edm::InputTag trackLabel_;
 
@@ -59,9 +59,9 @@ private:
   double rawMassMin_, rawMassMax_, massMin_, massMax_;
 
   double cut_minPt_, cut_maxEta_;
-  double cut_trackChi2_, cut_trackIPSignif_, cut_DCA_;
+  double cut_trackChi2_, cut_trackSignif_, cut_DCA_;
   int cut_trackNHit_;
-  double cut_vertexChi2_, cut_minVtxDxy_, cut_minVtxSignif_;
+  double cut_vertexChi2_, cut_vtxDxy_, cut_vtxSignif_;
 
   unsigned int minNumber_, maxNumber_;
 
@@ -77,13 +77,13 @@ VertexCandProducer::VertexCandProducer(const edm::ParameterSet& pset)
   cut_maxEta_ = trackPSet.getParameter<double>("maxEta");
   cut_trackChi2_ = trackPSet.getParameter<double>("chi2");
   cut_trackNHit_  = trackPSet.getParameter<int>("nHit");
-  cut_trackIPSignif_ = trackPSet.getParameter<double>("ipSignif");
+  cut_trackSignif_ = trackPSet.getParameter<double>("signif");
   cut_DCA_ = trackPSet.getParameter<double>("DCA");
 
   edm::ParameterSet vertexPSet = pset.getParameter<edm::ParameterSet>("vertex");
   cut_vertexChi2_ = vertexPSet.getParameter<double>("chi2");
-  cut_minVtxDxy_ = vertexPSet.getParameter<double>("dxy");
-  cut_minVtxSignif_ = vertexPSet.getParameter<double>("vtxSignif");
+  cut_vtxDxy_ = vertexPSet.getParameter<double>("dxy");
+  cut_vtxSignif_ = vertexPSet.getParameter<double>("signif");
 
   pdgId_ = pset.getParameter<unsigned int>("pdgId");
   leg1Id_ = pset.getParameter<unsigned int>("leg1Id");
@@ -96,13 +96,8 @@ VertexCandProducer::VertexCandProducer(const edm::ParameterSet& pset)
   minNumber_ = pset.getParameter<unsigned int>("minNumber");
   maxNumber_ = pset.getParameter<unsigned int>("maxNumber");
 
-  massMap_[13] = 0.1056583715;
-  massMap_[211] = 0.13957018;
-  massMap_[2211] = 0.938272013;
-  massMap_[321] = 0.493677;
-
-  mass1_ = massMap_[leg1Id_];
-  mass2_ = massMap_[leg2Id_];
+  mass1_ = particleMass(leg1Id_);
+  mass2_ = particleMass(leg2Id_);
 
   produces<reco::VertexCompositeCandidateCollection>();
 }
@@ -218,7 +213,7 @@ bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventS
 
       double rVtxMag = ROOT::Math::Mag(distanceVector);
       double sigmaRvtxMag = sqrt(ROOT::Math::Similarity(totalCov, distanceVector)) / rVtxMag;
-      if( rVtxMag < cut_minVtxDxy_ or rVtxMag / sigmaRvtxMag < cut_minVtxSignif_ ) continue;
+      if( rVtxMag < cut_vtxDxy_ or rVtxMag / sigmaRvtxMag < cut_vtxSignif_ ) continue;
 
       // Cuts finished, now we create the candidates and push them back into the collections.
       
@@ -299,10 +294,23 @@ bool VertexCandProducer::isGoodTrack(const reco::TrackRef& track, const reco::Be
   TSCBLBuilderNoMaterial blsBuilder;
   TrajectoryStateClosestToBeamLine tscb( blsBuilder(initialFTS, *beamSpot) );
   if ( !tscb.isValid() ) return false;
-  if ( tscb.transverseImpactParameter().significance() <= cut_trackIPSignif_ ) return false;
+  if ( tscb.transverseImpactParameter().significance() <= cut_trackSignif_ ) return false;
 
   return true;
 }
+
+double VertexCandProducer::particleMass(const unsigned int pdgId) const;
+{
+  switch(pdgId)
+  {
+    case   11: return 0.0005109989; break;
+    case   13: return 0.1056583715; break;
+    case  211: return 0.13957018  ; break;
+    case  321: return 0.493677    ; break;
+    case 2212: return 0.938272013 ; break;
+  }
+  return 1e12; // Make this particle supermassive to fail mass range cut
+} 
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(VertexCandProducer);
