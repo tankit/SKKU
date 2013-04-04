@@ -282,7 +282,7 @@ bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventS
   return (nCands >= minNumber_ and nCands <= maxNumber_);
 }
 
-bool VertexCandProducer::isGoodTrack(const reco::TrackRef& track, const reco::BeamSpot* beamSpot)
+bool VertexCandProducer::isGoodTrack(const reco::TrackRef& track, const reco::BeamSpot* beamSpot) const
 {
   const static reco::TrackBase::TrackQuality trackQual = reco::TrackBase::qualityByName("loose");
   if ( !track->quality(trackQual) ) return false;
@@ -299,7 +299,7 @@ bool VertexCandProducer::isGoodTrack(const reco::TrackRef& track, const reco::Be
   return true;
 }
 
-double VertexCandProducer::particleMass(const unsigned int pdgId) const;
+double VertexCandProducer::particleMass(const unsigned int pdgId) const
 {
   switch(pdgId)
   {
