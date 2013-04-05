@@ -124,13 +124,15 @@ private:
   int run_, lumi_, event_;
   int nMuon_, nVertexCand_;
   int legId_;
-  int muonCharge_, trackCharge1_, trackCharge2_;
+  int muonCharge1_, muonCharge2_;
+  int trackCharge1_, trackCharge2_;
   int pdgId_;
-  double vertexMass_, vertexPt_, vertexL3D_, vertexL2D_, vertexLxy_;
-  double deltaR_, deltaPt_;
-  math::XYZTLorentzVector muon_, track1_, track2_;
-  std::vector<int> muonIdResults_;
-  std::vector<int> muonStations_;
+  double vertexMass_, vertexPt_, /*vertexL3D_, vertexL2D_,*/ vertexLxy_;
+  //double deltaR_, deltaPt_;
+  math::XYZTLorentzVector muon1_, muon2_;
+  math::XYZTLorentzVector track1_, track2_;
+  std::vector<int> muonIdResults1_, muonIdResults2_;
+  //std::vector<int> muonStations_;
   std::vector<Histograms*> h1_, h2_;
 };
 
@@ -181,25 +183,28 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
     tree_->Branch("vertexMass", &vertexMass_, "vertexMass/D");
     tree_->Branch("pdgId", &pdgId_, "pdgId/I");
     tree_->Branch("vertexPt", &vertexPt_, "vertexPt/D");
-    tree_->Branch("vertexL3D", &vertexL3D_, "vertexL3D/D");
-    tree_->Branch("vertexL2D", &vertexL2D_, "vertexL2D/D");
+    //tree_->Branch("vertexL3D", &vertexL3D_, "vertexL3D/D");
+    //tree_->Branch("vertexL2D", &vertexL2D_, "vertexL2D/D");
     tree_->Branch("vertexLxy", &vertexLxy_, "vertexLxy/D");
 
-    tree_->Branch("deltaR" , &deltaR_ , "deltaR/D" );
-    tree_->Branch("deltaPt", &deltaPt_, "deltaPt/D");
+    //tree_->Branch("deltaR" , &deltaR_ , "deltaR/D" );
+    //tree_->Branch("deltaPt", &deltaPt_, "deltaPt/D");
     tree_->Branch("legId", &legId_, "legId/I");
-    tree_->Branch("muonCharge", &muonCharge_, "muonCharge/I");
+    tree_->Branch("muonCharge1", &muonCharge1_, "muonCharge1/I");
+    tree_->Branch("muonCharge2", &muonCharge2_, "muonCharge2/I");
     tree_->Branch("trackCharge1", &trackCharge1_, "trackCharge1/I");
     tree_->Branch("trackCharge2", &trackCharge2_, "trackCharge2/I");
-    tree_->Branch("muon" , "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &muon_ );
+    tree_->Branch("muon1" , "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &muon1_ );
+    tree_->Branch("muon2" , "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &muon2_ );
     tree_->Branch("track1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &track1_);
     tree_->Branch("track2", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >", &track2_);
   }
 
   edm::ParameterSet muonIds = pset.getParameter<edm::ParameterSet>("muonIds");
   std::vector<std::string> muonIdNames = muonIds.getParameterNames();
-  muonIdResults_.resize(muonIdNames.size());
-  muonStations_.resize(muonIdNames.size());
+  muonIdResults1_.resize(muonIdNames.size());
+  muonIdResults2_.resize(muonIdNames.size());
+  //muonStations_.resize(muonIdNames.size());
   for ( int i=0, n=muonIdNames.size(); i<n; ++i )
   {
     const std::string& name = muonIdNames[i];
@@ -214,8 +219,9 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
 
     if ( doTree )
     {
-      tree_->Branch(Form("muonId_%s", name.c_str()), &(muonIdResults_[0])+i, Form("muonId_%s/I", name.c_str()));
-      tree_->Branch(Form("muStations_%s", name.c_str()), &(muonStations_[0])+i, Form("muStations_%s/I", name.c_str()));
+      tree_->Branch(Form("muonId1_%s", name.c_str()), &(muonIdResults1_[0])+i, Form("muonId1_%s/I", name.c_str()));
+      tree_->Branch(Form("muonId2_%s", name.c_str()), &(muonIdResults2_[0])+i, Form("muonId2_%s/I", name.c_str()));
+      //tree_->Branch(Form("muStations_%s", name.c_str()), &(muonStations_[0])+i, Form("muStations_%s/I", name.c_str()));
     }
 
     if ( doHist_ )
@@ -234,7 +240,11 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
   event_ = event.id().event();
   lumi_ = event.id().luminosityBlock();
 
-  for ( int i=0, n=muonIdResults_.size(); i<n; ++i ) muonIdResults_[i] = muonStations_[i] = -1;
+  for ( int i=0, n=muonIdResults1_.size(); i<n; ++i )
+  {
+    muonIdResults1_[i] = muonIdResults2_[i]  -1;
+    //muonStations_[i] = -1;
+  }
 
   edm::Handle<edm::View<reco::Muon> > muonHandle;
   event.getByLabel(muonLabel_, muonHandle);
@@ -255,11 +265,14 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
   for ( int iVertexCand=0; iVertexCand<nVertexCand_; ++iVertexCand )
   {
     vertexMass_ = vertexPt_ = -1e9;
-    vertexL3D_ = vertexL2D_ = vertexLxy_ = -1e9;
-    deltaR_ = deltaPt_ = 1e-9;
+    vertexLxy_ = -1e9;
+    //vertexL3D_ = vertexL2D_ = vertexLxy_ = -1e9;
+    //deltaR_ = deltaPt_ = 1e-9;
     legId_ = 0;
-    muonCharge_ = trackCharge1_ = trackCharge2_ = 0;
-    muon_ = track1_ = track2_ = math::XYZTLorentzVector();
+    muonCharge1_ = muonCharge2_ = 0;
+    trackCharge1_ = trackCharge2_ = 0;
+    muon1_ = muon2_ = math::XYZTLorentzVector();
+    track1_ = track2_ = math::XYZTLorentzVector();
 
     const reco::VertexCompositeCandidate& vertexCand = vertexCandHandle->at(iVertexCand);
     if ( !(*vertexCut_)(vertexCand) ) continue;
@@ -271,8 +284,8 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     if ( vertexMass_ < massMin_ or vertexMass_ > massMax_ ) continue;
 
     math::XYZPoint vertex = vertexCand.vertex();
-    vertexL3D_ = vertex.R();
-    vertexL2D_ = vertex.Rho();
+    //vertexL3D_ = vertex.R();
+    //vertexL2D_ = vertex.Rho();
     vertexLxy_ = (vertex.x()*vertexCand.px() + vertex.y()*vertexCand.py())/vertexCand.p();
 
     const reco::Candidate* p1 = vertexCand.daughter(0);
@@ -314,8 +327,8 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     const reco::Muon* muon1 = findMatchedMuonByTrackRef(*p1, muonHandle);
     const reco::Muon* muon2 = findMatchedMuonByTrackRef(*p2, muonHandle);
 
-    const reco::Muon* matchedMuon = muon1 ? muon1 : muon2;
-    const reco::Candidate* matchedTrack = muon1 ? p1 : p2;
+    //const reco::Muon* matchedMuon = muon1 ? muon1 : muon2;
+    //const reco::Candidate* matchedTrack = muon1 ? p1 : p2;
     // Set matched muon. 
     // legId = 0 for un-matched case.
     // There can be very rare case of double fake muons. 
@@ -326,32 +339,48 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     track2_ = p2->p4();
     trackCharge2_ = p2->charge();
 
-    if ( matchedMuon )
+    if ( muon1 ) 
     {
-      if ( muon1 ) { legId_ |= 1; ++nFakeMuon; }
-      if ( muon2 ) { legId_ |= 2; ++nFakeMuon; }
-      
-      muonCharge_ = matchedMuon->charge();
-      muon_ = matchedMuon->p4();
-      deltaR_ = deltaR(*matchedTrack, *matchedMuon);
-      deltaPt_ = matchedTrack->pt() - matchedMuon->pt();
+      legId_ |= 1;
+      ++nFakeMuon; 
+      muonCharge1_ = muon1->charge();
+      muon1_ = muon1->p4();
 
       for ( int i=0, n=muonCuts_.size(); i<n; ++i )
       {
-        muonIdResults_[i] = true;
-        muonIdResults_[i] &= (*muonCuts_[i])(*matchedMuon);
-        muonIdResults_[i] &= muon::isGoodMuon(*matchedMuon, muonSelectionTypes_[i], muonArbitrationTypes_[i]);
+        muonIdResults1_[i] = true;
+        muonIdResults1_[i] &= (*muonCuts_[i])(*muon1);
+        muonIdResults1_[i] &= muon::isGoodMuon(*muon1, muonSelectionTypes_[i], muonArbitrationTypes_[i]);
 
-        muonStations_[i] = matchedMuon->numberOfMatchedStations(muonArbitrationTypes_[i]);
       }
+    }
+    if ( muon2 ) 
+    {
+      legId_ |= 2;
+      ++nFakeMuon; 
+      muonCharge2_ = muon2->charge();
+      muon2_ = muon2->p4();
+
+      for ( int i=0, n=muonCuts_.size(); i<n; ++i )
+      {
+        muonIdResults2_[i] = true;
+        muonIdResults2_[i] &= (*muonCuts_[i])(*muon2);
+        muonIdResults2_[i] &= muon::isGoodMuon(*muon2, muonSelectionTypes_[i], muonArbitrationTypes_[i]);
+
+      }
+      
+      //deltaR_ = deltaR(*matchedTrack, *matchedMuon);
+      //deltaPt_ = matchedTrack->pt() - matchedMuon->pt();
+
+      //muonStations_[i] = matchedMuon->numberOfMatchedStations(muonArbitrationTypes_[i]);
     }
 
     if ( doHist_ )
     {
       for ( int i=0, n=muonCuts_.size(); i<n; ++i )
       {
-        h1_[i]->fill(track1_, vertexMass_, muonIdResults_[i] == 1);
-        h2_[i]->fill(track2_, vertexMass_, muonIdResults_[i] == 1);
+        h1_[i]->fill(track1_, vertexMass_, muonIdResults1_[i] == 1);
+        h2_[i]->fill(track2_, vertexMass_, muonIdResults2_[i] == 1);
       }
     }
     if ( tree_ ) tree_->Fill();
