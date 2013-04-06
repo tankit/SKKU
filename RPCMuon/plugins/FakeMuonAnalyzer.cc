@@ -240,12 +240,6 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
   event_ = event.id().event();
   lumi_ = event.id().luminosityBlock();
 
-  for ( int i=0, n=muonIdResults1_.size(); i<n; ++i )
-  {
-    muonIdResults1_[i] = muonIdResults2_[i]  -1;
-    //muonStations_[i] = -1;
-  }
-
   edm::Handle<edm::View<reco::Muon> > muonHandle;
   event.getByLabel(muonLabel_, muonHandle);
 
@@ -273,6 +267,12 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     trackCharge1_ = trackCharge2_ = 0;
     muon1_ = muon2_ = math::XYZTLorentzVector();
     track1_ = track2_ = math::XYZTLorentzVector();
+
+    for ( int i=0, n=muonIdResults1_.size(); i<n; ++i )
+    {
+      muonIdResults1_[i] = muonIdResults2_[i] = -1;
+      //muonStations_[i] = -1;
+    }
 
     const reco::VertexCompositeCandidate& vertexCand = vertexCandHandle->at(iVertexCand);
     if ( !(*vertexCut_)(vertexCand) ) continue;
@@ -327,13 +327,6 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     const reco::Muon* muon1 = findMatchedMuonByTrackRef(*p1, muonHandle);
     const reco::Muon* muon2 = findMatchedMuonByTrackRef(*p2, muonHandle);
 
-    //const reco::Muon* matchedMuon = muon1 ? muon1 : muon2;
-    //const reco::Candidate* matchedTrack = muon1 ? p1 : p2;
-    // Set matched muon. 
-    // legId = 0 for un-matched case.
-    // There can be very rare case of double fake muons. 
-    // Only muon1 will be stored in this case but we can separate this case with requiring legId != 3
-    legId_ = 0;
     track1_ = p1->p4();
     trackCharge1_ = p1->charge();
     track2_ = p2->p4();
@@ -351,7 +344,6 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
         muonIdResults1_[i] = true;
         muonIdResults1_[i] &= (*muonCuts_[i])(*muon1);
         muonIdResults1_[i] &= muon::isGoodMuon(*muon1, muonSelectionTypes_[i], muonArbitrationTypes_[i]);
-
       }
     }
     if ( muon2 ) 
@@ -366,7 +358,6 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
         muonIdResults2_[i] = true;
         muonIdResults2_[i] &= (*muonCuts_[i])(*muon2);
         muonIdResults2_[i] &= muon::isGoodMuon(*muon2, muonSelectionTypes_[i], muonArbitrationTypes_[i]);
-
       }
       
       //deltaR_ = deltaR(*matchedTrack, *matchedMuon);
