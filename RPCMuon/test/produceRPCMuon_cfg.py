@@ -55,24 +55,6 @@ process.source = cms.Source("PoolSource",
     dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
 )
 
-def lumiList( json ):
-    import FWCore.PythonUtilities.LumiList as LumiList
-    myLumis = LumiList.LumiList(filename = json ).getCMSSWString().split(',')
-    return myLumis
-
-def applyJSON( process, json ):
-    # import PhysicsTools.PythonAnalysis.LumiList as LumiList
-    # import FWCore.ParameterSet.Types as CfgTypes
-    # myLumis = LumiList.LumiList(filename = json ).getCMSSWString().split(',')
-
-    myLumis = lumiList( json )
-
-    import FWCore.ParameterSet.Types as CfgTypes
-    process.source.lumisToProcess = CfgTypes.untracked(CfgTypes.VLuminosityBlockRange())
-    process.source.lumisToProcess.extend(myLumis)
-
-    # print process.source.lumisToProcess
-
 process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('out.root'),
     outputCommands = cms.untracked.vstring('drop *',),
@@ -80,6 +62,12 @@ process.out = cms.OutputModule("PoolOutputModule",
 from Configuration.EventContent.EventContent_cff import RECOSIMEventContent
 process.out.outputCommands += RECOSIMEventContent.outputCommands
 
+process.noscraping = cms.EDFilter("FilterOutScraping",
+    applyfilter = cms.untracked.bool(True),
+    debugOn = cms.untracked.bool(False),
+    numtrack = cms.untracked.uint32(10),
+    thresh = cms.untracked.double(0.25)
+)
 # Good vertex requirement
 process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
     vertexCollection = cms.InputTag('offlinePrimaryVertices'),
@@ -119,24 +107,15 @@ process.muonRereco = cms.Sequence(
   * process.muons
 )
 
-process.fakeKshort2 = process.fakeKshort.clone(
-    vertexCand = cms.InputTag("generalV0Candidates", "Kshort"),
-)
-
 process.pKs = cms.Path(
-    process.primaryVertexFilter
+    process.noscraping + process.primaryVertexFilter
   + process.kshortVertex
   + process.muonRereco
-  #* process.fakeKshort2
   * process.fakeKshort
 )
 
-process.fakeLambda2 = process.fakeLambda.clone(
-    vertexCand = cms.InputTag("generalV0Candidates", "Lambda"),
-)
-
 process.pLambda = cms.Path(
-    process.primaryVertexFilter
+    process.noscraping + process.primaryVertexFilter
   + process.lambdaVertex
   + process.muonRereco
   #* process.fakeLambda2
@@ -144,27 +123,45 @@ process.pLambda = cms.Path(
 )
 
 process.pPhi = cms.Path(
-    process.primaryVertexFilter
+    process.noscraping + process.primaryVertexFilter
   + process.phiVertex
   + process.muonRereco
   * process.fakePhi
 )
 
 process.pJpsi = cms.Path(
-    process.primaryVertexFilter
+    process.noscraping + process.primaryVertexFilter
   + process.jpsiVertex
   + process.muonRereco
   * process.fakeJpsi
 )
 
 #process.outPath = cms.EndPath(process.out)
+def lumiList( json ):
+    import FWCore.PythonUtilities.LumiList as LumiList
+    myLumis = LumiList.LumiList(filename = json ).getCMSSWString().split(',')
+    return myLumis
+
+def applyJSON( process, json ):
+    # import PhysicsTools.PythonAnalysis.LumiList as LumiList
+    # import FWCore.ParameterSet.Types as CfgTypes
+    # myLumis = LumiList.LumiList(filename = json ).getCMSSWString().split(',')
+
+    myLumis = lumiList( json )
+
+    import FWCore.ParameterSet.Types as CfgTypes
+    process.source.lumisToProcess = CfgTypes.untracked(CfgTypes.VLuminosityBlockRange())
+    process.source.lumisToProcess.extend(myLumis)
+
+    # print process.source.lumisToProcess
 
 if 'SECTION' in os.environ:
     section = int(os.environ['SECTION'])
-    nFiles = 20
+    nFiles = 10
 
     jsonDir = "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt"
-    jsonFile = "Cert_190456-208686_8TeV_PromptReco_Collisions12_JSON.txt"
+    #jsonFile = "Cert_190456-208686_8TeV_PromptReco_Collisions12_JSON.txt"
+    jsonFile = "Cert_190456-208686_8TeV_PromptReco_Collisions12_JSON_MuonPhys.txt"
     applyJSON(process, os.path.join(jsonDir, jsonFile))
 
     files = [l.strip() for l in open("MinimumBias-Run2012D.txt").readlines()]
