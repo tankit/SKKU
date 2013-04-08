@@ -53,10 +53,10 @@ jpsiVertex = kshortVertex.clone(
     pdgId = cms.uint32(443),
     leg1Id = cms.uint32(13),
     leg2Id = cms.uint32(13),
-    rawMassMin = cms.double(2.90),
-    rawMassMax = cms.double(3.30),
-    massMin = cms.double(2.95),
-    massMax = cms.double(3.25),
+    rawMassMin = cms.double(2.75),
+    rawMassMax = cms.double(3.45),
+    massMin = cms.double(2.80),
+    massMax = cms.double(3.40),
 )
 jpsiVertex.track.signif = -5
 jpsiVertex.vertex.signif = -5
