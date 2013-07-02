@@ -13,8 +13,8 @@
 //                                                                                                                               
 // Original Author:  Hyunkwan Seo,588 R-009,+41227678393,                                                                        
 //         Created:  Fri Jun 17 17:45:39 CEST 2011<<<<<<< RecHitAnal.cc
-// $Id: RecHitAnal.cc,v 1.10 2012/10/15 13:27:28 hkseo Exp $=======
-// $Id: RecHitAnal.cc,v 1.10 2012/10/15 13:27:28 hkseo Exp $>>>>>>> 1.4
+// $Id: RecHitAnal.cc,v 1.11 2012/12/14 16:43:20 hkseo Exp $=======
+// $Id: RecHitAnal.cc,v 1.11 2012/12/14 16:43:20 hkseo Exp $>>>>>>> 1.4
 //                                                                                                                               
 //    
 
@@ -528,10 +528,10 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
 
   nCSCseg = allCSCSegments->size();
   nDTseg = allDT4DSegments->size();
-  int nRPCRecHits = rpcRecHits->size();
+  //int nRPCRecHits = rpcRecHits->size();
   nMuons = muons->size();
   int nMuonsNoRPC = globalMuonsNoRPC->size();
-  int nStaMuons = StandAloneMuons->size();
+  //int nStaMuons = StandAloneMuons->size();
   nTracks = generalTracks->size();
 
   if (nMuons<1) return;   // for now ask for at least one muon
@@ -692,7 +692,7 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
 
           // hits from DT segments
           if (id.det() == DetId::Muon && id.subdetId() == MuonSubdetId::DT ) {
-            const DTRecSegment4D *seg4D = dynamic_cast<const DTRecSegment4D*>((*segment)->hit());
+            //const DTRecSegment4D *seg4D = dynamic_cast<const DTRecSegment4D*>((*segment)->hit());
             /*
 	      if((*seg4D).hasPhi())
               hitsFromSegmDt_+=(*seg4D).phiSegment()->specificRecHits().size();
@@ -759,7 +759,7 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
       hitsFromDt=0;
       hitsFromCsc=0;
       hitsFromRpc=0;
-      int hitsFromTk=0;
+      //int hitsFromTk=0;
       int hitsFromTrack=0;
       int validHitsFromTrack=0;
 
@@ -797,9 +797,9 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
       
       
       // hits from track (the part concerning the rechits of rpc. info from Davide)
-      bool fbarrel[6], fendcap[3]; // flag of layers crossed
-      for (int i=0; i<6; i++) fbarrel[i] = false;
-      for (int i=0; i<3; i++) fendcap[i] = false;
+      //bool fbarrel[6], fendcap[3]; // flag of layers crossed
+      //for (int i=0; i<6; i++) fbarrel[i] = false;
+      //for (int i=0; i<3; i++) fendcap[i] = false;
 
       typedef std::map<RecHitIter, RecHitIter> RecToRecHitMap;
       RecToRecHitMap refToRecHitMapGLB;
@@ -901,7 +901,7 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
 	  const RPCRoll * r1; LocalPoint l;
           l = (*recHit)->localPosition();
 	  r1 = rpcGeometry->roll(id);
-	  GlobalPoint G = r1->surface().toGlobal(l);
+	  //GlobalPoint G = r1->surface().toGlobal(l);
 	  RPCDetId rpcId = r1->id();
 
 	  regionSTA[hitsFromRpcSTA] = rpcId.region();
@@ -989,7 +989,7 @@ void RecHitAnal::analyze(const edm::Event& event, const edm::EventSetup& eventSe
 	  const RPCRoll * r1; LocalPoint l;
           l = (*recHit)->localPosition();
 	  r1 = rpcGeometry->roll(id);
-	  GlobalPoint G = r1->surface().toGlobal(l);
+	  //GlobalPoint G = r1->surface().toGlobal(l);
 	  RPCDetId rpcId = r1->id();
 
 	  region_track[hitsFromRpc_track] = rpcId.region();
