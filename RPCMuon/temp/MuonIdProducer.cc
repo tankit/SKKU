@@ -757,8 +757,8 @@ bool MuonIdProducer::isGoodRPCMuon( const reco::Muon& muon )
   if(muon.track()->pt() < minPt_ || muon.track()->p() < minP_) return false;
    if ( addExtraSoftMuons_ && 
 	muon.pt()<5 && fabs(muon.eta())<1.5 && 
-	muon.numberOfMatches( reco::Muon::RPCHitAndTrackArbitration ) > 1 ) return true;
-   return ( muon.numberOfMatches( reco::Muon::RPCHitAndTrackArbitration ) > minNumberOfMatches_ );
+	muon.numberOfMatchedRPCLayers( reco::Muon::RPCHitAndTrackArbitration ) > 1 ) return true;
+   return ( muon.numberOfMatchedRPCLayers( reco::Muon::RPCHitAndTrackArbitration ) > minNumberOfMatches_ );
 }
 
 void MuonIdProducer::fillMuonId(edm::Event& iEvent, const edm::EventSetup& iSetup,
@@ -812,13 +812,17 @@ void MuonIdProducer::fillMuonId(edm::Event& iEvent, const edm::EventSetup& iSetu
       aMuon.setCalEnergy( muonEnergy );
    }
    if ( ! fillMatching_ && ! aMuon.isTrackerMuon() && ! aMuon.isRPCMuon() ) return;
-   
+  
+   edm::Handle<RPCRecHitCollection> rpcRecHits;
+   iEvent.getByLabel(edm::InputTag("rpcRecHits"), rpcRecHits);
+ 
    // fill muon match info
    std::vector<reco::MuonChamberMatch> muonChamberMatches;
    unsigned int nubmerOfMatchesAccordingToTrackAssociator = 0;
    for( std::vector<TAMuonChamberMatch>::const_iterator chamber=info.chambers.begin();
 	chamber!=info.chambers.end(); chamber++ )
      {
+        if  (chamber->id.subdetId() == 3 && rpcRecHits.isValid()  ) continue; // Skip RPC chambers, they are taken care of below)
 	reco::MuonChamberMatch matchedChamber;
 	
 	LocalError localError = chamber->tState.localError().positionError();
@@ -885,8 +889,6 @@ void MuonIdProducer::fillMuonId(edm::Event& iEvent, const edm::EventSetup& iSetu
      }
 
   // Fill RPC info
-  edm::Handle<RPCRecHitCollection> rpcRecHits;
-  iEvent.getByLabel(edm::InputTag("rpcRecHits"), rpcRecHits);
   if ( rpcRecHits.isValid() )
   {
 
@@ -927,7 +929,8 @@ void MuonIdProducer::fillMuonId(edm::Event& iEvent, const edm::EventSetup& iSetu
         rpcHitMatch.mask = 0;
         rpcHitMatch.bx = rpcRecHit->BunchX();
 
-        matchedChamber.rpcMatches.push_back(rpcHitMatch);
+        const double AbsDx = fabs(rpcRecHit->localPosition().x()-chamber->tState.localPosition().x());
+        if( AbsDx <= 20 or AbsDx/sqrt(localError.xx()) <= 4 ) matchedChamber.rpcMatches.push_back(rpcHitMatch);
       }
 
       muonChamberMatches.push_back(matchedChamber);
