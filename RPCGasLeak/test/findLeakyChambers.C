@@ -21,6 +21,7 @@ bool hasValue(const std::vector<int>& arr, int value);
 void findLeakyChambers()
 {
 	gStyle->SetOptStat(0);
+  gStyle->SetMarkerSize(0.1);
 
 	// Build Volume data map
 	std::map<int, double> rpcVolumeMap;
@@ -79,6 +80,8 @@ void findLeakyChambers()
 	// Do the analysis
 	const double threshold = 1.0;
 	std::vector<int> leakyChambers;
+  TF1* fLinear = new TF1("fLinear", "[1]*x+[0]", minTime, maxTime);
+  fLinear->SetParLimits(1, -1, 0);
 	const double fitMin1 = 1500, fitMax1 = 1500+600;
 	const double fitMin2 = 1200, fitMax2 = 1200+600;
 	const double fitMin3 = 900, fitMax3 = 900+600;
@@ -108,9 +111,9 @@ void findLeakyChambers()
 		}
 
 		// Do fitting if it is not leaky chamber
-		grp->Fit("pol1", "Q" , "", fitMin1, fitMax1);
-		grp->Fit("pol1", "+Q", "", fitMin2, fitMax2);
-		grp->Fit("pol1", "+Q", "", fitMin3, fitMax3);
+		grp->Fit("fLinear", "Q" , "", fitMin1, fitMax1);
+		grp->Fit("fLinear", "+Q", "", fitMin2, fitMax2);
+		grp->Fit("fLinear", "+Q", "", fitMin3, fitMax3);
 
 		TList* functions = grp->GetListOfFunctions();
 		TF1* f1 = (TF1*)functions->At(0);
