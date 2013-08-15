@@ -81,7 +81,7 @@ void findLeakyChambers()
 	std::vector<int> leakyChambers;
 	const double fitMin1 = 1500, fitMax1 = 1500+600;
 	const double fitMin2 = 1200, fitMax2 = 1200+600;
-	const double fitMin3 = 800, fitMax3 = 800+600;
+	const double fitMin3 = 900, fitMax3 = 900+600;
 	TGraphErrors* grpPressureDrop1 = new TGraphErrors();
 	TGraphErrors* grpPressureDrop2 = new TGraphErrors();
 	TGraphErrors* grpPressureDrop3 = new TGraphErrors();
@@ -171,7 +171,7 @@ void findLeakyChambers()
 	legPressureDropVsChamber->SetBorderSize(0);
 	legPressureDropVsChamber->AddEntry(grpPressureDrop1, "1500-2100", "p");
 	legPressureDropVsChamber->AddEntry(grpPressureDrop2, "1200-1800", "p");
-	legPressureDropVsChamber->AddEntry(grpPressureDrop3, "800-1400" , "p");
+	legPressureDropVsChamber->AddEntry(grpPressureDrop3, "900-1500" , "p");
 	legPressureDropVsChamber->Draw();
 
 	TCanvas* cPressureDrop = new TCanvas("cPressureDrop", "PressureDrop", 500, 500);
@@ -187,7 +187,7 @@ void findLeakyChambers()
 	legPressureDrop->SetBorderSize(0);
 	legPressureDrop->AddEntry(hPressureDrop1, "1500-2100", "l");
 	legPressureDrop->AddEntry(hPressureDrop2, "1200-1800", "l");
-	legPressureDrop->AddEntry(hPressureDrop3, "800-1400" , "l");
+	legPressureDrop->AddEntry(hPressureDrop3, "900-1500" , "l");
 	legPressureDrop->Draw();
 }
 
