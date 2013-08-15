@@ -189,6 +189,10 @@ void findLeakyChambers()
 	legPressureDrop->AddEntry(hPressureDrop2, "1200-1800", "l");
 	legPressureDrop->AddEntry(hPressureDrop3, "900-1500" , "l");
 	legPressureDrop->Draw();
+
+	cPressureDropVsChamber->Print("cPressureDropVsChamber.png");
+	cPressureDrop->Print("cPressureDrop.png");
+	cPressureVsTime->Print("cPressureVsTime.png");
 }
 
 bool hasValue(const std::vector<int>& arr, int value)
