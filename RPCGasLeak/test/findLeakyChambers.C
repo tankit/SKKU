@@ -26,7 +26,7 @@ void findLeakyChambers()
 	std::map<int, double> rpcVolumeMap;
 	if ( true )
 	{
-		ifstream fin("volume.txt");
+		ifstream fin("../data/volume.txt");
 		double v;
 		for ( int i=0; i<=49; ++i )
 		{
@@ -43,7 +43,7 @@ void findLeakyChambers()
 	std::map<int, TGraph*> rpcPressureMap;
 	for ( int i=0; i<nFile; ++i )
 	{
-		ifstream fin(Form("DataSet%d.txt", i+1));
+		ifstream fin(Form("../data/DataSet%d.txt", i+1));
 		int dummyI;
 		fin >> dummyI; // dummy variable
 		std::vector<int> chamberNumbers;
@@ -85,7 +85,7 @@ void findLeakyChambers()
 	TGraphErrors* grpPressureDrop1 = new TGraphErrors();
 	TGraphErrors* grpPressureDrop2 = new TGraphErrors();
 	TGraphErrors* grpPressureDrop3 = new TGraphErrors();
-	const double maxPressureDrop = 0.1;//0.25;
+	const double maxPressureDrop = 0.25;
 	TH1F* hPressureDrop1 = new TH1F("hPressureDrop1", "Pressure Drop;Pressure drop (mbar/10 min)", 50, 0, maxPressureDrop);
 	TH1F* hPressureDrop2 = new TH1F("hPressureDrop2", "Pressure Drop;Pressure drop (mbar/10 min)", 50, 0, maxPressureDrop);
 	TH1F* hPressureDrop3 = new TH1F("hPressureDrop3", "Pressure Drop;Pressure drop (mbar/10 min)", 50, 0, maxPressureDrop);
