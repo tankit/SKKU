@@ -8,8 +8,11 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.StandardSequences.GeometryDB_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-#process.GlobalTag.globaltag = 'PRE_62_V8::All'
 process.GlobalTag.globaltag = 'PRE_ST62_V8::All'
+
+process.load("HLTrigger.HLTfilters.hltHighLevel_cfi")
+process.hltHighLevel.throw = False
+process.hltHighLevel.HLTPaths = ["*"]
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
@@ -35,6 +38,7 @@ process.source = cms.Source("PoolSource",
         "keep *_*CaloJets_*_*",
         "keep *_offlineBeamSpot_*_*",
         "keep *_offlinePrimaryVertices_*_*",
+        "keep *_TriggerResults_*_*",
     ),
     dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
 )
@@ -45,13 +49,15 @@ process.out = cms.OutputModule("PoolOutputModule",
 )
 from Configuration.EventContent.EventContent_cff import RECOSIMEventContent
 process.out.outputCommands += RECOSIMEventContent.outputCommands
+#process.outPath = cms.EndPath(process.out)
 
 ## Muon rereconstruction
-#muidRPCMuLoose = cms.EDProducer("MuonSelectionTypeValueMapProducer",
-#    inputMuonCollection = cms.InputTag("muons1stStep"),
-#    selectionType = cms.string('RPCMuLoose'),
-#)
-#muonSelectionTypeSequence += muidRPCMuLoose
+if not hasattr(process, 'muidRPCMuLoose'):
+    process.muidRPCMuLoose = cms.EDProducer("MuonSelectionTypeValueMapProducer",
+        inputMuonCollection = cms.InputTag("muons1stStep"),
+        selectionType = cms.string('RPCMuLoose'),
+    )
+    process.muonSelectionTypeSequence += process.muidRPCMuLoose
 
 process.muonRereco = cms.Sequence(
 #    process.RawToDigi
@@ -87,15 +93,20 @@ process.TFileService = cms.Service("TFileService",
 process.load("SKKU.RPCMuon.VertexCandProducer_cfi")
 process.load("SKKU.RPCMuon.fakeMuonAnalyzer_cfi")
 
-process.pKs = cms.Path(
+process.commonFilters = cms.Sequence(
     process.noscraping + process.primaryVertexFilter
+  + process.hltHighLevel
+)
+
+process.pKs = cms.Path(
+    process.commonFilters
   + process.kshortVertex
   + process.muonRereco
   * process.fakeKshort
 )
 
 process.pLambda = cms.Path(
-    process.noscraping + process.primaryVertexFilter
+    process.commonFilters
   + process.lambdaVertex
   + process.muonRereco
   #* process.fakeLambda2
@@ -103,43 +114,27 @@ process.pLambda = cms.Path(
 )
 
 process.pPhi = cms.Path(
-    process.noscraping + process.primaryVertexFilter
+    process.commonFilters
   + process.phiVertex
   + process.muonRereco
   * process.fakePhi
 )
 
 process.pJpsi = cms.Path(
-    process.noscraping + process.primaryVertexFilter
+    process.commonFilters
   + process.jpsiVertex
   + process.muonRereco
   * process.fakeJpsi
 )
 
-#from SKKU.RPCMuon.applyJSON_cff import *
-#jsonDir = "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt"
-#jsonFile = "Cert_190456-208686_8TeV_PromptReco_Collisions12_JSON.txt"
-##jsonFile = "Cert_190456-208686_8TeV_PromptReco_Collisions12_JSON_MuonPhys.txt"
-#applyJSON(process, os.path.join(jsonDir, jsonFile))
-
-
-#process.outPath = cms.EndPath(process.out)
-if 'SECTION' in os.environ:
-    section = int(os.environ['SECTION'])
-    nFiles = 10
-
+if 'Run2012' in process.source.fileNames[0]:
+    from SKKU.RPCMuon.applyJSON_cff import *
     jsonDir = "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt"
-    #jsonFile = "Cert_190456-208686_8TeV_PromptReco_Collisions12_JSON.txt"
-    jsonFile = "Cert_190456-208686_8TeV_PromptReco_Collisions12_JSON_MuonPhys.txt"
+    jsonFile = "Cert_190456-208686_8TeV_PromptReco_Collisions12_JSON.txt"
+    #jsonFile = "Cert_190456-208686_8TeV_PromptReco_Collisions12_JSON_MuonPhys.txt"
     applyJSON(process, os.path.join(jsonDir, jsonFile))
 
-    files = [l.strip() for l in open("MinimumBias-Run2012D.txt").readlines()]
-    begin = nFiles*section
-    end = min(nFiles*(section+1), len(files)+1)
-    process.source.fileNames = files[begin:end]
-
-    process.TFileService.fileName = "unmerged/result_%03d.root" % section
-
-    print process.source.fileNames[0]
-    print process.source.fileNames[-1]
+## Special care for running fakerate study on SingleMu dataset
+if 'SingleMu' in process.source.fileNames[0]:
+    process.hltHighLevel.HLTPaths = ["HLT_IsoMu24_v*",]
 
