@@ -2,12 +2,12 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("TagProbe")
 
-process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
-process.load("Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff")
+process.load("Configuration.StandardSequences.GeometryDB_cff")
+process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.GlobalTag.globaltag = "START53_LV3A::All"
-#process.GlobalTag.globaltag = "PRE_ST62_V8::All"
+#process.GlobalTag.globaltag = "START53_LV3A::All"
+process.GlobalTag.globaltag = "PRE_ST62_V8::All"
 
 process.load("HLTrigger.HLTfilters.hltHighLevel_cfi")
 process.hltHighLevel.throw = False
@@ -136,22 +136,22 @@ process.load("MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff")
 process.muonMatchHLTL2.maxDeltaR = 0.3 # Zoltan tuning - it was 0.5
 process.muonMatchHLTL3.maxDeltaR = 0.1
 from MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff import *
+changeRecoMuonInput(process, "promptMuons")
 #useExtendedL1Match(process)
 #addHLTL1Passthrough(process)
 
 process.tagMuons = cms.EDFilter("PATMuonSelector",
     src = cms.InputTag("patMuonsWithTrigger"),
     cut = cms.string(
-        "pt > 20 && abs(eta) < 1.8"
         #" && isGlobalMuon && isPFMuon"
-        " && isGlobalMuon"
+        " isGlobalMuon"
         #" && isolationR03().sumPt<0.05*pt"
-        #" && innerTrack().hitPattern().numberOfValidPixelHits() > 0"
-        #" && track().hitPattern().trackerLayersWithMeasurement() > 5"
-        #" && globalTrack().normalizedChi2()<10.0"
-        #" && globalTrack().hitPattern().numberOfValidMuonHits()>0"
-        #" && numberOfMatchedStations>1"
-        #" && !triggerObjectMatchesByPath('HLT_IsoMu24_v*').empty()"
+        " && innerTrack().hitPattern().numberOfValidPixelHits() > 0"
+        " && track().hitPattern().trackerLayersWithMeasurement() > 5"
+        " && globalTrack().normalizedChi2()<10.0"
+        " && globalTrack().hitPattern().numberOfValidMuonHits()>0"
+        " && numberOfMatchedStations>1"
+        " && !triggerObjectMatchesByPath('HLT_IsoMu24_v*').empty()"
     ),
     filter = cms.bool(True),
 )
@@ -205,8 +205,8 @@ process.passLooseMuons = cms.EDProducer("MatchedCandidateSelector",
 )
 
 process.muonSelectionSequence = cms.Sequence(
-    process.tagMuons * process.tagMuonFilter
-  + process.selectedMuons * process.promptMuons
+    process.selectedMuons * process.promptMuons
+  * process.patMuonsWithTriggerSequence * process.tagMuons * process.tagMuonFilter
   + process.goodTracks * process.trackCands * process.promptTrackCands * process.trackProbes
   + process.selectLooseMuons * process.matchLooseMuons * process.passLooseMuons
 )
@@ -257,7 +257,6 @@ process.TFileService = cms.Service("TFileService",
 process.p = cms.Path(
     process.commonFilters
   + process.muonRereco
-  * process.patMuonsWithTriggerSequence
   * process.muonSelectionSequence
   * process.tpPairs * process.muonEffs
 )
