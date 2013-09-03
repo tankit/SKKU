@@ -11,7 +11,7 @@ process.GlobalTag.globaltag = "PRE_ST62_V8::All"
 
 process.load("HLTrigger.HLTfilters.hltHighLevel_cfi")
 process.hltHighLevel.throw = False
-process.hltHighLevel.HLTPaths = ["HLT_IsoMu24_v*"]
+process.hltHighLevel.HLTPaths = ["HLT_IsoMu24_v*", "HLT_IsoMu24_eta2p1_v*",]
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
@@ -151,7 +151,8 @@ process.tagMuons = cms.EDFilter("PATMuonSelector",
         " && globalTrack().normalizedChi2()<10.0"
         " && globalTrack().hitPattern().numberOfValidMuonHits()>0"
         " && numberOfMatchedStations>1"
-        " && !triggerObjectMatchesByPath('HLT_IsoMu24_v*').empty()"
+        " && (!triggerObjectMatchesByPath('HLT_IsoMu24_v*').empty()"
+        "  || !triggerObjectMatchesByPath('HLT_IsoMu24_eta2p1_v*').empty() )"
     ),
     filter = cms.bool(True),
 )
