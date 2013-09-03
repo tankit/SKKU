@@ -98,8 +98,8 @@ process.promptMuons = cms.EDFilter("PromptMuonSelector",
     vertex = cms.InputTag("goodOfflinePrimaryVertices"),
 )
 
-process.selectLooseMuons = cms.EDFilter("MuonRefSelector",
-    src = cms.InputTag("promptMuons"),
+process.selectLooseMuons = cms.EDFilter("PATMuonSelector",
+    src = cms.InputTag("patMuonsWithTrigger"),
     cut = cms.string(
         " (isGlobalMuon || isTrackerMuon)"# && isPFMuon"
     ),
