@@ -105,12 +105,13 @@ public:
 
 private:
 
-  const reco::Muon* findMatchedMuonByTrackRef(const reco::Candidate& p, edm::Handle<edm::View<reco::Muon> >& muonHandle);
-  const reco::Muon* findMatchedMuonByDR(const reco::Candidate& p, edm::Handle<edm::View<reco::Muon> >& muonHandle);
-  const reco::Muon* findMatchedMuonByDRDPt(const reco::Candidate& p, edm::Handle<edm::View<reco::Muon> >& muonHandle);
+  const reco::Muon* findMatchedMuonByTrackRef(const reco::Candidate& p, const std::vector<const reco::Muon*>& muons);
+  const reco::Muon* findMatchedMuonByDR(const reco::Candidate& p, const std::vector<const reco::Muon*>& muons);
+  const reco::Muon* findMatchedMuonByDRDPt(const reco::Candidate& p, const std::vector<const reco::Muon*>& muons);
 
   edm::InputTag muonLabel_;
   edm::InputTag vertexCandLabel_;
+  edm::InputTag vetoMuonLabel_;
   std::vector<StringCutObjectSelector<reco::Muon, true>* > muonCuts_;
   std::vector<muon::SelectionType> muonSelectionTypes_;
   std::vector<reco::Muon::ArbitrationType> muonArbitrationTypes_;
@@ -154,6 +155,8 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
     maxDR_ = pset.getParameter<double>("maxDR");
     maxDPt_ = pset.getParameter<double>("maxDPt");
   }
+
+  vetoMuonLabel_ = pset.getParameter<edm::InputTag>("vetoMuon");
 
   massMin_ = pset.getParameter<double>("massMin");
   massMax_ = pset.getParameter<double>("massMax");
@@ -243,10 +246,31 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
   edm::Handle<edm::View<reco::Muon> > muonHandle;
   event.getByLabel(muonLabel_, muonHandle);
 
+  edm::Handle<edm::View<reco::Muon> > vetoMuonHandle;
+  event.getByLabel(vetoMuonLabel_, vetoMuonHandle);
+
   edm::Handle<edm::View<reco::VertexCompositeCandidate> > vertexCandHandle;
   event.getByLabel(vertexCandLabel_, vertexCandHandle);
 
-  nMuon_ = muonHandle->size();
+  // Veto muons
+  std::vector<const reco::Muon*> vetoedMuons;
+  for ( int i=0, n=muonHandle->size(); i<n; ++i )
+  {
+    const reco::Muon& muon1 = muonHandle->at(i);
+    bool isToVetoed = false;
+    for ( int j=0, m=vetoMuonHandle->size(); j<m; ++j )
+    {
+      const reco::Muon& muon2 = vetoMuonHandle->at(j);
+      if ( muon1.get<reco::TrackRef>() == muon2.get<reco::TrackRef>() )
+      {
+        isToVetoed = true;
+        break;
+      }
+    }
+    if ( !isToVetoed ) vetoedMuons.push_back(&muon1);
+  }
+
+  nMuon_ = vetoedMuons.size();
   nVertexCand_ = vertexCandHandle->size();
 
   hEvent_->Fill(0);
@@ -324,8 +348,8 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     }
 
     // Find fake muon
-    const reco::Muon* muon1 = findMatchedMuonByTrackRef(*p1, muonHandle);
-    const reco::Muon* muon2 = findMatchedMuonByTrackRef(*p2, muonHandle);
+    const reco::Muon* muon1 = findMatchedMuonByTrackRef(*p1, vetoedMuons);
+    const reco::Muon* muon2 = findMatchedMuonByTrackRef(*p2, vetoedMuons);
 
     track1_ = p1->p4();
     trackCharge1_ = p1->charge();
@@ -380,11 +404,11 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
   if ( nFakeMuon != 0 ) hEvent_->Fill(3);
 }
 
-const reco::Muon* FakeMuonAnalyzer::findMatchedMuonByTrackRef(const reco::Candidate& p, edm::Handle<edm::View<reco::Muon> >& muonHandle)
+const reco::Muon* FakeMuonAnalyzer::findMatchedMuonByTrackRef(const reco::Candidate& p, const std::vector<const reco::Muon*>& muons)
 {
-  for ( int i=0, n=muonHandle->size(); i<n; ++i )
+  for ( int i=0, n=muons.size(); i<n; ++i )
   {
-    const reco::Muon& muonCand = muonHandle->at(i);
+    const reco::Muon& muonCand = *muons.at(i);
 
     if ( p.get<reco::TrackRef>() == muonCand.track() ) return &muonCand;
   }
@@ -392,13 +416,13 @@ const reco::Muon* FakeMuonAnalyzer::findMatchedMuonByTrackRef(const reco::Candid
   return 0;
 }
 
-const reco::Muon* FakeMuonAnalyzer::findMatchedMuonByDR(const reco::Candidate& p, edm::Handle<edm::View<reco::Muon> >& muonHandle)
+const reco::Muon* FakeMuonAnalyzer::findMatchedMuonByDR(const reco::Candidate& p, const std::vector<const reco::Muon*>& muons)
 {
   const reco::Muon* matchedMuon = 0;
   double matchedDR = maxDR_;
-  for ( int i=0, n=muonHandle->size(); i<n; ++i )
+  for ( int i=0, n=muons.size(); i<n; ++i )
   {
-    const reco::Muon& muonCand = muonHandle->at(i);
+    const reco::Muon& muonCand = *muons.at(i);
 
     const double dR = deltaR(p, muonCand);
     if ( dR > matchedDR ) continue;
@@ -410,14 +434,14 @@ const reco::Muon* FakeMuonAnalyzer::findMatchedMuonByDR(const reco::Candidate& p
   return matchedMuon;
 }
 
-const reco::Muon* FakeMuonAnalyzer::findMatchedMuonByDRDPt(const reco::Candidate& p, edm::Handle<edm::View<reco::Muon> >& muonHandle)
+const reco::Muon* FakeMuonAnalyzer::findMatchedMuonByDRDPt(const reco::Candidate& p, const std::vector<const reco::Muon*>& muons)
 {
   const reco::Muon* matchedMuon = 0;
   double matchedDR = maxDR_;
   double matchedDPt = maxDPt_;
-  for ( int i=0, n=muonHandle->size(); i<n; ++i )
+  for ( int i=0, n=muons.size(); i<n; ++i )
   {
-    const reco::Muon& muonCand = muonHandle->at(i);
+    const reco::Muon& muonCand = *muons.at(i);
 
     const double dR = deltaR(p, muonCand);
     if ( dR > matchedDR ) continue;
