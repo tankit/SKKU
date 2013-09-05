@@ -116,6 +116,7 @@ private:
   std::vector<muon::SelectionType> muonSelectionTypes_;
   std::vector<reco::Muon::ArbitrationType> muonArbitrationTypes_;
   StringCutObjectSelector<reco::VertexCompositeCandidate, true>* vertexCut_;
+  unsigned int nMaxVetoMuon_;
   double maxDR_, maxDPt_;
   double massMin_, massMax_;
 
@@ -141,6 +142,7 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
 {
   muonLabel_ = pset.getParameter<edm::InputTag>("muon");
   vetoMuonLabel_ = pset.getParameter<edm::InputTag>("vetoMuon");
+  nMaxVetoMuon_ = pset.getParameter<unsigned int>("nMaxVetoMuon");
   vertexCandLabel_ = pset.getParameter<edm::InputTag>("vertexCand");
 
   std::string vertexCut = pset.getParameter<std::string>("vertexCut");
@@ -251,13 +253,14 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
   edm::Handle<edm::View<reco::VertexCompositeCandidate> > vertexCandHandle;
   event.getByLabel(vertexCandLabel_, vertexCandHandle);
 
-  // Veto muons
+  // Veto muons. Exclude muon if it has overlap up to n'th leading veto muons
   std::vector<const reco::Muon*> vetoedMuons;
-  for ( int i=0, n=muonHandle->size(); i<n; ++i )
+  const unsigned int nVetoMuon = std::min(vetoMuonHandle->size(), nMaxVetoMuon_);
+  for ( unsigned int i=0, n=muonHandle->size(); i<n; ++i )
   {
     const reco::Muon& muon1 = muonHandle->at(i);
     bool isToVetoed = false;
-    for ( int j=0, m=vetoMuonHandle->size(); j<m; ++j )
+    for ( unsigned int j=0; j<nVetoMuon; ++j )
     {
       const reco::Muon& muon2 = vetoMuonHandle->at(j);
       if ( muon1.get<reco::TrackRef>() == muon2.get<reco::TrackRef>() )
