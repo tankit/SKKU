@@ -140,6 +140,7 @@ private:
 FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
 {
   muonLabel_ = pset.getParameter<edm::InputTag>("muon");
+  vetoMuonLabel_ = pset.getParameter<edm::InputTag>("vetoMuon");
   vertexCandLabel_ = pset.getParameter<edm::InputTag>("vertexCand");
 
   std::string vertexCut = pset.getParameter<std::string>("vertexCut");
@@ -155,8 +156,6 @@ FakeMuonAnalyzer::FakeMuonAnalyzer(const edm::ParameterSet& pset)
     maxDR_ = pset.getParameter<double>("maxDR");
     maxDPt_ = pset.getParameter<double>("maxDPt");
   }
-
-  vetoMuonLabel_ = pset.getParameter<edm::InputTag>("vetoMuon");
 
   massMin_ = pset.getParameter<double>("massMin");
   massMax_ = pset.getParameter<double>("massMax");
