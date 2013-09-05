@@ -6,40 +6,33 @@ process.load("Configuration.StandardSequences.GeometryDB_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-#process.GlobalTag.globaltag = "START53_LV3A::All"
-process.GlobalTag.globaltag = "PRE_ST62_V8::All"
+from Configuration.AlCa.autoCond import autoCond
+process.GlobalTag.globaltag = autoCond["com10"]
 
 process.load("HLTrigger.HLTfilters.hltHighLevel_cfi")
 process.hltHighLevel.throw = False
 process.hltHighLevel.HLTPaths = ["HLT_IsoMu24_v*", "HLT_IsoMu24_eta2p1_v*",]
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
-#process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        "/store/relval/CMSSW_5_3_11/RelValZMM/GEN-SIM-RECO/START53_LV3A_RefAlca7TeV_14Jun2013-v1/00000/54F785DE-FAD4-E211-84E3-003048D2BBF2.root",
-        "/store/relval/CMSSW_5_3_11/RelValZMM/GEN-SIM-RECO/START53_LV3A_RefAlca7TeV_14Jun2013-v1/00000/F8AB35D7-F4D4-E211-8939-003048F0E2CC.root",
+        'file:Run2012D-PromptReco.root',
     ),
     inputCommands = cms.untracked.vstring(
-        "drop *_*_*_RECO",
-
+        "drop *",
         "keep *_generalTracks_*_*",
-        #"keep *_generalV0Candidates_*_*",
-        "keep *_tevMuons_*_*",
         "keep *_siPixel*_*_*", "keep *_siStrip*_*_*",
         "keep *_dt*_*_*", "keep *_csc*_*_*", "keep *_rpc*_*_*",
-        "keep *_*Digi_*_*", "keep *_*Digis_*_*", 
         "keep *EcalRecHit*_*_*_*", "keep *H*RecHit*_h*reco_*_*",
-        "keep *CaloTower*_*_*_*",
-        "keep *_*CaloJets_*_*",
+        "keep *CaloTower*_*_*_*", "keep *_*CaloJets_*_*",
         "keep *_offlineBeamSpot_*_*",
         "keep *_offlinePrimaryVertices_*_*",
         "keep *_TriggerResults_*_*",
         "keep *_hltTriggerSummaryAOD_*_*",
-        "keep *_particleFlow*_*_*",
-        "keep *_*_*_HLT",
+        "keep *_l1extra*_*_*",
     ),
     dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
 )
@@ -143,7 +136,7 @@ changeRecoMuonInput(process, "promptMuons")
 process.tagMuons = cms.EDFilter("PATMuonSelector",
     src = cms.InputTag("patMuonsWithTrigger"),
     cut = cms.string(
-        #" && isGlobalMuon && isPFMuon"
+        #" isGlobalMuon && isPFMuon"
         " isGlobalMuon"
         #" && isolationR03().sumPt<0.05*pt"
         " && innerTrack().hitPattern().numberOfValidPixelHits() > 0"
