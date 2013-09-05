@@ -51,7 +51,6 @@ process.muons.FillPFMomentumAndAssociation = False
 process.muons.PFCandidates = "particleFlow"
 
 process.muonRereco = cms.Sequence(
-#    process.RawToDigi
     process.muonrecoComplete
   * process.muoncosmicreco * process.regionalCosmicTracksSeq
   * process.muoncosmichighlevelreco #* process.muonshighlevelreco
@@ -169,7 +168,7 @@ process.promptTrackCands = cms.EDFilter("PromptTrackCandSelector",
     src = cms.InputTag("trackCands"),
     maxDxy = cms.untracked.double(0.2),
     maxDz = cms.untracked.double(0.5),
-    vertex = cms.InputTag("offlinePrimaryVertices"),
+    vertex = cms.InputTag("goodOfflinePrimaryVertices"),
 )
 
 process.trackProbes = cms.EDFilter("CandViewRefSelector",
