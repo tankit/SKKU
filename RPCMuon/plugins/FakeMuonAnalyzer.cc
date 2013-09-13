@@ -254,7 +254,7 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
   event.getByLabel(vertexCandLabel_, vertexCandHandle);
 
   // Veto muons. Exclude muon if it has overlap up to n'th leading veto muons
-  std::vector<const reco::Muon*> vetoedMuons;
+  std::vector<const reco::Muon*> unbiasedMuons;
   const unsigned int nVetoMuon = std::min(vetoMuonHandle->size(), nMaxVetoMuon_);
   for ( unsigned int i=0, n=muonHandle->size(); i<n; ++i )
   {
@@ -263,16 +263,16 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     for ( unsigned int j=0; j<nVetoMuon; ++j )
     {
       const reco::Muon& muon2 = vetoMuonHandle->at(j);
-      if ( muon1.get<reco::TrackRef>() == muon2.get<reco::TrackRef>() )
+      if ( muon1.p4() == muon2.p4() )
       {
         isToVetoed = true;
         break;
       }
     }
-    if ( !isToVetoed ) vetoedMuons.push_back(&muon1);
+    if ( !isToVetoed ) unbiasedMuons.push_back(&muon1);
   }
 
-  nMuon_ = vetoedMuons.size();
+  nMuon_ = unbiasedMuons.size();
   nVertexCand_ = vertexCandHandle->size();
 
   hEvent_->Fill(0);
@@ -350,8 +350,8 @@ void FakeMuonAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& e
     }
 
     // Find fake muon
-    const reco::Muon* muon1 = findMatchedMuonByTrackRef(*p1, vetoedMuons);
-    const reco::Muon* muon2 = findMatchedMuonByTrackRef(*p2, vetoedMuons);
+    const reco::Muon* muon1 = findMatchedMuonByTrackRef(*p1, unbiasedMuons);
+    const reco::Muon* muon2 = findMatchedMuonByTrackRef(*p2, unbiasedMuons);
 
     track1_ = p1->p4();
     trackCharge1_ = p1->charge();
