@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys, os
+from array import array
 if len(sys.argv) < 3:
     print "hist.py INPUTFILE.root OUTPUTFILE.root"
     sys.exit(2)
@@ -23,8 +24,8 @@ muonTypes = {
 
 baseCut = "abs(track%d.eta()) < 1.6 && track%d.pt() > 4" % (probeId, probeId)
 histDefs = [
-    ("AbsEta", "abs(track%d.eta())" % probeId, [0.0, 0.8, 1.2, 1.6]),
-    ("Pt"    , "track%d.pt()" % probeId, [4,5,7,10,20,100]),
+    ("AbsEta", "Pseudorapidity |#eta|", "abs(track%d.eta())" % probeId, [0.0, 0.8, 1.2, 1.6]),
+    ("Pt"    , "Transverse momentum p_{T} (GeV/c)", "track%d.pt()" % probeId, [4,5,7,10,20,100]),
 ]
 
 srcFile = TFile(srcFileName)
@@ -33,8 +34,13 @@ outFile = TFile(outFileName, "RECREATE")
 for muonType in muonTypes:
     muonIdCut = muonTypes[muonType]
     muonIdDir = outFile.mkdir(muonType)
-    for varName, varExp, bins in histDefs:
+    for varName, varTitle, varExp, bins in histDefs:
         varDir = muonIdDir.mkdir(varName)
+
+        varDir.cd()
+        binsArr = array('d', bins)
+        hFrame = TH1F("hFrame", "%s %s;%s" % (muonType, varName, varTitle), len(bins)-1, binsArr)
+        hFrame.Write()
         for i in range(len(bins)-1):
             binCut = "%s >= %f && %s < %f" % (varExp, bins[i], varExp, bins[i+1])
             binDir = varDir.mkdir("bin_%d" % i)
