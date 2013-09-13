@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
+import sys, os
 from ROOT import *
+if os.path.exists("rootlogon.C"):
+    gROOT.ProcessLine(".x rootlogon.C")
 
 objs = []
 
@@ -104,6 +107,8 @@ for catName in [x.GetName() for x in histFile.GetListOfKeys()]:
         hFrame.SetMaximum(1)
         c = TCanvas("c_%s_%s" % (catName, varName), "%s %s" % (catName, varName), 500, 500)
         grp = TGraphErrors()
+        grp.SetName("ratio")
+        grp.SetTitle(catName)
         for bin in range(hFrame.GetNbinsX()):
             binName = 'bin_%d' % bin
             binDir = varDir.GetDirectory(binName)
@@ -128,6 +133,7 @@ for catName in [x.GetName() for x in histFile.GetListOfKeys()]:
         hFrame.Draw()
         grp.Draw("P")
 
+        c.Write()
         hFrame.Write()
         grp.Write()
         objs.extend([c, hFrame, grp])
