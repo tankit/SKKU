@@ -9,6 +9,8 @@ srcFileName = sys.argv[1]
 outFileName = sys.argv[2]
 
 from ROOT import *
+if os.path.exists("rootlogon.C"):
+    gROOT.ProcessLine(".x rootlogon.C")
 
 probeId = 1
 tagId = (probeId+1)%2
