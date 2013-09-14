@@ -9,6 +9,7 @@ process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.autoCond import autoCond
 process.GlobalTag.globaltag = autoCond["com10"]
+#process.GlobalTag.globaltag = autoCond["startup"]
 
 process.load("HLTrigger.HLTfilters.hltHighLevel_cfi")
 process.hltHighLevel.throw = False
@@ -24,7 +25,8 @@ process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:Run2012D.root',
+        "/store/relval/CMSSW_5_3_6-START53_V14/RelValProdTTbar/GEN-SIM-RECO/v2/00000/52149A23-1E2A-E211-8BD3-003048678B14.root",
+        "/store/relval/CMSSW_5_3_6-START53_V14/RelValProdTTbar/GEN-SIM-RECO/v2/00000/B86B2DE8-122A-E211-AD41-003048678B84.root",
     ),
     inputCommands = cms.untracked.vstring(
         "drop *",
@@ -107,6 +109,8 @@ process.TFileService = cms.Service("TFileService",
 
 process.load("SKKU.RPCMuon.VertexCandProducer_cfi")
 process.load("SKKU.RPCMuon.fakeMuonAnalyzer_cfi")
+
+process.fakeKshort.muon = "patMuonsWithTrigger"
 
 process.commonFilters = cms.Sequence(
     process.noscraping + process.goodOfflinePrimaryVertices
