@@ -36,6 +36,14 @@ muonTypes = {
     "RPCMuLoose" :"muonId%d_RPCMuLoose  == 1" % probeId,
     "RPCMuMedium":"muonId%d_RPCMuMedium == 1" % probeId,
     "RPCMuTight" :"muonId%d_RPCMuTight  == 1" % probeId,
+
+    "TMOneStationLoose": "muonId%d_TMOneStationLoose == 1" % prodeId,
+    "TMOneStationTight": "muonId%d_TMOneStationTight == 1" % prodeId,
+    "TMTwoStationTest" : "muonId%d_TMTwoStationTest  == 1" % prodeId,
+
+    "globalMuon"      :"globalMuon       == 1" % probeId,
+    "globalMuonTight" :"globalMuonTight  == 1" % probeId,
+    "globalMuonMedium":"globalMuonMedium == 1" % probeId,
 }
 
 baseCut = "abs(track%d.eta()) < 1.6 && track%d.pt() > 4" % (probeId, probeId)
