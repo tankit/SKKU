@@ -50,6 +50,7 @@ public:
 private:
   bool isGoodTrack(const reco::TrackRef& track, const reco::BeamSpot* beamSpot) const;
   inline double particleMass(const unsigned int pdgId) const;
+  inline int signedPdgId(const unsigned int absPdgId, const int charge) const;
 
 private:
   edm::InputTag trackLabel_;
@@ -263,6 +264,10 @@ bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventS
       RecoChargedCandidate cand2(trackRef2->charge(), Particle::LorentzVector(mom2.x(), mom2.y(), mom2.z(), candE2), vtx);
       cand1.setTrack(trackRef1);
       cand2.setTrack(trackRef2);
+      const int pdgId1 = signedPdgId(leg1Id_, trackRef1->charge());
+      const int pdgId2 = signedPdgId(leg2Id_, trackRef2->charge());
+      cand1.setPdgId(pdgId1);
+      cand2.setPdgId(pdgId2);
       VertexCompositeCandidate* cand = new VertexCompositeCandidate(0, candLVec, vtx, vtxCov, vtxChi2, vtxNdof);
       cand->addDaughter(cand1);
       cand->addDaughter(cand2);
@@ -311,6 +316,12 @@ double VertexCandProducer::particleMass(const unsigned int pdgId) const
   }
   return 1e12; // Make this particle supermassive to fail mass range cut
 } 
+
+int VertexCandProducer::signedPdgId(const unsigned int pdgId, const int charge) const
+{
+  if ( pdgId == 11 or pdgId == 13 or pdgId == 15 ) return -pdgId*charge;
+  return pdgId*charge;
+}
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(VertexCandProducer);
