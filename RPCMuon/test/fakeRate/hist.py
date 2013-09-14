@@ -3,20 +3,34 @@
 import sys, os
 from array import array
 if len(sys.argv) < 3:
-    print "hist.py INPUTFILE.root OUTPUTFILE.root"
-    sys.exit(2)
-srcFileName = sys.argv[1]
-outFileName = sys.argv[2]
+    print "hist.py : project fakerate tree to histograms"
+    print "  Usage : hist.py MODENAME INPUTFILE"
+    print "hist_MODENAME.root will be created."
+    sys.exit()
+
+modName = sys.argv[1]
+srcFileName = sys.argv[2]
+
+probeId = 1
+tagId = (probeId+1)%2
+outFileName = 'hist_%s_%d.root' % (modName, probeId)
+
+modes = {
+    "Kshort":(0.43, 0.56, 0.002),
+    "Lambda":(1.08, 1.20, 0.002),
+    "Phi"   :(1.00, 1.04, 0.001),
+    "Jpsi"  :(2.80, 3.40, 0.010),
+}
+
+if modName not in modes:
+    print "Mode not in modes. Choose among", modes.keys()
+
+massMin, massMax, binWidth = modes[modName]
+nbin = int(round((massMax-massMin)/binWidth))
 
 from ROOT import *
 if os.path.exists("rootlogon.C"):
     gROOT.ProcessLine(".x rootlogon.C")
-
-probeId = 1
-tagId = (probeId+1)%2
-modName = "fakeKshort"
-massMin, massMax = 0.43, 0.56
-nbin = int(round((massMax-massMin)/0.002))
 
 muonTypes = {
     "RPCMuLoose" :"muonId%d_RPCMuLoose  == 1" % probeId,
@@ -27,11 +41,11 @@ muonTypes = {
 baseCut = "abs(track%d.eta()) < 1.6 && track%d.pt() > 4" % (probeId, probeId)
 histDefs = [
     ("AbsEta", "Pseudorapidity |#eta|", "abs(track%d.eta())" % probeId, [0.0, 0.8, 1.2, 1.6]),
-    ("Pt"    , "Transverse momentum p_{T} (GeV/c)", "track%d.pt()" % probeId, [4,5,7,10,20,100]),
+    ("Pt"    , "Transverse momentum p_{T} (GeV/c)", "track%d.pt()" % probeId, [4,5,7,10,20,30,50,500]),
 ]
 
 srcFile = TFile(srcFileName)
-tree = srcFile.Get("%s/tree" % modName)
+tree = srcFile.Get("fake%s/tree" % modName)
 outFile = TFile(outFileName, "RECREATE")
 for muonType in muonTypes:
     muonIdCut = muonTypes[muonType]
@@ -52,8 +66,8 @@ for muonType in muonTypes:
             cutStrFail = TNamed("cut_fail", "(%s) && !(%s) && (%s)" % (baseCut, muonIdCut, binCut))
             hM_pass = TH1F("hM_pass", "Passing candidates;Mass (GeV/c^{2});Entries per 2MeV/c^{2}", nbin, massMin, massMax)
             hM_fail = TH1F("hM_fail", "Failing candidates;Mass (GeV/c^{2});Entries per 2MeV/c^{2}", nbin, massMin, massMax)
-            tree.Draw("vertexMass>>hM_pass", cutStrPass.GetTitle(), "goff")
-            tree.Draw("vertexMass>>hM_fail", cutStrFail.GetTitle(), "goff")
+            tree.Draw("mass>>hM_pass", cutStrPass.GetTitle(), "goff")
+            tree.Draw("mass>>hM_fail", cutStrFail.GetTitle(), "goff")
 
             cutStrPass.Write()
             cutStrFail.Write()
