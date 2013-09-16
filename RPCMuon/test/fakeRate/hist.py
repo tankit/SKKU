@@ -2,16 +2,16 @@
 
 import sys, os
 from array import array
-if len(sys.argv) < 3:
+if len(sys.argv) < 4:
     print "hist.py : project fakerate tree to histograms"
-    print "  Usage : hist.py MODENAME INPUTFILE"
-    print "hist_MODENAME.root will be created."
+    print "  Usage : hist.py MODENAME INPUTFILE PROBE_LEG_ID"
+    print "hist_MODENAME_LEGID.root will be created."
     sys.exit()
 
 modName = sys.argv[1]
 srcFileName = sys.argv[2]
 
-probeId = 1
+probeId = int(sys.argv[3])
 tagId = (probeId+1)%2
 outFileName = 'hist_%s_%d.root' % (modName, probeId)
 
