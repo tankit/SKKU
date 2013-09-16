@@ -120,8 +120,8 @@ process.selectTightMuons = process.selectLooseMuons.clone(
 )
 
 process.selectLooseRPCMuons  = process.selectLooseMuons.clone(cut = cms.string("isRPCMuon"))
-process.selectMediumRPCMuons = process.selectLooseMuons.clone(cut = cms.string("isRPCMuon && numberOfMatchedRPCLayers() > 1"))
-process.selectTightRPCMuons  = process.selectLooseMuons.clone(cut = cms.string("isRPCMuon && numberOfMatchedRPCLayers() > 2"))
+process.selectMediumRPCMuons = process.selectLooseMuons.clone(cut = cms.string("isRPCMuon && numberOfMatchedStations('RPCHitAndTrackArbitration') >= 2"))
+process.selectTightRPCMuons  = process.selectLooseMuons.clone(cut = cms.string("isRPCMuon && numberOfMatchedStations('RPCHitAndTrackArbitration') >= 2 && numberOfMatchedRPCLayers >= 3"))
 
 ## Trigger matching with PAT
 process.load("MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff")
