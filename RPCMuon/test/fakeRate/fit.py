@@ -5,6 +5,17 @@ from ROOT import *
 if os.path.exists("rootlogon.C"):
     gROOT.ProcessLine(".x rootlogon.C")
 
+if len(sys.argv) < 3:
+    print "fit.py : calculate fakerate by fitting"
+    print "Usage : python -i fit.py MODE"
+    print "        read hist_MODE.root and writes fit_MODE.root and image_MODE"
+    sys.exit()
+
+mode = sys.argv[1]
+inputFileName = "hist_%s.root" % mode
+outputFileName = "fit_%s.root" % mode
+imageDirName = "image_%s" % mode
+
 objs = []
 
 def fit(hA, hB, c = None):
@@ -26,12 +37,14 @@ def fit(hA, hB, c = None):
     getattr(ws, 'import')(hDataB)
 
     ws.factory("m0[%f, %f, %f]" % ((massMax+massMin)/2, massMin, massMax))
-    ws.factory("Voigtian::sigA(mass, m0, w0[1e-2, 1e-5, 1e-1], sigmaA[1e-2, 1e-3, 1e-1])")
+    if 'Kshort' in mode: ws.factory("Voigtian::sigA(mass, m0, w0[1e-2, 5e-3, 2e-2], sigmaA[1e-2, 1e-3, 1e-1])") # Kshort
+    elif 'Phi'  in mode: ws.factory("Voigtian::sigA(mass, m0, w0[5e-3, 1e-3, 1e-2], sigmaA[1e-2, 1e-3, 1e-1])") # Phi
+    elif 'Jpsi' in mode: ws.factory("Voigtian::sigA(mass, m0, w0[1e-2, 1e-3, 5e-2], sigmaA[2e-2, 1e-2, 1e-1])") # Jpsi
     ws.factory("Voigtian::sigB(mass, m0, w0, sigmaA)")
-    #ws.factory("Voigtian::sigB(mass, m0, w0, sigmaB[1e-2, 1e-3, 1e+0])")
-    ws.factory("Chebychev::bkgA(mass, {p0A[0, -10, 10], p1A[0, -10, 10]})")
-    ws.factory("Chebychev::bkgB(mass, {p0B[0, -10, 10], p1B[0, -10, 10]})")
-    ws.factory("ratio[0.001, 0, 1]")
+    ws.factory("Chebychev::bkgA(mass, {p0A[0, -5, 5], p1A[0, -5, 5]})")
+    ws.factory("Chebychev::bkgB(mass, {p0B[0, -5, 5], p1B[0, -5, 5]})")
+    if 'Jpsi' in mode: ws.factory("ratio[0.9, 0, 1]")
+    else: ws.factory("ratio[0.001, 0, 1]")
     ws.factory("EXPR::nSigA('nSig*ratio', nSig[%f, 0, %f], ratio)" % (0.5*nTotal, 1.1*nTotal))
     ws.factory("EXPR::nSigB('nSig*(1-ratio)', nSig, ratio)")
     ws.factory("SUM::pdfA(nSigA*sigA, nBkgA[%f, 0, %f]*bkgA)" % (0.5*nA, 1.1*nA))
@@ -87,12 +100,14 @@ def fit(hA, hB, c = None):
     ratio = result.floatParsFinal().find('ratio')
     return ratio;
 
-histFile = TFile("hist.root")
-fitFile  = TFile("fit.root", "RECREATE")
+if not os.path.isdir(imageDirName) :os.mkdir(imageDirName)
+histFile = TFile(inputFileName)
+fitFile  = TFile(outputFileName, "RECREATE")
 for catName in [x.GetName() for x in histFile.GetListOfKeys()]:
     catDir = histFile.GetDirectory(catName)
     if catDir == None: continue
     outCatDir = fitFile.mkdir(catName)
+    if not os.path.isdir("%s/%s" % (imageDirName, catName)): os.mkdir("%s/%s" % (imageDirName, catName))
 
     for varName in [x.GetName() for x in catDir.GetListOfKeys()]:
         varDir = catDir.GetDirectory(varName)
@@ -103,8 +118,11 @@ for catName in [x.GetName() for x in histFile.GetListOfKeys()]:
         outVarDir.cd()
         hFrame = hFrame.Clone()
 
+        if not os.path.isdir("%s/%s/%s" % (imageDirName, catName, varName)): os.mkdir("%s/%s/%s" % (imageDirName, catName, varName))
+
         hFrame.SetMinimum(0)
         hFrame.SetMaximum(1)
+        hFrame.GetYaxis().SetTitle("Fake rate (%)")
         c = TCanvas("c_%s_%s" % (catName, varName), "%s %s" % (catName, varName), 500, 500)
         grp = TGraphErrors()
         grp.SetName("ratio")
@@ -120,6 +138,7 @@ for catName in [x.GetName() for x in histFile.GetListOfKeys()]:
             ratio = fit(hM_pass, hM_fail, cFitCanvas)
             cFitCanvas.Write()
             objs.append(cFitCanvas)
+            cFitCanvas.Print("%s/%s/%s/%s.png" % (imageDirName, catName, varName, cFitCanvas.GetName()))
 
             x    = hFrame.GetBinCenter(bin+1)
             dx   = hFrame.GetBinWidth(bin+1)/2
@@ -137,4 +156,6 @@ for catName in [x.GetName() for x in histFile.GetListOfKeys()]:
         hFrame.Write()
         grp.Write()
         objs.extend([c, hFrame, grp])
+
+        c.Print("%s/%s/%s/%s.png" % (imageDirName, catName, varName, c.GetName()))
 
