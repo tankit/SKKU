@@ -29,12 +29,24 @@ fakeKshort.muonIds.globalMuon = cms.PSet(
     arbitration = cms.string("SegmentAndTrackArbitration"),
 )
 fakeKshort.muonIds.globalMuonMedium = cms.PSet(
-    cut = cms.string("isGlobalMuon && globalTrack().normalizedChi2()<10.0 && innerTrack().hitPattern().numberOfValidPixelHits() > 0 && track().hitPattern().trackerLayersWithMeasurement() > 5 "),
+    cut = cms.string(
+        "isGlobalMuon"
+        " && globalTrack().normalizedChi2()<10.0"
+        " && innerTrack().hitPattern().numberOfValidPixelHits() > 0"
+        " && track().hitPattern().trackerLayersWithMeasurement() > 5"
+    ),
     idSelection = cms.string("AllGlobalMuons"),
     arbitration = cms.string("SegmentAndTrackArbitration"),
 )
 fakeKshort.muonIds.globalMuonTight = cms.PSet(
-    cut = cms.string("isGlobalMuon  && globalTrack().normalizedChi2()<10.0 && innerTrack().hitPattern().numberOfValidPixelHits() > 0 && track().hitPattern().trackerLayersWithMeasurement() > 5 && numberOfMatchedStations() > 1 && globalTrack().hitPattern().numberOfValidMuonHits() > 0"),
+    cut = cms.string(
+        "isGlobalMuon"
+        " && globalTrack().normalizedChi2()<10.0"
+        " && innerTrack().hitPattern().numberOfValidPixelHits() > 0"
+        " && track().hitPattern().trackerLayersWithMeasurement() > 5"
+        " && numberOfMatchedStations() > 1"
+        " && globalTrack().hitPattern().numberOfValidMuonHits() > 0"
+    ),
     idSelection = cms.string("AllGlobalMuons"),
     arbitration = cms.string("SegmentAndTrackArbitration"),
 )
@@ -48,32 +60,6 @@ fakeKshort.muonIds.globalMuonPT = cms.PSet(
 fakeKshort.muonIds.globalMuonTest = cms.PSet(
     cut = cms.string("isPFMuon && (isGlobalMuon || isTrackerMuon) "),
     idSelection = cms.string("All"),
-    arbitration = cms.string("SegmentAndTrackArbitration"),
-)
-
-fakeKshort.muonIds.GLBMuonTestOne = cms.PSet(
-    cut = cms.string("isGlobalMuon && globalTrack().normalizedChi2()<10.0"),
-    idSelection = cms.string("AllGlobalMuons"),
-    arbitration = cms.string("SegmentAndTrackArbitration"),
-)
-fakeKshort.muonIds.GLBMuonTestTwo = cms.PSet(
-    cut = cms.string("isGlobalMuon && innerTrack().hitPattern().numberOfValidPixelHits() > 0"),
-    idSelection = cms.string("AllGlobalMuons"),
-    arbitration = cms.string("SegmentAndTrackArbitration"),
-)
-fakeKshort.muonIds.GLBMuonTestThree = cms.PSet(
-    cut = cms.string("isGlobalMuon && track().hitPattern().trackerLayersWithMeasurement() > 5"),
-    idSelection = cms.string("AllGlobalMuons"),
-    arbitration = cms.string("SegmentAndTrackArbitration"),
-)
-fakeKshort.muonIds.GLBMuonTestFour = cms.PSet(
-    cut = cms.string("isGlobalMuon && numberOfMatchedStations() > 1"),
-    idSelection = cms.string("AllGlobalMuons"),
-    arbitration = cms.string("SegmentAndTrackArbitration"),
-)
-fakeKshort.muonIds.GLBMuonTestFive = cms.PSet(
-    cut = cms.string("isGlobalMuon && globalTrack().hitPattern().numberOfValidMuonHits() > 0"),
-    idSelection = cms.string("AllGlobalMuons"),
     arbitration = cms.string("SegmentAndTrackArbitration"),
 )
 
@@ -100,11 +86,6 @@ fakeKshort.muonIds.RPCMuLoose = cms.PSet(
 )
 fakeKshort.muonIds.RPCMuMedium = cms.PSet(
     cut = cms.string("isRPCMuon &&  numberOfMatchedStations('RPCHitAndTrackArbitration') >= 2 "),
-    idSelection = cms.string("RPCMuLoose"),
-    arbitration = cms.string("RPCHitAndTrackArbitration"),
-)
-fakeKshort.muonIds.RPCMuPromptTight = cms.PSet(
-    cut = cms.string("isRPCMuon && numberOfMatchedRPCLayers >=3 "),
     idSelection = cms.string("RPCMuLoose"),
     arbitration = cms.string("RPCHitAndTrackArbitration"),
 )
