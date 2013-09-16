@@ -46,10 +46,10 @@ muonTypes = {
     "globalMuonMedium":"muonId%d_globalMuonMedium == 1" % probeId,
 }
 
-baseCut = "abs(track%d.eta()) < 1.6 && track%d.pt() > 4" % (probeId, probeId)
+baseCut = "abs(track%d.eta()) < 1.6 && track%d.pt() > 4 && track%d.pt() < 20" % (probeId, probeId, probeId)
 histDefs = [
     ("AbsEta", "Pseudorapidity |#eta|", "abs(track%d.eta())" % probeId, [0.0, 0.8, 1.2, 1.6]),
-    ("Pt"    , "Transverse momentum p_{T} (GeV/c)", "track%d.pt()" % probeId, [4,5,7,10,20,30,50,500]),
+    ("Pt"    , "Transverse momentum p_{T} (GeV/c)", "track%d.pt()" % probeId, [4,5,7,10,20]),#,30,50,500]),
 ]
 
 srcFile = TFile(srcFileName)
