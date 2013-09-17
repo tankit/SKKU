@@ -12,7 +12,8 @@ modName = sys.argv[1]
 srcFileName = sys.argv[2]
 
 probeId = int(sys.argv[3])
-tagId = (probeId+1)%2
+if probeId == 1: tagId = 2
+else: tagId = 1
 outFileName = 'hist_%s_%d.root' % (modName, probeId)
 
 modes = {
@@ -51,6 +52,10 @@ histDefs = [
     ("AbsEta", "Pseudorapidity |#eta|", "abs(track%d.eta())" % probeId, [0.0, 0.8, 1.2, 1.6]),
     ("Pt"    , "Transverse momentum p_{T} (GeV/c)", "track%d.pt()" % probeId, [4,5,7,10,20]),#,30,50,500]),
 ]
+if modName == "Jpsi":
+    baseCut += " && muonId%d_globalMuonTight == 1" % tagId
+elif modName == "Lambda":
+    baseCut += " && track%d.mass() > 0.5" % probeId
 
 srcFile = TFile(srcFileName)
 tree = srcFile.Get("fake%s/tree" % modName)
