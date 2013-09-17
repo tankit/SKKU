@@ -5,7 +5,7 @@ from ROOT import *
 if os.path.exists("rootlogon.C"):
     gROOT.ProcessLine(".x rootlogon.C")
 
-if len(sys.argv) < 3:
+if len(sys.argv) < 2:
     print "fit.py : calculate fakerate by fitting"
     print "Usage : python -i fit.py MODE"
     print "        read hist_MODE.root and writes fit_MODE.root and image_MODE"
@@ -38,13 +38,13 @@ def fit(hA, hB, c = None):
 
     ws.factory("m0[%f, %f, %f]" % ((massMax+massMin)/2, massMin, massMax))
     if 'Kshort' in mode: ws.factory("Voigtian::sigA(mass, m0, w0[1e-2, 5e-3, 2e-2], sigmaA[1e-2, 1e-3, 1e-1])") # Kshort
-    elif 'Phi'  in mode: ws.factory("Voigtian::sigA(mass, m0, w0[5e-3, 1e-3, 1e-2], sigmaA[1e-2, 1e-3, 1e-1])") # Phi
-    elif 'Jpsi' in mode: ws.factory("Voigtian::sigA(mass, m0, w0[1e-2, 1e-3, 5e-2], sigmaA[2e-2, 1e-2, 1e-1])") # Jpsi
+    elif 'Phi'  in mode: ws.factory("Voigtian::sigA(mass, m0, w0[5e-3, 1e-3, 2e-2], sigmaA[2e-3, 1e-3, 5e-3])") # Phi
+    elif 'Jpsi' in mode: ws.factory("Voigtian::sigA(mass, m0, w0[1e-2, 1e-3, 2e-2], sigmaA[2e-2, 5e-3, 5e-2])") # Jpsi
     ws.factory("Voigtian::sigB(mass, m0, w0, sigmaA)")
     ws.factory("Chebychev::bkgA(mass, {p0A[0, -5, 5], p1A[0, -5, 5]})")
     ws.factory("Chebychev::bkgB(mass, {p0B[0, -5, 5], p1B[0, -5, 5]})")
-    if 'Jpsi' in mode: ws.factory("ratio[0.9, 0, 1]")
-    else: ws.factory("ratio[0.001, 0, 1]")
+    if 'Jpsi' in mode: ws.factory("ratio[0.999, 0, 1]")
+    else: ws.factory("ratio[0.003, 0, 1]")
     ws.factory("EXPR::nSigA('nSig*ratio', nSig[%f, 0, %f], ratio)" % (0.5*nTotal, 1.1*nTotal))
     ws.factory("EXPR::nSigB('nSig*(1-ratio)', nSig, ratio)")
     ws.factory("SUM::pdfA(nSigA*sigA, nBkgA[%f, 0, %f]*bkgA)" % (0.5*nA, 1.1*nA))
