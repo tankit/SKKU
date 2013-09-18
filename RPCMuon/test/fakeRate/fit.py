@@ -2,8 +2,10 @@
 
 import sys, os
 from ROOT import *
-if os.path.exists("rootlogon.C"):
-    gROOT.ProcessLine(".x rootlogon.C")
+from urllib import urlretrieve
+if not os.path.exists('rootlogon.C'):
+    urlretrieve('https://raw.github.com/cms-top-kr/tools/master/rootlogon.C', 'rootlogon.C')
+gROOT.ProcessLine(".x rootlogon.C")
 
 if len(sys.argv) < 2:
     print "fit.py : calculate fakerate by fitting"

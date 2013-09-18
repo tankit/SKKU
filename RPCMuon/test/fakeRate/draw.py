@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 from ROOT import *
-
+from urllib import urlretrieve
+if not os.path.exists('rootlogon.C'):
+    urlretrieve('https://raw.github.com/cms-top-kr/tools/master/rootlogon.C', 'rootlogon.C')
 gROOT.ProcessLine(".x rootlogon.C")
 gROOT.ForceStyle()
 
