@@ -30,8 +30,10 @@ massMin, massMax, binWidth = modes[modName]
 nbin = int(round((massMax-massMin)/binWidth))
 
 from ROOT import *
-if os.path.exists("rootlogon.C"):
-    gROOT.ProcessLine(".x rootlogon.C")
+from urllib import urlretrieve
+if not os.path.exists('rootlogon.C'):
+    urlretrieve('https://raw.github.com/cms-top-kr/tools/master/rootlogon.C', 'rootlogon.C')
+gROOT.ProcessLine(".x rootlogon.C")
 
 muonTypes = {
     "RPCMuLoose" :"muonId%d_RPCMuLoose  == 1" % probeId,
