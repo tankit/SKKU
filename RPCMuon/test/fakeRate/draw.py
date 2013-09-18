@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys, os
 from ROOT import *
 from urllib import urlretrieve
 if not os.path.exists('rootlogon.C'):
