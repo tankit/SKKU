@@ -48,9 +48,11 @@ muonTypes = {
 }
 
 baseCut = "abs(track%d.eta()) < 1.6 && track%d.pt() > 4 && track%d.pt() < 20" % (probeId, probeId, probeId)
+#baseCut = "abs(track%d.eta()) < 1.6 && track%d.pt() > 4 && track%d.pt() < 500" % (probeId, probeId, probeId)
 histDefs = [
-    ("AbsEta", "Pseudorapidity |#eta|", "abs(track%d.eta())" % probeId, [0.0, 0.8, 1.2, 1.6]),
-    ("Pt"    , "Transverse momentum p_{T} (GeV/c)", "track%d.pt()" % probeId, [4,5,7,10,20]),#,30,50,500]),
+    ("AbsEta", "Pseudorapidity |#eta|", "abs(track%d.eta())" % probeId, [0.0, 0.9, 1.2, 1.6]),
+    ("Pt"    , "Transverse momentum p_{T} (GeV/c)", "track%d.pt()" % probeId, [4,6,8,10,20]),
+    #("Pt"    , "Transverse momentum p_{T} (GeV/c)", "track%d.pt()" % probeId, [4,6,8,10,20,30,50,500]),
 ]
 if modName == "Jpsi":
     baseCut += " && muonId%d_globalMuonTight == 1" % tagId
