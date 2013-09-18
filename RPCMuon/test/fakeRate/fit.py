@@ -70,6 +70,8 @@ def fit(hA, hB, c = None):
     dataAB = RooDataSet("dataAB", "mass", RooArgSet(mass, weight), RooFit.Index(ws.index), 
                         RooFit.Import("A", dataA), RooFit.Import("B", dataB), RooFit.WeightVar(weight))
 
+    simPdf.fitTo(dataAB)
+    simPdf.fitTo(dataAB, RooFit.Extended())
     result = simPdf.fitTo(dataAB, RooFit.Save(), RooFit.Extended())
   
     if c != None:
