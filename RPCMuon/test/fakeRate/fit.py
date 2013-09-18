@@ -141,6 +141,7 @@ for catName in [x.GetName() for x in histFile.GetListOfKeys()]:
             cFitCanvas.Write()
             objs.append(cFitCanvas)
             cFitCanvas.Print("%s/%s/%s/%s.png" % (imageDirName, catName, varName, cFitCanvas.GetName()))
+            cFitCanvas.Print("%s/%s/%s/%s.pdf" % (imageDirName, catName, varName, cFitCanvas.GetName()))
 
             x    = hFrame.GetBinCenter(bin+1)
             dx   = hFrame.GetBinWidth(bin+1)/2
@@ -160,4 +161,5 @@ for catName in [x.GetName() for x in histFile.GetListOfKeys()]:
         objs.extend([c, hFrame, grp])
 
         c.Print("%s/%s/%s/%s.png" % (imageDirName, catName, varName, c.GetName()))
+        c.Print("%s/%s/%s/%s.pdf" % (imageDirName, catName, varName, c.GetName()))
 
