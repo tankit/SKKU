@@ -17,7 +17,7 @@ if not os.path.exists('rootlogon.C'):
 gROOT.ProcessLine(".x rootlogon.C")
 gROOT.ForceStyle()
 
-baseCut = "abseta < 1.6 && pt > 20 && pt < 500"
+baseCut = "abseta < 1.6 && pt > 20"
 muonIdDefs = [
     ("tightMuons", "tightMuons"),
     ("looseRPCMuons", "looseRPCMuons"),
@@ -28,8 +28,8 @@ muonIdDefs = [
     ("tightRPCInclusive", "tightRPCMuons || tightMuons"),
 ]
 histDefs = [
-    ("AbsEta", "Pseudorapidity |#eta|", "abseta", [0.0, 0.9, 1.2, 1.6]),
-    ("Pt"    , "Transverse momentum p_{T} (GeV/c)", "pt", [20, 30, 40, 50, 100, 200])
+    ("AbsEta", "Pseudorapidity |#eta|", "abseta", [0.0, 0.9, 1.2, 1.4, 1.6]),
+    ("Pt"    , "Transverse momentum p_{T} (GeV/c)", "pt", [20, 30, 40, 50, 60, 100, 250])
 ]
 
 massMin, massMax, binWidth = 75, 105, 0.2
