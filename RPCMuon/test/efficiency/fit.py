@@ -6,6 +6,8 @@ from urllib import urlretrieve
 if not os.path.exists('rootlogon.C'):
     urlretrieve('https://raw.github.com/cms-top-kr/tools/master/rootlogon.C', 'rootlogon.C')
 gROOT.ProcessLine(".x rootlogon.C")
+#RooMsgService.instance().getStream(1).removeTopic(RooFit.NumericIntegration)
+RooMsgService.instance().setGlobalKillBelow(RooFit.ERROR)
 
 inputFileName = "hist.root"
 outputFileName = "fit.root"
@@ -65,7 +67,7 @@ def fit(hA, hB, c = None):
 
     simPdf.fitTo(dataAB)
     simPdf.fitTo(dataAB, RooFit.Extended())
-    result = simPdf.fitTo(dataAB, RooFit.Save(), RooFit.Extended(), RooFit.Minos())
+    result = simPdf.fitTo(dataAB, RooFit.Save(), RooFit.Extended())#, RooFit.Minos())
   
     if c != None:
         frameA = mass.frame()
@@ -90,7 +92,6 @@ def fit(hA, hB, c = None):
     efficiency = result.floatParsFinal().find('efficiency')
     return efficiency;
 
-summaryText = ""
 if not os.path.isdir(imageDirName) :os.mkdir(imageDirName)
 histFile = TFile(inputFileName)
 fitFile  = TFile(outputFileName, "RECREATE")
@@ -111,14 +112,12 @@ for catName in [x.GetName() for x in histFile.GetListOfKeys()]:
 
         if not os.path.isdir("%s/%s/%s" % (imageDirName, catName, varName)): os.mkdir("%s/%s/%s" % (imageDirName, catName, varName))
 
-        tab_header = []
-        tab_values = []
-
         hFrame.SetMinimum(0)
         hFrame.SetMaximum(1)
         hFrame.GetYaxis().SetTitle("Fake rate (%)")
         c = TCanvas("c_%s_%s" % (catName, varName), "%s %s" % (catName, varName), 500, 500)
-        grp = TGraphAsymmErrors()
+        #grp = TGraphAsymmErrors()
+        grp = TGraphErrors()
         grp.SetName("efficiency")
         grp.SetTitle(catName)
         for bin in range(hFrame.GetNbinsX()):
@@ -138,16 +137,13 @@ for catName in [x.GetName() for x in histFile.GetListOfKeys()]:
             x    = hFrame.GetBinCenter(bin+1)
             dx   = hFrame.GetBinWidth(bin+1)/2
             y    = 100*efficiency.getVal()
-            dyLo = abs(100*efficiency.getErrorLo())
-            dyHi = abs(100*efficiency.getErrorHi())
+            dy   = abs(100*efficiency.getError())
+            #dyLo = abs(100*efficiency.getErrorLo())
+            #dyHi = abs(100*efficiency.getErrorHi())
             grp.SetPoint(bin, x, y)
-            grp.SetPointError(bin, dx, dx, dyLo, dyHi)
+            #grp.SetPointError(bin, dx, dx, dyLo, dyHi)
+            grp.SetPointError(bin, dx, dy)
             if y > hFrame.GetMaximum(): hFrame.SetMaximum(y*1.1)
-
-            tab_header.append("$%.2f-%.2f$" % (x-dx, x+dx))
-            tab_values.append("$%.1f^{+%.1f}_{-%.1f}$" % (y, dyLo, dyHi))
-        summaryText += ("    %s &" % varName ) + " & ".join(tab_header) + "\\\\" + "\n"
-        summaryText += ("    %s &" % catName ) + " & ".join(tab_values) + "\\\\" + "\n"
 
         c.cd()
         hFrame.Draw()
@@ -161,4 +157,3 @@ for catName in [x.GetName() for x in histFile.GetListOfKeys()]:
         c.Print("%s/%s/%s/%s.png" % (imageDirName, catName, varName, c.GetName()))
         c.Print("%s/%s/%s/%s.pdf" % (imageDirName, catName, varName, c.GetName()))
 
-print summaryText
