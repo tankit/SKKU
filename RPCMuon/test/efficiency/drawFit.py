@@ -4,17 +4,18 @@ from ROOT import *
 gROOT.ProcessLine(".x rootlogon.C")
 gROOT.ForceStyle()
 
-imgPrefix = "20130922_efficiencyGain_"
+#imgPrefix = "20130922_efficiencyGain"
+imgPrefix = "20130922_efficiency"
 
 varNames = ["Pt", "AbsEta"]
 categories = {
-#    "looseRPCMuons" :("RPCMuLoose" , kRed),
-#    "mediumRPCMuons":("RPCMuMedium", kRed+1), 
-#    "tightRPCMuons" :("RPCMuTight" , kMagenta),
-    "tightMuons"     :("TightMuons" , kBlack),
-    "looseRPCInclusive" :("Tight+RPCMuLoose" , kBlue),
-    "mediumRPCInclusive":("Tight+RPCMuMedium", kAzure), 
-    "tightRPCInclusive" :("Tight+RPCMuTight" , kGreen),
+    "looseRPCMuons" :("RPCMuLoose" , kRed),
+    "mediumRPCMuons":("RPCMuMedium", kRed+1), 
+    "tightRPCMuons" :("RPCMuTight" , kMagenta),
+#    "tightMuons"     :("TightMuons" , kBlack),
+#    "looseRPCInclusive" :("Tight+RPCMuLoose" , kBlue),
+#    "mediumRPCInclusive":("Tight+RPCMuMedium", kAzure), 
+#    "tightRPCInclusive" :("Tight+RPCMuTight" , kGreen),
 }
 
 objs = []
@@ -26,9 +27,10 @@ f = TFile("fit.root")
 for varName in varNames:
     hFrame = None
     c = TCanvas("c%s" % varName, varName, 500, 500)
-    leg = TLegend(0.6, 0.25, 0.92, 0.5)
+    leg = TLegend(0.55, 0.20, 0.92, 0.4)
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
+    leg.SetTextFont(42)
     for catName in categories:
         objDir = f.GetDirectory("%s/%s" % (catName, varName))
         if objDir == None: continue
@@ -36,7 +38,8 @@ for varName in varNames:
 
         if hFrame == None:
             hFrame = objDir.Get("hFrame")
-            hFrame.SetMinimum(0)
+            hFrame.GetYaxis().SetTitle("Efficiency (%)")
+            hFrame.SetMinimum(50)
             hFrame.SetMaximum(105)
             hFrame.Draw()
             summaryTableTex += "    %s " % varName
@@ -52,7 +55,7 @@ for varName in varNames:
         grp = objDir.Get("efficiency")
         if grp == None: continue
         summaryTableTex += "    %s " % catTitle
-        summaryTableTxt += "| *%s* |" % catTitle
+        summaryTableTxt += "| %s |" % catTitle
         for b in range(grp.GetN()):
             y = grp.GetY()[b]
             ey = grp.GetEY()[b]
