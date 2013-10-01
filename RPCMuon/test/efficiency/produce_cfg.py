@@ -15,6 +15,9 @@ process.hltHighLevel.HLTPaths = ["HLT_IsoMu24_v*", "HLT_IsoMu24_eta2p1_v*",]
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.suppressError = cms.untracked.vstring('patTriggerFull')
+process.MessageLogger.suppressWarning = cms.untracked.vstring('patTriggerFull')
+process.MessageLogger.suppressInfo = cms.untracked.vstring('patTriggerFull')
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 process.source = cms.Source("PoolSource",
