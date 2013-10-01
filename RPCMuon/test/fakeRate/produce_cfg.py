@@ -15,9 +15,8 @@ process.load("HLTrigger.HLTfilters.hltHighLevel_cfi")
 process.hltHighLevel.throw = False
 process.hltHighLevel.HLTPaths = ["HLT_IsoMu24_v*", "HLT_IsoMu24_eta2p1_v*"]
 
-process.MessageLogger.suppressError = cms.untracked.vstring('hltPrescaleTable', 'HLTConfigData', 'patTriggerFull',)
-process.MessageLogger.suppressWarning = cms.untracked.vstring('hltPrescaleSet', 'patTriggerFull',)
-#process.MessageLogger.suppressInfo = cms.untracked.vstring('hltPrescaleTable')
+process.MessageLogger.suppressError = cms.untracked.vstring('patTriggerFull',)
+process.MessageLogger.suppressWarning = cms.untracked.vstring('patTriggerFull',)
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
