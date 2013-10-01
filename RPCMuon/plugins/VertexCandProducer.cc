@@ -62,7 +62,7 @@ private:
   double cut_minPt_, cut_maxEta_;
   double cut_trackChi2_, cut_trackSignif_, cut_DCA_;
   int cut_trackNHit_;
-  double cut_vertexChi2_, cut_vtxDxy_, cut_vtxSignif_;
+  double cut_vertexChi2_, cut_minLxy_, cut_maxLxy_, cut_vtxSignif_;
 
   unsigned int minNumber_, maxNumber_;
 
@@ -83,7 +83,8 @@ VertexCandProducer::VertexCandProducer(const edm::ParameterSet& pset)
 
   edm::ParameterSet vertexPSet = pset.getParameter<edm::ParameterSet>("vertex");
   cut_vertexChi2_ = vertexPSet.getParameter<double>("chi2");
-  cut_vtxDxy_ = vertexPSet.getParameter<double>("dxy");
+  cut_minLxy_ = vertexPSet.getParameter<double>("minLxy");
+  cut_maxLxy_ = vertexPSet.getParameter<double>("maxLxy");
   cut_vtxSignif_ = vertexPSet.getParameter<double>("signif");
 
   pdgId_ = pset.getParameter<unsigned int>("pdgId");
@@ -214,7 +215,7 @@ bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventS
 
       double rVtxMag = ROOT::Math::Mag(distanceVector);
       double sigmaRvtxMag = sqrt(ROOT::Math::Similarity(totalCov, distanceVector)) / rVtxMag;
-      if( rVtxMag < cut_vtxDxy_ or rVtxMag / sigmaRvtxMag < cut_vtxSignif_ ) continue;
+      if( rVtxMag < cut_minLxy_ or rVtxMag > cut_maxLxy_ or rVtxMag / sigmaRvtxMag < cut_vtxSignif_ ) continue;
 
       // Cuts finished, now we create the candidates and push them back into the collections.
       
