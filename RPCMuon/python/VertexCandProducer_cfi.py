@@ -13,7 +13,7 @@ kshortVertex = cms.EDFilter("VertexCandProducer",
     vertex = cms.PSet(
         chi2 = cms.double(7.),
         minLxy = cms.double(0.0),
-        maxLxy = cms.double(4.0),
+        maxLxy = cms.double(40),
         signif = cms.double(5.0),
     ),
     pdgId = cms.uint32(310),
@@ -48,8 +48,8 @@ phiVertex = kshortVertex.clone(
 )
 phiVertex.track.signif  = -5
 phiVertex.vertex.signif = -5
-phiVertex.vertex.minLxy = -0.2
-phiVertex.vertex.maxLxy =  4
+phiVertex.vertex.minLxy = -40
+phiVertex.vertex.maxLxy =  40
 
 jpsiVertex = kshortVertex.clone(
     pdgId = cms.uint32(443),
@@ -62,5 +62,5 @@ jpsiVertex = kshortVertex.clone(
 )
 jpsiVertex.track.signif  = -5
 jpsiVertex.vertex.signif = -5
-jpsiVertex.vertex.minLxy = -0.2
-jpsiVertex.vertex.maxLxy =  4
+jpsiVertex.vertex.minLxy = -40
+jpsiVertex.vertex.maxLxy =  40
