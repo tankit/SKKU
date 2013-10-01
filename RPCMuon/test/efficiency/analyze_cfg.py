@@ -15,7 +15,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ),
     InputDirectoryName = cms.string("muonEffs"),
     InputTreeName = cms.string("fitter_tree"),
-    OutputFileName = cms.string("Efficiency.root"),
+    OutputFileName = cms.string("tnpResult.root"),
     #numbrer of CPUs to use for fitting
     NumCPU = cms.uint32(1),
     # specifies wether to save the RooWorkspace containing the data for each bin and
@@ -26,7 +26,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
                                                  
     # defines all the real variables of the probes available in the input tree and intended for use in the efficiencies
     Variables = cms.PSet(
-        mass = cms.vstring("Tag-Probe Mass", "60.0", "120.0", "GeV/c^{2}"),
+        mass = cms.vstring("Tag-Probe Mass", "75.0", "105.0", "GeV/c^{2}"),
         pt = cms.vstring("Probe p_{T}", "20", "500", "GeV/c"),
         #eta = cms.vstring("Probe #eta", "-1.8", "1.8", ""),
         abseta = cms.vstring("Probe #eta", "0", "1.8", ""),
@@ -35,11 +35,9 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 
     # defines all the discrete variables of the probes available in the input tree and intended for use in the efficiency calculations
     Categories = cms.PSet(
-        #PassingMediumMuons = cms.vstring("", "dummy[pass=1,fail=0]")
-        #PassingMediumTightMuons = cms.vstring("PassingMediumTightMuons", "dummy[pass=1,fail=0]")
-        #PassingMediumTightMuonsRPCMu = cms.vstring("PassingMediumTightMuonsRPCMu", "dummy[pass=1,fail=0]")
-        #PassingTightMuons = cms.vstring("PassingTightMuons", "dummy[pass=1,fail=0]")
-        looseRPCMuons = cms.vstring("looseRPCMuons", "dummy[pass=1,fail=0]")
+        looseRPCMuons  = cms.vstring("looseRPCMuons" , "dummy[pass=1,fail=0]"),
+        mediumRPCMuons = cms.vstring("mediumRPCMuons", "dummy[pass=1,fail=0]"),
+        tightRPCMuons  = cms.vstring("tightRPCMuons" , "dummy[pass=1,fail=0]"),
     ),
 
     # defines all the PDFs that will be available for the efficiency calculations; uses RooFit's "factory" syntax;
@@ -59,20 +57,54 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     # there will be a separate output directory for each calculation that includes a simultaneous fit, side band subtraction and counting. 
     Efficiencies = cms.PSet(
         #the name of the parameter set becomes the name of the directory
-        pt = cms.PSet(
+        RPCMuLoose_pt = cms.PSet(
             EfficiencyCategoryAndState = cms.vstring("looseRPCMuons","pass"),
             UnbinnedVariables = cms.vstring("mass"),
             BinnedVariables = cms.PSet(
+                abseta = cms.vdouble(0.0, 1.6),
+                pt = cms.vdouble(20, 30, 40, 50, 60, 100, 250),
+            ),
+            BinToPDFmap = cms.vstring("twoVoigtians")
+        ),
+        RPCMuLoose_abseta = cms.PSet(
+            EfficiencyCategoryAndState = cms.vstring("looseRPCMuons","pass"),
+            UnbinnedVariables = cms.vstring("mass"),
+            BinnedVariables = cms.PSet(
+                abseta = cms.vdouble(0.0, 0.9, 1.2, 1.4, 1.6, 1.8)
+            ),
+            BinToPDFmap = cms.vstring("twoVoigtians")
+        ),
+        RPCMuMedium_pt = cms.PSet(
+            EfficiencyCategoryAndState = cms.vstring("mediumRPCMuons","pass"),
+            UnbinnedVariables = cms.vstring("mass"),
+            BinnedVariables = cms.PSet(
+                abseta = cms.vdouble(0.0, 1.6),
                 pt = cms.vdouble(20, 30, 40, 50, 60, 100, 250)
             ),
             BinToPDFmap = cms.vstring("twoVoigtians")
         ),
-        abseta = cms.PSet(
-            EfficiencyCategoryAndState = cms.vstring("looseRPCMuons","pass"),
+        RPCMuMedium_abseta = cms.PSet(
+            EfficiencyCategoryAndState = cms.vstring("mediumRPCMuons","pass"),
             UnbinnedVariables = cms.vstring("mass"),
             BinnedVariables = cms.PSet(
-                abseta = cms.vdouble(0.0, 0.2, 0.4, 0.6, 0.8,
-                                     1.0, 1.2, 1.4, 1.6, 1.8)
+                abseta = cms.vdouble(0.0, 0.9, 1.2, 1.4, 1.6, 1.8)
+            ),
+            BinToPDFmap = cms.vstring("twoVoigtians")
+        ),
+        RPCMuTight_pt = cms.PSet(
+            EfficiencyCategoryAndState = cms.vstring("tightRPCMuons","pass"),
+            UnbinnedVariables = cms.vstring("mass"),
+            BinnedVariables = cms.PSet(
+                abseta = cms.vdouble(0.0, 1.6),
+                pt = cms.vdouble(20, 30, 40, 50, 60, 100, 250)
+            ),
+            BinToPDFmap = cms.vstring("twoVoigtians")
+        ),
+        RPCMuTight_abseta = cms.PSet(
+            EfficiencyCategoryAndState = cms.vstring("tightRPCMuons","pass"),
+            UnbinnedVariables = cms.vstring("mass"),
+            BinnedVariables = cms.PSet(
+                abseta = cms.vdouble(0.0, 0.9, 1.2, 1.4, 1.6, 1.8)
             ),
             BinToPDFmap = cms.vstring("twoVoigtians")
         ),
