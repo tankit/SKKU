@@ -62,7 +62,7 @@ private:
   double cut_minPt_, cut_maxEta_;
   double cut_trackChi2_, cut_trackSignif_, cut_DCA_;
   int cut_trackNHit_;
-  double cut_vertexChi2_, cut_vtxDxy_, cut_vtxSignif_;
+  double cut_vertexChi2_, cut_minLxy_, cut_maxLxy_, cut_vtxSignif_;
 
   unsigned int minNumber_, maxNumber_;
 
@@ -83,7 +83,8 @@ VertexCandProducer::VertexCandProducer(const edm::ParameterSet& pset)
 
   edm::ParameterSet vertexPSet = pset.getParameter<edm::ParameterSet>("vertex");
   cut_vertexChi2_ = vertexPSet.getParameter<double>("chi2");
-  cut_vtxDxy_ = vertexPSet.getParameter<double>("dxy");
+  cut_minLxy_ = vertexPSet.getParameter<double>("minLxy");
+  cut_maxLxy_ = vertexPSet.getParameter<double>("maxLxy");
   cut_vtxSignif_ = vertexPSet.getParameter<double>("signif");
 
   pdgId_ = pset.getParameter<unsigned int>("pdgId");
@@ -167,17 +168,24 @@ bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventS
       if ( !caState1.isValid() or !caState2.isValid() ) continue;
 
       double mass1 = mass1_, mass2 = mass2_;
-      if ( mass1_ != mass2_ )
+      int leg1Id = leg1Id_, leg2Id = leg2Id_;
+      if ( leg1Id != leg2Id )
       {
         if ( caState1.momentum().mag() > caState2.momentum().mag() )
         {
-          mass1 = max(mass1_, mass2_);
-          mass2 = min(mass1_, mass2_);
+          if ( mass1 < mass2 )
+          {
+            std::swap(mass1, mass2);
+            std::swap(leg1Id, leg2Id);
+          }
         }
         else
         {
-          mass1 = min(mass1_, mass2_);
-          mass2 = max(mass1_, mass2_);
+          if ( mass1 > mass2 )
+          {
+            std::swap(mass1, mass2);
+            std::swap(leg1Id, leg2Id);
+          }
         }
       }
  
@@ -214,7 +222,7 @@ bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventS
 
       double rVtxMag = ROOT::Math::Mag(distanceVector);
       double sigmaRvtxMag = sqrt(ROOT::Math::Similarity(totalCov, distanceVector)) / rVtxMag;
-      if( rVtxMag < cut_vtxDxy_ or rVtxMag / sigmaRvtxMag < cut_vtxSignif_ ) continue;
+      if( rVtxMag < cut_minLxy_ or rVtxMag > cut_maxLxy_ or rVtxMag / sigmaRvtxMag < cut_vtxSignif_ ) continue;
 
       // Cuts finished, now we create the candidates and push them back into the collections.
       
@@ -264,8 +272,8 @@ bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventS
       RecoChargedCandidate cand2(trackRef2->charge(), Particle::LorentzVector(mom2.x(), mom2.y(), mom2.z(), candE2), vtx);
       cand1.setTrack(trackRef1);
       cand2.setTrack(trackRef2);
-      const int pdgId1 = signedPdgId(leg1Id_, trackRef1->charge());
-      const int pdgId2 = signedPdgId(leg2Id_, trackRef2->charge());
+      const int pdgId1 = signedPdgId(leg1Id, trackRef1->charge());
+      const int pdgId2 = signedPdgId(leg2Id, trackRef2->charge());
       cand1.setPdgId(pdgId1);
       cand2.setPdgId(pdgId2);
       VertexCompositeCandidate* cand = new VertexCompositeCandidate(0, candLVec, vtx, vtxCov, vtxChi2, vtxNdof);
