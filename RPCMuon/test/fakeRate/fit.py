@@ -74,20 +74,20 @@ def fit(hA, hB, c = None):
 
     simPdf.fitTo(dataAB)
     simPdf.fitTo(dataAB, RooFit.Extended())
-    result = simPdf.fitTo(dataAB, RooFit.Save(), RooFit.Extended())
+    result = simPdf.fitTo(dataAB, RooFit.Save(), RooFit.Extended(), RooFit.Minos())
   
     if c != None:
         frameA = mass.frame()
         dataAB.plotOn(frameA, RooFit.Cut("index==index::A"))
         proj = RooFit.ProjWData(RooArgSet(ws.index), dataAB)
         slice = RooFit.Slice(ws.index, "A")
-        simPdf.plotOn(frameA, slice, proj, RooFit.LineColor(kBlue))
-        simPdf.plotOn(frameA, slice, proj, RooFit.LineColor(kRed), RooFit.Components("bkgA"), RooFit.LineStyle(kDashed));
+        simPdf.plotOn(frameA, slice, proj, RooFit.LineColor(kGreen))
+        simPdf.plotOn(frameA, slice, proj, RooFit.LineColor(kGreen), RooFit.Components("bkgA"), RooFit.LineStyle(kDashed));
 
         frameB = mass.frame()
         slice = RooFit.Slice(ws.index, "B")
         dataAB.plotOn(frameB, RooFit.Cut("index==index::B"))
-        simPdf.plotOn(frameB, slice, proj, RooFit.LineColor(kBlue))
+        simPdf.plotOn(frameB, slice, proj, RooFit.LineColor(kRed))
         simPdf.plotOn(frameB, slice, proj, RooFit.LineColor(kRed), RooFit.Components("bkgB"), RooFit.LineStyle(kDashed))
 
         c.Divide(2,1)
@@ -128,7 +128,7 @@ for catName in [x.GetName() for x in histFile.GetListOfKeys()]:
         hFrame.SetMaximum(1)
         hFrame.GetYaxis().SetTitle("Fake rate (%)")
         c = TCanvas("c_%s_%s" % (catName, varName), "%s %s" % (catName, varName), 500, 500)
-        grp = TGraphErrors()
+        grp = TGraphAsymmErrors()
         grp.SetName("ratio")
         grp.SetTitle(catName)
         for bin in range(hFrame.GetNbinsX()):
@@ -148,9 +148,11 @@ for catName in [x.GetName() for x in histFile.GetListOfKeys()]:
             x    = hFrame.GetBinCenter(bin+1)
             dx   = hFrame.GetBinWidth(bin+1)/2
             y    = 100*ratio.getVal()
-            dy   = abs(100*ratio.getError())
+            #dy   = abs(100*ratio.getError())
+            dyLo  = abs(100*ratio.getErrorLo())
+            dyHi  = abs(100*ratio.getErrorHi())
             grp.SetPoint(bin, x, y)
-            grp.SetPointError(bin, dx, dy)
+            grp.SetPointError(bin, dx, dx, dyLo, dyHi)
             if y > hFrame.GetMaximum(): hFrame.SetMaximum(y*1.1)
 
         c.cd()
