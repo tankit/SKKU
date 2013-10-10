@@ -84,8 +84,12 @@ process.commonFilters = cms.Sequence(
 
 ## Trigger matching with PAT
 process.load("MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff")
-process.muonMatchHLTL2.maxDeltaR = 0.3 # Zoltan tuning - it was 0.5
-process.muonMatchHLTL3.maxDeltaR = 0.1
+process.muonMatchHLTL2.maxDeltaR = 0.02 # Zoltan tuning - it was 0.5
+process.muonMatchHLTL3.maxDeltaR = 0.02
+process.muonMatchHLTL3T.maxDeltaR = 0.02
+process.muonMatchHLTL2.maxDPtRel = 0.1
+process.muonMatchHLTL3.maxDPtRel = 0.1
+process.muonMatchHLTL3T.maxDPtRel = 0.1
 from MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff import *
 
 process.tagMuons = cms.EDFilter("PATMuonSelector",
