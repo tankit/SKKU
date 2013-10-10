@@ -2,8 +2,6 @@ import FWCore.ParameterSet.Config as cms
 
 fakeKshort = cms.EDAnalyzer("FakeMuonAnalyzer",
     muon = cms.InputTag("muons"),
-    vetoMuon = cms.InputTag("tagMuons"),
-    nMaxVetoMuon = cms.uint32(1),
     #vertexCand = cms.InputTag("generalV0Candidates", "Kshort"),
     vertexCand = cms.InputTag("kshortVertex"),
     muonIds = cms.PSet(),
