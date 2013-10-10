@@ -36,6 +36,10 @@
 
 #include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
 
+#include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/MuonReco/interface/Muon.h"
+#include "DataFormats/MuonReco/interface/MuonFwd.h"
+
 #include <string>
 #include <fstream>
 
@@ -59,6 +63,9 @@ private:
   double mass1_, mass2_;
   double rawMassMin_, rawMassMax_, massMin_, massMax_;
 
+  edm::InputTag veto_muonLabel_;
+  double veto_maxDeltaR_;
+
   double cut_minPt_, cut_maxEta_;
   double cut_trackChi2_, cut_trackSignif_, cut_DCA_;
   int cut_trackNHit_;
@@ -72,6 +79,10 @@ private:
 
 VertexCandProducer::VertexCandProducer(const edm::ParameterSet& pset)
 {
+  edm::ParameterSet vetoMuonPSet = pset.getParameter<edm::ParameterSet>("vetoMuon");
+  veto_muonLabel_ = vetoMuonPSet.getParameter<edm::InputTag>("src");
+  veto_maxDeltaR_ = vetoMuonPSet.getParameter<double>("maxDeltaR");
+
   edm::ParameterSet trackPSet = pset.getParameter<edm::ParameterSet>("track");
   trackLabel_ = trackPSet.getParameter<edm::InputTag>("src");
   cut_minPt_ = trackPSet.getParameter<double>("minPt");
@@ -132,12 +143,22 @@ bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventS
   eventSetup.get<GlobalTrackingGeometryRecord>().get(glbTkGeomHandle);
   //glbTkGeom_ = glbTkGeomHandle.product();
 
+  double vetoMuonEta = -999, vetoMuonPhi = 0;
+  edm::Handle<reco::MuonCollection> vetoMuonHandle;
+  if ( event.getByLabel(veto_muonLabel_, vetoMuonHandle) )
+  {
+    const reco::Muon& vetoMuon = vetoMuonHandle->at(0);
+    vetoMuonEta = vetoMuon.eta();
+    vetoMuonPhi = vetoMuon.phi();
+  }
+
   for ( int i=0, n=trackHandle->size(); i<n; ++i )
   {
     TrackRef trackRef1(trackHandle, i);
     // Positive particle in the 1st index (pi+, proton, K+...)
     if ( trackRef1->charge() < 0 ) continue;
     if ( !isGoodTrack(trackRef1, beamSpotHandle.product()) ) continue;
+    if ( vetoMuonEta != -999 and deltaR(vetoMuonEta, vetoMuonPhi, trackRef1->eta(), trackRef1->phi()) < veto_maxDeltaR_ ) continue;
 
     TransientTrack transTrack1(*trackRef1, bField_, glbTkGeomHandle);
     if ( !transTrack1.impactPointTSCP().isValid() ) continue;
@@ -149,6 +170,7 @@ bool VertexCandProducer::filter(edm::Event& event, const edm::EventSetup& eventS
       // Negative particle in the 2nd index (pi-, anti-proton, K-...)
       if ( trackRef2->charge() > 0 ) continue;
       if ( !isGoodTrack(trackRef2, beamSpotHandle.product()) ) continue;
+      if ( vetoMuonEta != -999 and deltaR(vetoMuonEta, vetoMuonPhi, trackRef2->eta(), trackRef2->phi()) < veto_maxDeltaR_ ) continue;
 
       TransientTrack transTrack2(*trackRef2, bField_, glbTkGeomHandle);
       if ( !transTrack2.impactPointTSCP().isValid() ) continue;
