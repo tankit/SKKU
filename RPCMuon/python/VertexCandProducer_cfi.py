@@ -1,6 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
 kshortVertex = cms.EDFilter("VertexCandProducer",
+    vetoMuon = cms.PSet(
+        src = cms.InputTag("tagMuons"),
+        maxDeltaR = cms.double(0.5),
+    ),
     track = cms.PSet(
         src = cms.InputTag("generalTracks"),
         minPt = cms.double(4.0),
